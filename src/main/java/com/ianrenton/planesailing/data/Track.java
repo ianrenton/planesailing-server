@@ -69,7 +69,7 @@ public abstract class Track {
 		if (!positionHistory.isEmpty()) {
 			TimestampedPosition p = positionHistory.getLatest();
 			if (course != null && speed != null) {
-				// todo dead reckoning
+				// todo
 			} else {
 				return p;
 			}

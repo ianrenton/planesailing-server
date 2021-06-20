@@ -6,15 +6,6 @@ import com.ianrenton.planesailing.utils.DataMaps;
 
 /**
  * Server for Plane/Sailing.
- * 
- * TODO:
- * * Move more functionality across from front end
- * * Xstream based serialisation for persistence
- * * Make ports and IP addresses configurable
- * * Finish SBS Receive with aircraft category and type
- * * Add loading of base station, airport and seaport data from file on disk at runtime
- * * Implement APRS Receive
- * * Implement web server
  */
 public class Application {
 	private static final int WEB_SERVER_PORT = 80;
