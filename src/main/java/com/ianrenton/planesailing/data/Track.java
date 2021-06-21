@@ -65,11 +65,11 @@ public abstract class Track {
 	 * Gets the dead reckoned position. If course and speed are unknown, this
 	 * will be the same as the result of getPosition(). May be null if position is unknown.
 	 */
-	public TimestampedPosition getDRLatitude() {
+	public TimestampedPosition getDRPosition() {
 		if (!positionHistory.isEmpty()) {
 			TimestampedPosition p = positionHistory.getLatest();
 			if (course != null && speed != null) {
-				// todo
+				return deadReckonFrom(p, course, speed);
 			} else {
 				return p;
 			}
@@ -77,16 +77,35 @@ public abstract class Track {
 			return null;
 		}
 	}
-	
+
 	/**
-	 * Gets the dead reckoned longitude. May be null if position is unknown.
+	 * Great Circle calculation for dead reckoning.
+	 * @param p Last known position, including timestamp
+	 * @param course in degrees
+	 * @param speed in knots
+	 * @return
 	 */
-	public Double getDRLongitude() {
-		if (!positionHistory.isEmpty()) {
-			return positionHistory.getLatest().getLongitude();
-		} else {
-			return null;
-		}
+	private TimestampedPosition deadReckonFrom(TimestampedPosition p, double course, double speed) {
+		double startLatitudeRadians = Math.toRadians(p.getLatitude());
+		double startLongitudeRadians = Math.toRadians(p.getLongitude());
+		double courseRadians = Math.toRadians(course);
+		double distMovedMetres = (p.getAge() / 1000.0) * speed * 0.514;
+		double distMovedRadians = distMovedMetres / 6371000.0;
+		
+        double cosphi1 = Math.cos(startLatitudeRadians);
+        double sinphi1 = Math.sin(startLatitudeRadians);
+        double cosAz = Math.cos(courseRadians);
+        double sinAz = Math.sin(courseRadians);
+        double sinc = Math.sin(distMovedRadians);
+        double cosc = Math.cos(distMovedRadians);
+        
+        double endLatitudeRadians = Math.asin(sinphi1 * cosc + cosphi1 * sinc * cosAz);
+        double endLongitudeRadians = Math.atan2(sinc * sinAz, cosphi1 * cosc - sinphi1 * sinc * cosAz) + startLongitudeRadians;
+        
+        double endLatitudeDegrees = Math.toDegrees(endLatitudeRadians);
+        double endLongitudeDegrees = Math.toDegrees(endLongitudeRadians);
+        
+        return new TimestampedPosition(endLatitudeDegrees, endLongitudeDegrees, System.currentTimeMillis());
 	}
 
 	/**

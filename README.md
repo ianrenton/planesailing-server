@@ -6,7 +6,6 @@ Currently under construction - this does not do anything very useful yet, and th
 
 ## To Do List
 
-* Dead reckoning calcs
 * Move the rest of the "get description" and similar functionality over from Plane/Sailing v1
 * Xstream based serialisation for persistence
 * Make ports and IP addresses configurable
