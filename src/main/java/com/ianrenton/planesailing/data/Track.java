@@ -64,6 +64,9 @@ public abstract class Track {
 	/**
 	 * Gets the dead reckoned position. If course and speed are unknown, this
 	 * will be the same as the result of getPosition(). May be null if position is unknown.
+	 * @deprecated Intention is that the front end only polls the server every 10
+	 * seconds, but updates its map & tote every second with a dead reckoned position
+	 * calculated at the front end based on the age of the position data.
 	 */
 	public TimestampedPosition getDRPosition() {
 		if (!positionHistory.isEmpty()) {

@@ -13,4 +13,4 @@ Currently under construction - this does not do anything very useful yet, and th
 * Implement APRS Receive via Direwolf - client to host:8000
 * Refactor TCP client to make common between SBS and APRS
 * Switch AIS to TCP client too to match? Requires new rtl_ais compile from source
-* Implement JSON web server
+* Implement JSON web server - Ensure server time is included in the JSON response so an accurate age of position data can be determined regardless of client's clock
