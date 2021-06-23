@@ -22,6 +22,8 @@ public class DataMaps {
 	public static final Map<String, String> AIRCRAFT_CATEGORY_TO_SYMBOL = new HashMap<>();
 	public static final Map<String, String> AIRCRAFT_AIRLINE_CODE_TO_OPERATOR = new HashMap<>();
 	public static final Map<String, String> AIRCRAFT_AIRLINE_CODE_TO_SYMBOL = new HashMap<>();
+	public static final Map<String, String> AIRCRAFT_ICAO_HEX_TO_REGISTRATION = new HashMap<>();
+	public static final Map<String, String> AIRCRAFT_ICAO_HEX_TO_TYPE = new HashMap<>();
 	public static final Map<String, String> AIRCRAFT_TYPE_SHORT_TO_LONG = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_SYMBOL = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_DESCRIPTION = new HashMap<>();
@@ -33,6 +35,8 @@ public class DataMaps {
 		load("aircraft_cat_to_symbol.csv", AIRCRAFT_CATEGORY_TO_SYMBOL);
 		load("aircraft_airline_code_to_operator.csv", AIRCRAFT_AIRLINE_CODE_TO_OPERATOR);
 		load("aircraft_airline_code_to_symbol.csv", AIRCRAFT_AIRLINE_CODE_TO_SYMBOL);
+		load("aircraft_icao_hex_to_registration.csv", AIRCRAFT_ICAO_HEX_TO_REGISTRATION);
+		load("aircraft_icao_hex_to_type.csv", AIRCRAFT_ICAO_HEX_TO_TYPE);
 		load("aircraft_type_short_to_long.csv", AIRCRAFT_TYPE_SHORT_TO_LONG);
 		load("ship_type_to_symbol.csv", SHIP_TYPE_TO_SYMBOL);
 		load("ship_type_to_description.csv", SHIP_TYPE_TO_DESCRIPTION);
@@ -46,7 +50,7 @@ public class DataMaps {
 	 * @param map
 	 */
 	private static void load(String filename, Map<String, String> map) {
-		URL url = Thread.currentThread().getContextClassLoader().getResource("aircraft_cat_to_description.csv");
+		URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
 		try {
 			InputStreamReader in = new InputStreamReader(url.openStream());
 			try {
@@ -56,6 +60,7 @@ public class DataMaps {
 					map.put(row[0], row[1]);
 				}
 				reader.close();
+				LOGGER.info("Loaded {}", filename);
 			} catch (CsvException ex) {
 				LOGGER.error("Error loading data map file {}", filename, ex);
 			}

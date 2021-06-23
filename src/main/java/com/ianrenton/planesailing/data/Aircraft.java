@@ -125,4 +125,29 @@ public class Aircraft extends Track {
 		}
 		return "ICAO " + id;
 	}
+	
+	/**
+	 * Get registration (tail number) if known, otherwise null.
+	 */
+	public String getRegistration() {
+		return DataMaps.AIRCRAFT_ICAO_HEX_TO_REGISTRATION.getOrDefault(id, null);
+	}
+	
+	/**
+	 * Get airframe type (short version) if known, otherwise null.
+	 */
+	public String getTypeShort() {
+		return DataMaps.AIRCRAFT_ICAO_HEX_TO_TYPE.getOrDefault(id, null);
+	}
+	
+	/**
+	 * Get airframe type (long version) if known, otherwise null.
+	 */
+	public String getTypeLong() {
+		if (getTypeShort() != null) {
+			return DataMaps.AIRCRAFT_TYPE_SHORT_TO_LONG.getOrDefault(getTypeShort(), null);
+		} else {
+			return null;
+		}
+	}
 }
