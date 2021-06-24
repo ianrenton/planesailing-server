@@ -2,6 +2,7 @@ aircraft_airline_code_to_operator.csv
 aircraft_airline_code_to_symbol.csv
 aircraft_cat_to_description.csv
 aircraft_cat_to_symbol.csv
+ship_nav_status_to_description.csv
 ship_type_to_description.csv
 ship_type_to_symbol.csv:
 

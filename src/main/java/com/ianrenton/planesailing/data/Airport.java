@@ -28,4 +28,14 @@ public class Airport extends Track {
 	public String getDisplayName() {
 		return name;
 	}
+
+	@Override
+	public String getDisplayDescription1() {
+		return "";
+	}
+
+	@Override
+	public String getDisplayDescription2() {
+		return "";
+	}
 }

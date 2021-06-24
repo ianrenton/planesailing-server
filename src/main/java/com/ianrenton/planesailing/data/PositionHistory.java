@@ -6,6 +6,7 @@ import java.util.ArrayList;
  * Position history for a track.
  */
 public class PositionHistory extends ArrayList<TimestampedPosition> {
+	private static final long serialVersionUID = 1L;
 	private long historyLength = Long.MAX_VALUE;
 
 	/**

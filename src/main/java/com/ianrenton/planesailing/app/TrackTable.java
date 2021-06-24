@@ -1,5 +1,8 @@
 package com.ianrenton.planesailing.app;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,22 +13,32 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.ianrenton.planesailing.data.Track;
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Track table
  */
 public class TrackTable extends HashMap<String, Track> {
 
+	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
-	private static ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-	private ScheduledFuture scheduledTask;
+	private transient final XStream xstream = new XStream();
+	private transient final File serializationFile = new File("tracktable.xml");
+	private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+	@SuppressWarnings("rawtypes")
+	private transient final ScheduledFuture maintenanceTask;
+	@SuppressWarnings("rawtypes")
+	private transient final ScheduledFuture backupTask;
 	
 	/**
-	 * Create a track table. Spawns an internal thread to run scheduled tasks
-	 * such as culling old positions, and printing status data.
+	 * Create a track table, using data found on disk if present.
+	 * Spawns internal threads to run scheduled tasks such as culling old positions,
+	 * printing status data, and backing up the track table to disk.
 	 */
 	public TrackTable() {
-		scheduledTask = scheduledExecutorService.scheduleWithFixedDelay(new ScheduledTask(), 10, 10, TimeUnit.SECONDS);
+		loadFromFile();
+		maintenanceTask = scheduledExecutorService.scheduleWithFixedDelay(new MaintenanceTask(), 10, 10, TimeUnit.SECONDS);
+		backupTask = scheduledExecutorService.scheduleWithFixedDelay(new BackupTask(), 1, 10, TimeUnit.MINUTES);
 	}
 	
 	/**
@@ -46,14 +59,44 @@ public class TrackTable extends HashMap<String, Track> {
 		values().removeIf(t -> t.shouldDrop());
 	}
 	
-	public void shutdown() {
-		scheduledTask.cancel(true);
+	/**
+	 * Load data from XStream serialisation file on disk
+	 */
+	public void loadFromFile() {
+		if (serializationFile.exists()) {
+			clear();
+			putAll((TrackTable) xstream.fromXML(serializationFile));
+			LOGGER.info("Loaded track table from {}", serializationFile.getAbsolutePath());
+		} else {
+			LOGGER.info("Track table file did not exist in {}, probably first startup.", serializationFile.getAbsolutePath());
+		}
 	}
 
 	/**
-	 * Scheduled task that runs while the track table is running.
+	 * Save data to XStream serialisation file on disk
 	 */
-	private class ScheduledTask implements Runnable {
+	public void saveToFile() {
+		try {
+			xstream.toXML(this, new FileWriter(serializationFile));
+			LOGGER.info("Backed up track table to {}", serializationFile.getAbsolutePath());
+		} catch (IOException e) {
+			LOGGER.error("Could not save track table to {}", serializationFile.getAbsolutePath(), e);
+		}
+	}
+	
+	/**
+	 * Stop internal threads and prepare for shutdown.
+	 */
+	public void shutdown() {
+		maintenanceTask.cancel(true);
+		backupTask.cancel(true);
+		saveToFile();
+	}
+
+	/**
+	 * Scheduled maintenance task that runs while the track table is running.
+	 */
+	private class MaintenanceTask implements Runnable {
 
 		@Override
 		public void run() {
@@ -69,15 +112,30 @@ public class TrackTable extends HashMap<String, Track> {
 			LOGGER.info("Seen {} entities.", size());
 
 			if (!isEmpty()) {
-				LOGGER.info("ID                  Age (ms)");
-				LOGGER.info("------------------------------------");
+				LOGGER.info("----------------------------------------------------------------------------------");
+				LOGGER.info("Name                 Type       Description                               Age (ms)");
+				LOGGER.info("----------------------------------------------------------------------------------");
 				for (Track e : values()) {
-					LOGGER.info("{}{}", String.format("%-20s", e.getDisplayName()), e.getTimeSinceLastUpdate() != null ? e.getTimeSinceLastUpdate() : "---");
+					LOGGER.info("{} {} {} {} {}",
+							String.format("%-20.20s", e.getDisplayName()),
+							String.format("%-10.10s", e.getTrackType()),
+							String.format("%-20.20s", e.getDisplayDescription1()),
+							String.format("%-20.20s", e.getDisplayDescription2()),
+							e.getTimeSinceLastUpdate() != null ? String.format("%-6.6s", e.getTimeSinceLastUpdate()) : "------");
 				}
+				LOGGER.info("----------------------------------------------------------------------------------");
 			}
-			
-			LOGGER.info("");
 		}
+	}
 
+	/**
+	 * Scheduled backup task that runs while the track table is running.
+	 */
+	private class BackupTask implements Runnable {
+
+		@Override
+		public void run() {
+			saveToFile();
+		}
 	}
 }

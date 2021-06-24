@@ -1,13 +1,11 @@
 # Plane Sailing Server
 
-Server-side code for Plain/Sailing version 2.
+Server-side code for Plane/Sailing version 2.
 
 Currently under construction - this does not do anything very useful yet, and the Plane/Sailing web interface does not talk to it.
 
 ## To Do List
 
-* Move the rest of the "get description" and similar functionality over from Plane/Sailing v1
-* Xstream based serialisation for persistence
 * Make ports and IP addresses configurable
 * Add loading of base station, airport and seaport data from JSON config file at runtime
 * Implement APRS Receive via Direwolf - client to host:8000

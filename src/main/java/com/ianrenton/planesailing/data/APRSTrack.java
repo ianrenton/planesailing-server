@@ -8,4 +8,14 @@ public class APRSTrack extends Track {
 		setSymbolCode(DEFAULT_APRS_SYMBOL);
 		positionHistory.setHistoryLength(60 * 60 * 1000); // 1 hour
 	}
+
+	@Override
+	public String getDisplayDescription1() {
+		return "";
+	}
+
+	@Override
+	public String getDisplayDescription2() {
+		return "";
+	}
 }

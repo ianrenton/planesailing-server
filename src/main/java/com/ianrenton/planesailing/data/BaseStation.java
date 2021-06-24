@@ -28,4 +28,14 @@ public class BaseStation extends Track {
 	public String getDisplayName() {
 		return name;
 	}
+
+	@Override
+	public String getDisplayDescription1() {
+		return softwareVersion;
+	}
+
+	@Override
+	public String getDisplayDescription2() {
+		return "";
+	}
 }

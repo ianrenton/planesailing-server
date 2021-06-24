@@ -237,4 +237,49 @@ public abstract class Track {
 		}
 		return id;
 	}
+	
+	/**
+	 * Get the position, formatted for display.
+	 */
+	public String getDisplayPosition() {
+		if (!positionHistory.isEmpty()) {
+			double lat = positionHistory.getLatest().getLatitude();
+			double lon = positionHistory.getLatest().getLongitude();
+			return (String.format("%07.4f", Math.abs(lat)) + ((lat >= 0) ? 'N' : 'S') + " " + String.format("%08.4f", Math.abs(lon)) + ((lon >= 0) ? 'E' : 'W'));
+		} else {
+			return "";
+		}		
+	}
+	
+	/**
+	 * Get the heading, formatted for display.
+	 */
+	public String getDisplayHeading() {
+		return (heading != null) ? String.format("%03d", heading.intValue()) : "";
+	}
+	
+	/**
+	 * Get the speed, formatted for display.
+	 */
+	public String getDisplaySpeed() {
+		return (speed != null) ? String.format("%d", speed.intValue()) + "KTS" : "";
+	}
+	
+	/**
+	 * Get the altitude, formatted for display. (Nothing here, this is overridden
+	 * in the Aircraft class)
+	 */
+	public String getDisplayAltitude() {
+		return "";
+	}
+	
+	/**
+	 * Get the first line of description for display.
+	 */
+	public abstract String getDisplayDescription1();
+	
+	/**
+	 * Get the second line of description for display.
+	 */
+	public abstract String getDisplayDescription2();
 }

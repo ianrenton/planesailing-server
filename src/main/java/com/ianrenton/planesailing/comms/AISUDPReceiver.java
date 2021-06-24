@@ -101,9 +101,9 @@ public class AISUDPReceiver {
 			break;
 		case BaseStationReport:
 			BaseStationReport m3 = (BaseStationReport) m;
-			s.setBaseStation(true);
+			s.setShoreStation(true);
 			s.addPosition(m3.getLatitude(), m3.getLongitude());
-			s.setTrackType(TrackType.AIS_BASE_STATION);
+			s.setTrackType(TrackType.AIS_SHORE_STATION);
 			s.setFixed(true);
 			break;
 		case ClassBCSStaticDataReport:

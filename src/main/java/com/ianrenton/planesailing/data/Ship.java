@@ -12,14 +12,15 @@ public class Ship extends Track {
 	private static final long DROP_MOVING_SHIP_TRACK_TIME = 1200000; // 20 minutes
 	private static final long DROP_STATIC_SHIP_TRACK_TIME = 172800000; // 2 days
 	private static final String DEFAULT_SHIP_SYMBOL = "SUSP------";
-	private static final String BASE_STATION_SYMBOL = "SUGPUUS-----";
+	private static final String SHORE_STATION_SYMBOL = "SUGPUUS-----";
 	private final int mmsi;
 	private String name;
 	private ShipType shipType = ShipType.NotAvailable;
-	private String shipTypeDescription = "Unknown";
-	private boolean baseStation = false;
+	private String shipTypeDescription = null;
+	private boolean shoreStation = false;
 	private NavigationStatus navStatus = NavigationStatus.Undefined;
-	private String destination = "";
+	private String navStatusDescription = null;
+	private String destination = null;
 
 	public Ship(int mmsi) {
 		super(String.valueOf(mmsi));
@@ -71,14 +72,14 @@ public class Ship extends Track {
 		updateMetadataTime();
 	}
 
-	public boolean isBaseStation() {
-		return baseStation;
+	public boolean isShoreStation() {
+		return shoreStation;
 	}
 
-	public void setBaseStation(boolean baseStation) {
-		this.baseStation = baseStation;
-		if (baseStation) {
-			setSymbolCode(BASE_STATION_SYMBOL);
+	public void setShoreStation(boolean shoreStation) {
+		this.shoreStation = shoreStation;
+		if (shoreStation) {
+			setSymbolCode(SHORE_STATION_SYMBOL);
 		}
 		updateMetadataTime();
 	}
@@ -89,6 +90,15 @@ public class Ship extends Track {
 
 	public void setNavStatus(NavigationStatus navStatus) {
 		this.navStatus = navStatus;
+		
+		// Set the right description for the nav status if known
+		for (Entry<String, String> e : DataMaps.SHIP_NAV_STATUS_TO_DESCRIPTION.entrySet()) {
+			if (navStatus.getCode().equals(Integer.valueOf(e.getKey()))) {
+				navStatusDescription = e.getValue();
+				break;
+			}
+		}
+				
 		updateMetadataTime();
 	}
 
@@ -122,5 +132,31 @@ public class Ship extends Track {
 			return name;
 		}
 		return "MMSI " + mmsi;
+	}
+
+	@Override
+	public String getDisplayDescription1() {
+		if (shoreStation) {
+			return "AIS SHORE STATION";
+		} else if (shipTypeDescription != null) {
+			return shipTypeDescription.toUpperCase();
+		} else {
+			return "SHIP (UNKNOWN TYPE)";
+		}
+	}
+
+	@Override
+	public String getDisplayDescription2() {
+		String ret = "";
+		if (navStatusDescription != null && !navStatusDescription.equals("Undefined")) {
+			ret += navStatusDescription.toUpperCase();
+		}
+		if (destination != null) {
+			if (!ret.isEmpty()) {
+				ret += " - ";
+			}
+			ret += destination.toUpperCase();
+		}
+		return ret;
 	}
 }
