@@ -1,6 +1,11 @@
 package com.ianrenton.planesailing.data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.ianrenton.planesailing.app.Application;
 
@@ -246,6 +251,8 @@ public abstract class Track implements Serializable {
 	
 	/**
 	 * Get the position, formatted for display.
+	 * @deprecated Not needed as the client will be dead reckoning its position internally
+	 * so will need to do its own formatting
 	 */
 	public String getDisplayPosition() {
 		if (!positionHistory.isEmpty()) {
@@ -262,6 +269,13 @@ public abstract class Track implements Serializable {
 	 */
 	public String getDisplayHeading() {
 		return (heading != null) ? String.format("%03d", heading.intValue()) : "";
+	}
+	
+	/**
+	 * Get the course, formatted for display.
+	 */
+	public String getDisplayCourse() {
+		return (course != null) ? String.format("%03d", course.intValue()) : "";
 	}
 	
 	/**
@@ -288,4 +302,62 @@ public abstract class Track implements Serializable {
 	 * Get the second line of description for display.
 	 */
 	public abstract String getDisplayDescription2();
+	
+	/**
+	 * Get a map of data for this track that will be provided to the client, including
+	 * all metadata, the current position, and the position history, used for the
+	 * "first" API call.
+	 */
+	public Map<String, Object> getFirstCallData() {
+		Map<String, Object> map = getAllCallData();
+		List<Map<String, Object>> posHistory = new ArrayList<>();
+		for (TimestampedPosition p : positionHistory) {
+			Map<String, Object> m = new HashMap<>();
+			m.put("lat", p.getLatitude());
+			m.put("lon", p.getLongitude());
+			posHistory.add(m);
+		}
+		map.put("poshistory", posHistory);
+		return map;
+	}
+	
+	/**
+	 * Get a map of data for this track that will be provided to the client, including
+	 * all metadata and the current position, used for the "update" API call.
+	 */
+	public Map<String, Object> getUpdateCallData() {
+		return getAllCallData();
+	}
+	
+	/**
+	 * Get a map of metadata for this track that will be provided to the client
+	 * in all API calls. This should be enough to generate all the information
+	 * the client needs, and shouldn't need overriding in subclasses.
+	 */
+	private Map<String, Object> getAllCallData() {
+		Map<String, Object> map = new LinkedHashMap<>();
+		map.put("name", getDisplayName());
+		map.put("tracktype", getTrackType().toString());
+		map.put("symbolcode", getSymbolCode());
+		map.put("fixed", isFixed());
+
+		TimestampedPosition p = getPosition();
+		if (p != null) {
+			map.put("lat", p.getLatitude());
+			map.put("lon", p.getLongitude());
+			map.put("postime", p.getTime());
+		}
+		
+		map.put("course", getCourse());
+		map.put("heading", getHeading());
+		map.put("speed", getSpeed());
+		map.put("courseText", getDisplayCourse());
+		map.put("headingText", getDisplayHeading());
+		map.put("speedText", getDisplaySpeed());
+		map.put("altitudeText", getDisplayAltitude());
+		map.put("desc1", getDisplayDescription1());
+		map.put("desc2", getDisplayDescription2());
+		map.put("datatime", getMetaDataTime());
+		return map;
+	}
 }

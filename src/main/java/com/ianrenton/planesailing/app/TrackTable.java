@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SerializationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import com.ianrenton.planesailing.data.Airport;
 import com.ianrenton.planesailing.data.BaseStation;
@@ -40,8 +41,9 @@ public class TrackTable extends HashMap<String, Track> {
 	private transient ScheduledFuture maintenanceTask;
 	@SuppressWarnings("rawtypes")
 	private transient ScheduledFuture backupTask;
-	
+
 	private transient boolean printTrackTableToStdOut = Application.CONFIG.getBoolean("print-track-table-to-stdout");
+	private transient boolean readableJSON = Application.CONFIG.getBoolean("comms.web-server.readable-json");
 
 	/**
 	 * Set up the track table, using data found on disk if present. Spawns internal
@@ -61,6 +63,42 @@ public class TrackTable extends HashMap<String, Track> {
 		// Set up tasks to run in the background
 		maintenanceTask = scheduledExecutorService.scheduleWithFixedDelay(new MaintenanceTask(), 10, 10, TimeUnit.SECONDS);
 		backupTask = scheduledExecutorService.scheduleWithFixedDelay(new BackupTask(), 10, 600, TimeUnit.SECONDS);
+	}
+	
+	/**
+	 * Returns JSON corresponding to the "first" API call of the server, which
+	 * includes all position history.
+	 */
+	public String getFirstCallJSON() {
+		Map<String, Object> map = new HashMap<>();
+		map.put("time", System.currentTimeMillis());
+		
+		Map<String, Map<String, Object>> tracks = new HashMap<>();
+		for (Track t : values()) {
+			tracks.put(t.getID(), t.getFirstCallData());
+		}
+		map.put("tracks", tracks);
+		
+		JSONObject o = new JSONObject(map);
+		return o.toString(readableJSON ? 2 : 0);
+	}
+	
+	/**
+	 * Returns JSON corresponding to the "update" API call of the server, which
+	 * includes all metadata but only the latest position and timestamp.
+	 */
+	public String getUpdateCallJSON() {
+		Map<String, Object> map = new HashMap<>();
+		map.put("time", System.currentTimeMillis());
+		
+		Map<String, Map<String, Object>> tracks = new HashMap<>();
+		for (Track t : values()) {
+			tracks.put(t.getID(), t.getUpdateCallData());
+		}
+		map.put("tracks", tracks);
+		
+		JSONObject o = new JSONObject(map);
+		return o.toString(readableJSON ? 2 : 0);
 	}
 	
 	private long countTracksOfType(TrackType t) {

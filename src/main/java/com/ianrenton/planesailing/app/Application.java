@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.ianrenton.planesailing.comms.AISUDPReceiver;
 import com.ianrenton.planesailing.comms.SBSTCPClient;
+import com.ianrenton.planesailing.comms.WebServer;
 import com.ianrenton.planesailing.utils.DataMaps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -19,6 +20,7 @@ public class Application {
 	
 	private final TrackTable trackTable = new TrackTable();
 
+	private final WebServer webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), trackTable);
 	private final AISUDPReceiver aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
 	private final SBSTCPClient sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
 
@@ -42,7 +44,10 @@ public class Application {
 		trackTable.loadCustomTracksFromConfig();
 	}
 	
-	private void run() {		
+	private void run() {
+		// Run web server thread
+		webServer.run();
+		
 		// Run data receiver threads
 		aisReceiver.run();
 		sbsReceiver.run();
@@ -50,6 +55,7 @@ public class Application {
 		// Add a JVM shutdown hook to stop threads nicely
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
+				webServer.stop();
 				aisReceiver.stop();
 				sbsReceiver.stop();
 				trackTable.shutdown();
