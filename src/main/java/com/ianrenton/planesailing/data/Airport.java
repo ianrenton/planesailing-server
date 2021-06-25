@@ -1,8 +1,10 @@
 package com.ianrenton.planesailing.data;
 
 public class Airport extends Track {
-	private static final String AIRPORT_SYMBOL = "SFGPIBA---H";
+	private static final long serialVersionUID = 1L;
+	private static final String AIRPORT_SYMBOL = "SFGPIBA---H";	
 	private static int airportCount;
+	
 	private final String name;
 	private final String icaoCode;
 	

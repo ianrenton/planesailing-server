@@ -52,7 +52,7 @@ public class DataMaps {
 	 * @param map
 	 */
 	private static void load(String filename, Map<String, String> map) {
-		URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
+		URL url = DataMaps.class.getClassLoader().getResource("./data/" + filename);
 		try {
 			InputStreamReader in = new InputStreamReader(url.openStream());
 			try {

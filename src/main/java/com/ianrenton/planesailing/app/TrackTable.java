@@ -24,14 +24,19 @@ import com.ianrenton.planesailing.data.TrackType;
  * Track table
  */
 public class TrackTable extends HashMap<String, Track> {
-
+	
+	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
+	
 	private transient final File serializationFile = new File("track_data_store.dat");
+	
 	private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 	@SuppressWarnings("rawtypes")
 	private transient ScheduledFuture maintenanceTask;
 	@SuppressWarnings("rawtypes")
 	private transient ScheduledFuture backupTask;
+	
+	private transient boolean printTrackTableToStdOut = Application.CONFIG.getBoolean("print-track-table-to-stdout");
 
 	/**
 	 * Set up the track table, using data found on disk if present. Spawns internal
@@ -145,7 +150,7 @@ public class TrackTable extends HashMap<String, Track> {
 			}
 			LOGGER.info("Track table contains: {}", summary);
 
-			if (Application.PRINT_TRACK_TABLE_TO_STDOUT && !isEmpty()) {
+			if (printTrackTableToStdOut && !isEmpty()) {
 				LOGGER.info("----------------------------------------------------------------------------------");
 				LOGGER.info("Name                 Type       Description                               Age (ms)");
 				LOGGER.info("----------------------------------------------------------------------------------");

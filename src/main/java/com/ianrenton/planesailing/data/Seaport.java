@@ -1,8 +1,10 @@
 package com.ianrenton.planesailing.data;
 
 public class Seaport extends Track {
+	private static final long serialVersionUID = 1L;
 	private static final String SEAPORT_SYMBOL = "SFGPIBN---H-";
 	private static int seaportCount;
+	
 	private final String name;
 	
 	public Seaport(String name, double lat, double lon) {

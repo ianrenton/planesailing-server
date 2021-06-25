@@ -6,32 +6,21 @@ import org.apache.logging.log4j.Logger;
 import com.ianrenton.planesailing.comms.AISUDPReceiver;
 import com.ianrenton.planesailing.comms.SBSTCPClient;
 import com.ianrenton.planesailing.utils.DataMaps;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 /**
  * Server for Plane/Sailing.
  */
-public class Application {
-	private static final int WEB_SERVER_PORT = 80;
-	private static final int AIS_RECEIVER_LOCAL_PORT = 9242;
-	private static final String SBS_RECEIVER_HOST = "192.168.1.241";
-	private static final int SBS_RECEIVER_PORT = 30003;
-	public static final boolean PRINT_TRACK_TABLE_TO_STDOUT = false;
-
-	public static final long DROP_AIR_TRACK_TIME = 300000; // 5 min
-	public static final long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = 10000; // Drop tracks at zero altitude sooner because
-																		// they've likely landed, dead reckoning far
-																		// past the airport runway looks weird
-	public static final long DEFAULT_SHOW_ANTICIPATED_TIME = 60000; // 60 seconds
-	public static final long SHIP_SHOW_ANTICIPATED_TIME = 300000; // 5 minutes
-	public static final long DROP_MOVING_SHIP_TRACK_TIME = 1200000; // 20 minutes
-	public static final long DROP_STATIC_SHIP_TRACK_TIME = 172800000; // 2 days
-
+public class Application {	
+	public static final Config CONFIG = ConfigFactory.load().getConfig("plane-sailing-server");
+	
 	private static final Logger LOGGER = LogManager.getLogger(Application.class);
 	
 	private final TrackTable trackTable = new TrackTable();
 
-	private final AISUDPReceiver aisReceiver = new AISUDPReceiver(AIS_RECEIVER_LOCAL_PORT, trackTable);
-	private final SBSTCPClient sbsReceiver = new SBSTCPClient(SBS_RECEIVER_HOST, SBS_RECEIVER_PORT, trackTable);
+	private final AISUDPReceiver aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
+	private final SBSTCPClient sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
 
 	/**
 	 * Start the application
@@ -42,13 +31,15 @@ public class Application {
 		app.run();
 	}
 	
-	private void run() {
+	public Application() {
 		// Load data
 		DataMaps.initialise();
 		
 		// Set up track table
 		trackTable.initialise();
-		
+	}
+	
+	private void run() {		
 		// Run data receiver threads
 		aisReceiver.run();
 		sbsReceiver.run();

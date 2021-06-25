@@ -6,7 +6,6 @@ Currently under construction - this does not do anything very useful yet, and th
 
 ## To Do List
 
-* Make ports and IP addresses configurable
 * Add loading of base station, airport and seaport data from JSON config file at runtime
 * Implement APRS Receive via Direwolf - client to host:8000
 * Refactor TCP client to make common between SBS and APRS

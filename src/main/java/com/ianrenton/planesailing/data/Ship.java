@@ -9,8 +9,13 @@ import dk.tbsalling.aismessages.ais.messages.types.NavigationStatus;
 import dk.tbsalling.aismessages.ais.messages.types.ShipType;
 
 public class Ship extends Track {
+	private static final long serialVersionUID = 1L;
 	private static final String DEFAULT_SHIP_SYMBOL = "SUSP------";
 	private static final String SHORE_STATION_SYMBOL = "SUGPUUS-----";
+	private static final Long DROP_STATIC_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-static-after");
+	private static final Long DROP_MOVING_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-moving-after");
+	private static final Long SHIP_SHOW_ANTICIPATED_TIME = Application.CONFIG.getLong("timing.ship-show-anticipated-after");
+	
 	private final int mmsi;
 	private String name;
 	private ShipType shipType = ShipType.NotAvailable;
@@ -111,9 +116,9 @@ public class Ship extends Track {
 	
 	public boolean shouldDrop() {
 		if (getSpeed() == null || getSpeed() == 0.0) {
-			return getTimeSinceLastUpdate() > Application.DROP_STATIC_SHIP_TRACK_TIME;
+			return getTimeSinceLastUpdate() > DROP_STATIC_SHIP_TRACK_TIME;
 		} else {
-			return getTimeSinceLastUpdate() > Application.DROP_MOVING_SHIP_TRACK_TIME;
+			return getTimeSinceLastUpdate() > DROP_MOVING_SHIP_TRACK_TIME;
 		}
 	}
 	
@@ -121,7 +126,7 @@ public class Ship extends Track {
 	 * Longer "anticipated" threshold for ships
 	 */
 	public boolean shouldShowAnticipatedSymbol() {
-		return getPositionAge() != null && getPositionAge() > Application.SHIP_SHOW_ANTICIPATED_TIME;
+		return getPositionAge() != null && getPositionAge() > SHIP_SHOW_ANTICIPATED_TIME;
 	}
 	
 	@Override
