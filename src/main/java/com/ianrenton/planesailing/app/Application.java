@@ -1,5 +1,8 @@
 package com.ianrenton.planesailing.app;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.ianrenton.planesailing.comms.AISUDPReceiver;
 import com.ianrenton.planesailing.comms.SBSTCPClient;
 import com.ianrenton.planesailing.utils.DataMaps;
@@ -12,6 +15,18 @@ public class Application {
 	private static final int AIS_RECEIVER_LOCAL_PORT = 9242;
 	private static final String SBS_RECEIVER_HOST = "192.168.1.241";
 	private static final int SBS_RECEIVER_PORT = 30003;
+	public static final boolean PRINT_TRACK_TABLE_TO_STDOUT = false;
+
+	public static final long DROP_AIR_TRACK_TIME = 300000; // 5 min
+	public static final long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = 10000; // Drop tracks at zero altitude sooner because
+																		// they've likely landed, dead reckoning far
+																		// past the airport runway looks weird
+	public static final long DEFAULT_SHOW_ANTICIPATED_TIME = 60000; // 60 seconds
+	public static final long SHIP_SHOW_ANTICIPATED_TIME = 300000; // 5 minutes
+	public static final long DROP_MOVING_SHIP_TRACK_TIME = 1200000; // 20 minutes
+	public static final long DROP_STATIC_SHIP_TRACK_TIME = 172800000; // 2 days
+
+	private static final Logger LOGGER = LogManager.getLogger(Application.class);
 	
 	private final TrackTable trackTable = new TrackTable();
 
@@ -28,7 +43,13 @@ public class Application {
 	}
 	
 	private void run() {
-		// Run threads
+		// Load data
+		DataMaps.initialise();
+		
+		// Set up track table
+		trackTable.initialise();
+		
+		// Run data receiver threads
 		aisReceiver.run();
 		sbsReceiver.run();
 		
@@ -40,6 +61,8 @@ public class Application {
 				trackTable.shutdown();
 			}
 		});
+		
+		LOGGER.info("Plane Sailing Server is up and running!");
 	}
 
 }

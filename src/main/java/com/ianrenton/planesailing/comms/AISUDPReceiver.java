@@ -108,7 +108,9 @@ public class AISUDPReceiver {
 			break;
 		case ClassBCSStaticDataReport:
 			ClassBCSStaticDataReport m4 = (ClassBCSStaticDataReport) m;
-			s.setName(m4.getShipName().trim());
+			if (m4.getShipName() != null) {
+				s.setName(m4.getShipName().trim());
+			}
 			s.setCallsign(m4.getCallsign().trim());
 			s.setShipType(m4.getShipType());
 			s.setTrackType(TrackType.SHIP);

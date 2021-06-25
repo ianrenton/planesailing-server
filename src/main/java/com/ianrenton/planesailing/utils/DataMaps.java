@@ -31,7 +31,7 @@ public class DataMaps {
 
 	private static final Logger LOGGER = LogManager.getLogger(DataMaps.class);
 
-	static {
+	public static void initialise() {
 		load("aircraft_cat_to_description.csv", AIRCRAFT_CATEGORY_TO_DESCRIPTION);
 		load("aircraft_cat_to_symbol.csv", AIRCRAFT_CATEGORY_TO_SYMBOL);
 		load("aircraft_airline_code_to_operator.csv", AIRCRAFT_AIRLINE_CODE_TO_OPERATOR);

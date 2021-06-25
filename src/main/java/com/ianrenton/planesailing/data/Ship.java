@@ -2,15 +2,13 @@ package com.ianrenton.planesailing.data;
 
 import java.util.Map.Entry;
 
+import com.ianrenton.planesailing.app.Application;
 import com.ianrenton.planesailing.utils.DataMaps;
 
 import dk.tbsalling.aismessages.ais.messages.types.NavigationStatus;
 import dk.tbsalling.aismessages.ais.messages.types.ShipType;
 
 public class Ship extends Track {
-	private static final long SHOW_ANTICIPATED_TIME = 300000; // 5 minutes
-	private static final long DROP_MOVING_SHIP_TRACK_TIME = 1200000; // 20 minutes
-	private static final long DROP_STATIC_SHIP_TRACK_TIME = 172800000; // 2 days
 	private static final String DEFAULT_SHIP_SYMBOL = "SUSP------";
 	private static final String SHORE_STATION_SYMBOL = "SUGPUUS-----";
 	private final int mmsi;
@@ -113,9 +111,9 @@ public class Ship extends Track {
 	
 	public boolean shouldDrop() {
 		if (getSpeed() == null || getSpeed() == 0.0) {
-			return getTimeSinceLastUpdate() > DROP_STATIC_SHIP_TRACK_TIME;
+			return getTimeSinceLastUpdate() > Application.DROP_STATIC_SHIP_TRACK_TIME;
 		} else {
-			return getTimeSinceLastUpdate() > DROP_MOVING_SHIP_TRACK_TIME;
+			return getTimeSinceLastUpdate() > Application.DROP_MOVING_SHIP_TRACK_TIME;
 		}
 	}
 	
@@ -123,7 +121,7 @@ public class Ship extends Track {
 	 * Longer "anticipated" threshold for ships
 	 */
 	public boolean shouldShowAnticipatedSymbol() {
-		return getPositionAge() != null && getPositionAge() > SHOW_ANTICIPATED_TIME;
+		return getPositionAge() != null && getPositionAge() > Application.SHIP_SHOW_ANTICIPATED_TIME;
 	}
 	
 	@Override

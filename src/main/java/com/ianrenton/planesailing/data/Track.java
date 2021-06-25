@@ -1,7 +1,11 @@
 package com.ianrenton.planesailing.data;
 
-public abstract class Track {
-	private static final long SHOW_ANTICIPATED_TIME = 60000; // 60 seconds
+import java.io.Serializable;
+
+import com.ianrenton.planesailing.app.Application;
+
+public abstract class Track implements Serializable {
+	protected static final long serialVersionUID = 1L;
 	
 	protected String id; // unique ID. ICAO Hex is used for aircraft, MMSI for ships, callsign for APRS
 							// tracks. These are all sufficiently different that each track should be
@@ -224,7 +228,7 @@ public abstract class Track {
 	 * Show the "anticipated" version of the symbol?
 	 */
 	public boolean shouldShowAnticipatedSymbol() {
-		return getPositionAge() != null && getPositionAge() > SHOW_ANTICIPATED_TIME;
+		return getPositionAge() != null && getPositionAge() > Application.DEFAULT_SHOW_ANTICIPATED_TIME;
 	}
 	
 	/**

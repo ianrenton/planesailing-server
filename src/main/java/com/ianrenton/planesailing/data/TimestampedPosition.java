@@ -1,6 +1,10 @@
 package com.ianrenton.planesailing.data;
 
-public class TimestampedPosition implements Comparable<TimestampedPosition> {
+import java.io.Serializable;
+
+public class TimestampedPosition implements Comparable<TimestampedPosition>, Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private final double latitude; // degrees
 	private final double longitude; // degrees
 	private final long time; // UTC millis since epoch

@@ -2,17 +2,14 @@ package com.ianrenton.planesailing.data;
 
 import java.util.Map.Entry;
 
+import com.ianrenton.planesailing.app.Application;
 import com.ianrenton.planesailing.utils.DataMaps;
 
 public class Aircraft extends Track {
-	private static final long DROP_AIR_TRACK_TIME = 300000; // 5 min
-	private static final long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = 10000; // Drop tracks at zero altitude sooner because
-																		// they've likely landed, dead reckoning far
-																		// past the airport runway looks weird
 	private static final String DEFAULT_AIRCRAFT_SYMBOL = "SUAPCF----";
 	private Double altitude; // feet
 	private boolean onGround;
-	private int squawk;
+	private Integer squawk;
 	private Double verticalRate; // feet per second
 	private String category; // e.g. "A1" = light
 	private String categoryDescription; // e.g. "Light"
@@ -37,11 +34,11 @@ public class Aircraft extends Track {
 		return altitude;
 	}
 
-	public int getSquawk() {
+	public Integer getSquawk() {
 		return squawk;
 	}
 
-	public double getVerticalRate() {
+	public Double getVerticalRate() {
 		return verticalRate;
 	}
 
@@ -146,9 +143,9 @@ public class Aircraft extends Track {
 
 	public boolean shouldDrop() {
 		if (isOnGround()) {
-			return getTimeSinceLastUpdate() > DROP_AIR_TRACK_AT_ZERO_ALT_TIME;
+			return getTimeSinceLastUpdate() > Application.DROP_AIR_TRACK_AT_ZERO_ALT_TIME;
 		} else {
-			return getTimeSinceLastUpdate() > DROP_AIR_TRACK_TIME;
+			return getTimeSinceLastUpdate() > Application.DROP_AIR_TRACK_TIME;
 		}
 	}
 
