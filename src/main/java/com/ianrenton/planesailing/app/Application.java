@@ -37,6 +37,9 @@ public class Application {
 		
 		// Set up track table
 		trackTable.initialise();
+		
+		// Load custom tracks from config
+		trackTable.loadCustomTracksFromConfig();
 	}
 	
 	private void run() {		

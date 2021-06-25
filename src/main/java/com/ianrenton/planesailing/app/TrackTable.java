@@ -17,8 +17,13 @@ import org.apache.commons.lang3.SerializationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.ianrenton.planesailing.data.Airport;
+import com.ianrenton.planesailing.data.BaseStation;
+import com.ianrenton.planesailing.data.Seaport;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
+import com.typesafe.config.ConfigList;
+import com.typesafe.config.ConfigValue;
 
 /**
  * Track table
@@ -81,7 +86,7 @@ public class TrackTable extends HashMap<String, Track> {
 	}
 
 	/**
-	 * Load data from serialisation file on disk
+	 * Load data from serialisation file on disk.
 	 */
 	public void loadFromFile() {
 		if (serializationFile.exists()) {
@@ -102,7 +107,7 @@ public class TrackTable extends HashMap<String, Track> {
 	}
 
 	/**
-	 * Save data to serialisation file on disk
+	 * Save data to serialisation file on disk.
 	 */
 	public void saveToFile() {
 		try {
@@ -114,6 +119,44 @@ public class TrackTable extends HashMap<String, Track> {
 		} catch (IOException e) {
 			LOGGER.error("Could not save track table to {}", serializationFile.getAbsolutePath(), e);
 		}
+	}
+
+	/**
+	 * Read the "custom tracks" (base station, airports and seaports) from the config file
+	 * and populate the track table.
+	 */
+	@SuppressWarnings("unchecked")
+	public void loadCustomTracksFromConfig() {
+		// First, remove any existing base stations, airports and seaports from the track table.
+		// We are loading a new set from config so we don't want to duplicate any old ones.
+		values().removeIf(t -> t.getTrackType() == TrackType.BASE_STATION
+				|| t.getTrackType() == TrackType.AIRPORT
+				|| t.getTrackType() == TrackType.SEAPORT);
+		
+		// Now load.
+		ConfigList baseStationConfigs = Application.CONFIG.getList("custom-tracks.base-stations");
+		for (ConfigValue c : baseStationConfigs) {
+			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
+			BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"), (String) data.get("software-version"));
+			put(bs.getID(), bs);
+		}
+		LOGGER.info("Loaded {} base stations from config file", baseStationConfigs.size());
+
+		ConfigList airportConfigs = Application.CONFIG.getList("custom-tracks.airports");
+		for (ConfigValue c : airportConfigs) {
+			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
+			Airport ap = new Airport((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"), (String) data.get("icao-code"));
+			put(ap.getID(), ap);
+		}
+		LOGGER.info("Loaded {} airports from config file", airportConfigs.size());
+
+		ConfigList seaportConfigs = Application.CONFIG.getList("custom-tracks.seaports");
+		for (ConfigValue c : seaportConfigs) {
+			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
+			Seaport sp = new Seaport((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"));
+			put(sp.getID(), sp);
+		}
+		LOGGER.info("Loaded {} seaports from config file", seaportConfigs.size());
 	}
 
 	/**
