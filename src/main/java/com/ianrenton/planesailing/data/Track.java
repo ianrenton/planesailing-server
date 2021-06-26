@@ -379,7 +379,7 @@ public abstract class Track implements Serializable {
 	 */
 	private Map<String, Object> getAllCallData() {
 		Map<String, Object> map = new LinkedHashMap<>();
-		map.put("name", getDisplayName());
+		map.put("name", getDisplayName().toUpperCase());
 		map.put("tracktype", getTrackType().toString());
 		map.put("symbolcode", getSymbolCode());
 		map.put("fixed", isFixed());
@@ -399,8 +399,8 @@ public abstract class Track implements Serializable {
 		map.put("headingText", getDisplayHeading());
 		map.put("speedText", getDisplaySpeed());
 		map.put("altitudeText", getDisplayAltitude());
-		map.put("desc1", getDisplayDescription1());
-		map.put("desc2", getDisplayDescription2());
+		map.put("desc1", getDisplayDescription1().toUpperCase());
+		map.put("desc2", getDisplayDescription2().toUpperCase());
 		map.put("datatime", getMetaDataTime());
 		return map;
 	}
