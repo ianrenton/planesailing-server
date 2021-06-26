@@ -18,6 +18,17 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 * Persists data to disk so the content of the track table is not lost on restart
 * Customisable times to drop tracks etc.
 
+## Usage
+
+In order to use this software, you should be running some combination of software to provide the data to it, e.g. rtl_ais, Dump1090, Direwolf etc. To run Plane/Sailing Server:
+1. Download and unpack the software, or build it yourself. You should have a JAR file and an `application.conf` file.
+2. Ensure your machine has Java 15 installed.
+3. Edit `application.conf` and set the IP addresses and ports as required. If you don't have a particular server, e.g. you don't do APRS, delete that section from the file.
+4. Set the base station position, and any airports and seaports you'd like to appear in your data.
+5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION].jar`
+6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
+7. Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, but my setup instructions for the full system at https://ianrenton.com/hardware/planesailing contain my setup for a Raspberry Pi.
+
 ## To Do List
 
 * Finish APRS support - may require additions to javAPRSlib to support course, speed etc. Currently hampered by low volume of APRS traffic here and lack of a handheld transmitter I can use for testing

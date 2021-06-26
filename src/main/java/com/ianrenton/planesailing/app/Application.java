@@ -22,10 +22,10 @@ public class Application {
 	
 	private final TrackTable trackTable = new TrackTable();
 
-	private final WebServer webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), trackTable);
-	private final AISUDPReceiver aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
-	private final TCPClient sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
-	private final TCPClient aprsReceiver = new APRSTCPClient(CONFIG.getString("comms.aprs-receiver.host"), CONFIG.getInt("comms.aprs-receiver.port"), trackTable);
+	private WebServer webServer;
+	private AISUDPReceiver aisReceiver;
+	private TCPClient sbsReceiver;
+	private TCPClient aprsReceiver;
 
 	/**
 	 * Start the application
@@ -45,24 +45,63 @@ public class Application {
 		
 		// Load custom tracks from config
 		trackTable.loadCustomTracksFromConfig();
+		
+		// Set up connections
+		if (CONFIG.hasPath("comms.web-server")) {
+			webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), trackTable);
+		} else {
+			LOGGER.warn("Web server config was missing from application.conf!");
+		}
+		if (CONFIG.hasPath("comms.ais-receiver")) {
+			aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
+		} else {
+			LOGGER.info("No AIS receiver config found in application.conf, AIS receiver will not be created.");
+		}
+		if (CONFIG.hasPath("comms.sbs-receiver")) {
+			sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
+		} else {
+			LOGGER.info("No SBS receiver config found in application.conf, SBS receiver will not be created.");
+		}
+		if (CONFIG.hasPath("comms.aprs-receiver")) {
+			aprsReceiver = new APRSTCPClient(CONFIG.getString("comms.aprs-receiver.host"), CONFIG.getInt("comms.aprs-receiver.port"), trackTable);
+		} else {
+			LOGGER.info("No APRS receiver config found in application.conf, APRS receiver will not be created.");
+		}
+
 	}
 	
 	private void run() {
 		// Run web server thread
-		webServer.run();
+		if (webServer != null) {
+			webServer.run();
+		}
 		
 		// Run data receiver threads
-		aisReceiver.run();
-		sbsReceiver.run();
-		aprsReceiver.run();
+		if (aisReceiver != null) {
+			aisReceiver.run();
+		}
+		if (sbsReceiver != null) {
+			sbsReceiver.run();
+		}
+		if (aprsReceiver != null) {
+			aprsReceiver.run();
+		}
 		
 		// Add a JVM shutdown hook to stop threads nicely
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
-				webServer.stop();
-				aisReceiver.stop();
-				sbsReceiver.stop();
-				aprsReceiver.stop();
+				if (webServer != null) {
+					webServer.stop();
+				}
+				if (aisReceiver != null) {
+					aisReceiver.stop();
+				}
+				if (sbsReceiver != null) {
+					sbsReceiver.stop();
+				}
+				if (aprsReceiver != null) {
+					aprsReceiver.stop();
+				}
 				trackTable.shutdown();
 			}
 		});

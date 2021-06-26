@@ -83,7 +83,7 @@ public abstract class TCPClient {
 					try {
 						getLogger().info("Trying to make TCP connection to {}:{} to receive {}...", remoteHost, remotePort, getDataType());
 						clientSocket = new Socket(remoteHost, remotePort);
-						clientSocket.setSoTimeout(5000);
+						clientSocket.setSoTimeout(60000);
 						clientSocket.setSoLinger(false, 0);
 						in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 						getLogger().info("TCP socket for {} connected.", getDataType());
