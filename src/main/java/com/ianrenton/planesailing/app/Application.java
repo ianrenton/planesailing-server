@@ -64,27 +64,18 @@ public class Application {
 		trackTable.loadCustomTracksFromConfig();
 		
 		// Set up connections
-		if (CONFIG.hasPath("comms.web-server")) {
+		if (CONFIG.getBoolean("comms.web-server.enabled")) {
 			webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), trackTable);
-		} else {
-			LOGGER.warn("Web server config was missing from application.conf!");
 		}
-		if (CONFIG.hasPath("comms.ais-receiver")) {
+		if (CONFIG.getBoolean("comms.ais-receiver.enabled")) {
 			aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
-		} else {
-			LOGGER.info("No AIS receiver config found in application.conf, AIS receiver will not be created.");
 		}
-		if (CONFIG.hasPath("comms.sbs-receiver")) {
+		if (CONFIG.getBoolean("comms.sbs-receiver.enabled")) {
 			sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
-		} else {
-			LOGGER.info("No SBS receiver config found in application.conf, SBS receiver will not be created.");
 		}
-		if (CONFIG.hasPath("comms.aprs-receiver")) {
+		if (CONFIG.getBoolean("comms.aprs-receiver.enabled")) {
 			aprsReceiver = new APRSTCPClient(CONFIG.getString("comms.aprs-receiver.host"), CONFIG.getInt("comms.aprs-receiver.port"), trackTable);
-		} else {
-			LOGGER.info("No APRS receiver config found in application.conf, APRS receiver will not be created.");
 		}
-
 	}
 	
 	private void run() {
