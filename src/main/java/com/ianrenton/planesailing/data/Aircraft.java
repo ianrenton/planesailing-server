@@ -11,7 +11,6 @@ public class Aircraft extends Track {
 	private static final Long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = Application.CONFIG.getLong("timing.drop-air-track-after");
 	private static final Long DROP_AIR_TRACK_TIME = Application.CONFIG.getLong("timing.drop-air-track-at-zero-alt-after");
 	
-	private Double altitude; // feet
 	private boolean onGround;
 	private Integer squawk;
 	private Double verticalRate; // feet per second
@@ -32,10 +31,6 @@ public class Aircraft extends Track {
 		if (aircraftTypeShort != null) {
 			aircraftTypeLong = DataMaps.AIRCRAFT_TYPE_SHORT_TO_LONG.getOrDefault(aircraftTypeShort, null);
 		}
-	}
-
-	public Double getAltitude() {
-		return altitude;
 	}
 
 	public Integer getSquawk() {
@@ -69,11 +64,6 @@ public class Aircraft extends Track {
 				break;
 			}
 		}
-	}
-
-	public void setAltitude(double altitude) {
-		this.altitude = altitude;
-		updateMetadataTime();
 	}
 
 	public void setOnGround(boolean onGround) {
@@ -162,7 +152,9 @@ public class Aircraft extends Track {
 	}
 
 	/**
-	 * Get the altitude, formatted for display.
+	 * Get the altitude, formatted for display. Overrides the default
+	 * format to provide it in Flight Level and show climbing/falling
+	 * indicator.
 	 */
 	public String getDisplayAltitude() {
 		String ret = "";

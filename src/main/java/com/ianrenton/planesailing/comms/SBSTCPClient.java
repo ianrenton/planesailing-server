@@ -1,11 +1,5 @@
 package com.ianrenton.planesailing.comms;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,13 +10,9 @@ import com.ianrenton.planesailing.data.Aircraft;
  * Receiver for SBS messages from a TCP server. See:
  * http://woodair.net/sbs/article/barebones42_socket_data.htm
  */
-public class SBSTCPClient {
+public class SBSTCPClient extends TCPClient {
+
 	private static final Logger LOGGER = LogManager.getLogger(SBSTCPClient.class);
-	private final String remoteHost;
-	private final int remotePort;
-	private final TrackTable trackTable;
-	private final Receiver receiver = new Receiver();
-	private boolean run = true;
 
 	/**
 	 * Create the client
@@ -32,32 +22,11 @@ public class SBSTCPClient {
 	 * @param trackTable The track table to use.
 	 */
 	public SBSTCPClient(String remoteHost, int remotePort, TrackTable trackTable) {
-		this.remoteHost = remoteHost;
-		this.remotePort = remotePort;
-		this.trackTable = trackTable;
+		super(remoteHost, remotePort, trackTable);
 	}
 
-	/**
-	 * Run the client.
-	 */
-	public void run() {
-		run = true;
-		new Thread(receiver).start();
-	}
-
-	/**
-	 * Stop the client.
-	 */
-	public void stop() {
-		run = false;
-	}
-
-	/**
-	 * Handle an incoming message.
-	 * 
-	 * @param m
-	 */
-	private void handle(String m) {
+	@Override
+	protected void handle(String m) {
 		String[] fields = m.split(",");
 		String icaoHex = fields[4];
 
@@ -129,47 +98,13 @@ public class SBSTCPClient {
 		}
 	}
 
-	/**
-	 * Inner receiver thread. Reads datagrams from the UDP socket, pipes them over
-	 * to the third-party AISInputStreamReader.
-	 */
-	private class Receiver implements Runnable {
+	@Override
+	protected String getDataType() {
+		return "ADS-B (SBS) data";
+	}
 
-		private Socket clientSocket;
-		private BufferedReader in;
-
-		public void run() {
-			while (run) {
-				while (run) {
-					// Try to connect
-					try {
-						LOGGER.info("Trying to make TCP connection to {}:{} to receive SBS data...", remoteHost,
-								remotePort);
-						clientSocket = new Socket(remoteHost, remotePort);
-						clientSocket.setSoTimeout(5000);
-						clientSocket.setSoLinger(false, 0);
-						in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-						LOGGER.info("TCP socket for SBS data connected.");
-						break;
-					} catch (IOException e) {
-						try {
-							LOGGER.warn("TCP Socket could not connect, trying again in one minute...");
-							TimeUnit.MINUTES.sleep(1);
-						} catch (InterruptedException ie) {
-						}
-					}
-				}
-
-				while (run) {
-					try {
-						String line = in.readLine();
-						handle(line);
-					} catch (IOException ex) {
-						LOGGER.warn("TCP Socket exception, reconnecting...");
-						break;
-					}
-				}
-			}
-		}
+	@Override
+	protected Logger getLogger() {
+		return LOGGER;
 	}
 }

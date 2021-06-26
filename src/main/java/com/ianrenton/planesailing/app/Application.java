@@ -4,7 +4,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.ianrenton.planesailing.comms.AISUDPReceiver;
+import com.ianrenton.planesailing.comms.APRSTCPClient;
 import com.ianrenton.planesailing.comms.SBSTCPClient;
+import com.ianrenton.planesailing.comms.TCPClient;
 import com.ianrenton.planesailing.comms.WebServer;
 import com.ianrenton.planesailing.utils.DataMaps;
 import com.typesafe.config.Config;
@@ -22,7 +24,8 @@ public class Application {
 
 	private final WebServer webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), trackTable);
 	private final AISUDPReceiver aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
-	private final SBSTCPClient sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
+	private final TCPClient sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
+	private final TCPClient aprsReceiver = new APRSTCPClient(CONFIG.getString("comms.aprs-receiver.host"), CONFIG.getInt("comms.aprs-receiver.port"), trackTable);
 
 	/**
 	 * Start the application
@@ -51,6 +54,7 @@ public class Application {
 		// Run data receiver threads
 		aisReceiver.run();
 		sbsReceiver.run();
+		aprsReceiver.run();
 		
 		// Add a JVM shutdown hook to stop threads nicely
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -58,6 +62,7 @@ public class Application {
 				webServer.stop();
 				aisReceiver.stop();
 				sbsReceiver.stop();
+				aprsReceiver.stop();
 				trackTable.shutdown();
 			}
 		});

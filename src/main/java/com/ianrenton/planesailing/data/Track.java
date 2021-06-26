@@ -13,7 +13,7 @@ public abstract class Track implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final Long DEFAULT_SHOW_ANTICIPATED_TIME = Application.CONFIG.getLong("timing.show-anticipated-after");
-	
+
 	protected String id; // unique ID. ICAO Hex is used for aircraft, MMSI for ships, callsign for APRS
 							// tracks. These are all sufficiently different that each track should be
 							// able to use this without risk of collision. The same ID is used as the
@@ -22,6 +22,7 @@ public abstract class Track implements Serializable {
 	protected TrackType trackType;
 	protected String symbolCode;
 	protected final PositionHistory positionHistory = new PositionHistory();
+	protected Double altitude; // feet
 	protected Double course; // degrees
 	protected Double heading; // degrees
 	protected Double speed; // knots
@@ -60,7 +61,7 @@ public abstract class Track implements Serializable {
 	public void setSymbolCode(String symbolCode) {
 		this.symbolCode = symbolCode;
 	}
-	
+
 	/**
 	 * Gets the latest known position. May be null if position is unknown.
 	 */
@@ -71,13 +72,16 @@ public abstract class Track implements Serializable {
 			return null;
 		}
 	}
-	
+
 	/**
-	 * Gets the dead reckoned position. If course and speed are unknown, this
-	 * will be the same as the result of getPosition(). May be null if position is unknown.
+	 * Gets the dead reckoned position. If course and speed are unknown, this will
+	 * be the same as the result of getPosition(). May be null if position is
+	 * unknown.
+	 * 
 	 * @deprecated Intention is that the front end only polls the server every 10
-	 * seconds, but updates its map & tote every second with a dead reckoned position
-	 * calculated at the front end based on the age of the position data.
+	 *             seconds, but updates its map & tote every second with a dead
+	 *             reckoned position calculated at the front end based on the age of
+	 *             the position data.
 	 */
 	public TimestampedPosition getDRPosition() {
 		if (!positionHistory.isEmpty()) {
@@ -94,9 +98,10 @@ public abstract class Track implements Serializable {
 
 	/**
 	 * Great Circle calculation for dead reckoning.
-	 * @param p Last known position, including timestamp
+	 * 
+	 * @param p      Last known position, including timestamp
 	 * @param course in degrees
-	 * @param speed in knots
+	 * @param speed  in knots
 	 * @return
 	 */
 	private TimestampedPosition deadReckonFrom(TimestampedPosition p, double course, double speed) {
@@ -105,21 +110,30 @@ public abstract class Track implements Serializable {
 		double courseRadians = Math.toRadians(course);
 		double distMovedMetres = (p.getAge() / 1000.0) * speed * 0.514;
 		double distMovedRadians = distMovedMetres / 6371000.0;
-		
-        double cosphi1 = Math.cos(startLatitudeRadians);
-        double sinphi1 = Math.sin(startLatitudeRadians);
-        double cosAz = Math.cos(courseRadians);
-        double sinAz = Math.sin(courseRadians);
-        double sinc = Math.sin(distMovedRadians);
-        double cosc = Math.cos(distMovedRadians);
-        
-        double endLatitudeRadians = Math.asin(sinphi1 * cosc + cosphi1 * sinc * cosAz);
-        double endLongitudeRadians = Math.atan2(sinc * sinAz, cosphi1 * cosc - sinphi1 * sinc * cosAz) + startLongitudeRadians;
-        
-        double endLatitudeDegrees = Math.toDegrees(endLatitudeRadians);
-        double endLongitudeDegrees = Math.toDegrees(endLongitudeRadians);
-        
-        return new TimestampedPosition(endLatitudeDegrees, endLongitudeDegrees, System.currentTimeMillis());
+
+		double cosphi1 = Math.cos(startLatitudeRadians);
+		double sinphi1 = Math.sin(startLatitudeRadians);
+		double cosAz = Math.cos(courseRadians);
+		double sinAz = Math.sin(courseRadians);
+		double sinc = Math.sin(distMovedRadians);
+		double cosc = Math.cos(distMovedRadians);
+
+		double endLatitudeRadians = Math.asin(sinphi1 * cosc + cosphi1 * sinc * cosAz);
+		double endLongitudeRadians = Math.atan2(sinc * sinAz, cosphi1 * cosc - sinphi1 * sinc * cosAz) + startLongitudeRadians;
+
+		double endLatitudeDegrees = Math.toDegrees(endLatitudeRadians);
+		double endLongitudeDegrees = Math.toDegrees(endLongitudeRadians);
+
+		return new TimestampedPosition(endLatitudeDegrees, endLongitudeDegrees, System.currentTimeMillis());
+	}
+
+	public Double getAltitude() {
+		return altitude;
+	}
+
+	public void setAltitude(double altitude) {
+		this.altitude = altitude;
+		updateMetadataTime();
 	}
 
 	/**
@@ -168,8 +182,8 @@ public abstract class Track implements Serializable {
 	}
 
 	/**
-	 * Gets the age, in milliseconds, of the last position update for this track.
-	 * If no position history exists, return null.
+	 * Gets the age, in milliseconds, of the last position update for this track. If
+	 * no position history exists, return null.
 	 */
 	public Long getPositionAge() {
 		if (!positionHistory.isEmpty()) {
@@ -209,8 +223,8 @@ public abstract class Track implements Serializable {
 	}
 
 	/**
-	 * Is this a fixed track (e.g. the base station, airport or sea port) that should
-	 * never time out and be deleted?
+	 * Is this a fixed track (e.g. the base station, airport or sea port) that
+	 * should never time out and be deleted?
 	 */
 	public boolean isFixed() {
 		return fixed;
@@ -219,28 +233,28 @@ public abstract class Track implements Serializable {
 	public void setFixed(boolean fixed) {
 		this.fixed = fixed;
 	}
-	
+
 	/**
 	 * Return true if this track is old and should be dropped from the track table.
 	 * By default, this is true if the track is not "fixed", and has no data newer
-	 * than the amount of position history it's configured to store. However subclasses
-	 * can override this, e.g. to provide different logic for planes at altitude
-	 * compared to on the ground.
+	 * than the amount of position history it's configured to store. However
+	 * subclasses can override this, e.g. to provide different logic for planes at
+	 * altitude compared to on the ground.
 	 */
 	public boolean shouldDrop() {
 		return !isFixed() && getPositionHistory().isEmpty() && getMetaDataAge() > getPositionHistory().getHistoryLength();
 	}
-	
+
 	/**
 	 * Show the "anticipated" version of the symbol?
 	 */
 	public boolean shouldShowAnticipatedSymbol() {
 		return getPositionAge() != null && getPositionAge() > DEFAULT_SHOW_ANTICIPATED_TIME;
 	}
-	
+
 	/**
-	 * Get a name to be used for display. This will default to ID, or Callsign if set,
-	 * but track types should override this with their own concept of "name".
+	 * Get a name to be used for display. This will default to ID, or Callsign if
+	 * set, but track types should override this with their own concept of "name".
 	 */
 	public String getDisplayName() {
 		if (callsign != null) {
@@ -248,11 +262,12 @@ public abstract class Track implements Serializable {
 		}
 		return id;
 	}
-	
+
 	/**
 	 * Get the position, formatted for display.
-	 * @deprecated Not needed as the client will be dead reckoning its position internally
-	 * so will need to do its own formatting
+	 * 
+	 * @deprecated Not needed as the client will be dead reckoning its position
+	 *             internally so will need to do its own formatting
 	 */
 	public String getDisplayPosition() {
 		if (!positionHistory.isEmpty()) {
@@ -261,52 +276,51 @@ public abstract class Track implements Serializable {
 			return (String.format("%07.4f", Math.abs(lat)) + ((lat >= 0) ? 'N' : 'S') + " " + String.format("%08.4f", Math.abs(lon)) + ((lon >= 0) ? 'E' : 'W'));
 		} else {
 			return "";
-		}		
+		}
 	}
-	
+
+	/**
+	 * Get the altitude, formatted for display.
+	 */
+	public String getDisplayAltitude() {
+		return (altitude != null) ? String.format("%.0f ft", altitude) : "";
+	}
+
 	/**
 	 * Get the heading, formatted for display.
 	 */
 	public String getDisplayHeading() {
 		return (heading != null) ? String.format("%03d", heading.intValue()) : "";
 	}
-	
+
 	/**
 	 * Get the course, formatted for display.
 	 */
 	public String getDisplayCourse() {
 		return (course != null) ? String.format("%03d", course.intValue()) : "";
 	}
-	
+
 	/**
 	 * Get the speed, formatted for display.
 	 */
 	public String getDisplaySpeed() {
 		return (speed != null) ? String.format("%d", speed.intValue()) + "KTS" : "";
 	}
-	
-	/**
-	 * Get the altitude, formatted for display. (Nothing here, this is overridden
-	 * in the Aircraft class)
-	 */
-	public String getDisplayAltitude() {
-		return "";
-	}
-	
+
 	/**
 	 * Get the first line of description for display.
 	 */
 	public abstract String getDisplayDescription1();
-	
+
 	/**
 	 * Get the second line of description for display.
 	 */
 	public abstract String getDisplayDescription2();
-	
+
 	/**
-	 * Get a map of data for this track that will be provided to the client, including
-	 * all metadata, the current position, and the position history, used for the
-	 * "first" API call.
+	 * Get a map of data for this track that will be provided to the client,
+	 * including all metadata, the current position, and the position history, used
+	 * for the "first" API call.
 	 */
 	public Map<String, Object> getFirstCallData() {
 		Map<String, Object> map = getAllCallData();
@@ -320,19 +334,20 @@ public abstract class Track implements Serializable {
 		map.put("poshistory", posHistory);
 		return map;
 	}
-	
+
 	/**
-	 * Get a map of data for this track that will be provided to the client, including
-	 * all metadata and the current position, used for the "update" API call.
+	 * Get a map of data for this track that will be provided to the client,
+	 * including all metadata and the current position, used for the "update" API
+	 * call.
 	 */
 	public Map<String, Object> getUpdateCallData() {
 		return getAllCallData();
 	}
-	
+
 	/**
-	 * Get a map of metadata for this track that will be provided to the client
-	 * in all API calls. This should be enough to generate all the information
-	 * the client needs, and shouldn't need overriding in subclasses.
+	 * Get a map of metadata for this track that will be provided to the client in
+	 * all API calls. This should be enough to generate all the information the
+	 * client needs, and shouldn't need overriding in subclasses.
 	 */
 	private Map<String, Object> getAllCallData() {
 		Map<String, Object> map = new LinkedHashMap<>();
@@ -347,7 +362,7 @@ public abstract class Track implements Serializable {
 			map.put("lon", p.getLongitude());
 			map.put("postime", p.getTime());
 		}
-		
+
 		map.put("course", getCourse());
 		map.put("heading", getHeading());
 		map.put("speed", getSpeed());
