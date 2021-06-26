@@ -23,13 +23,14 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 In order to use this software, you should be running some combination of software to provide the data to it, e.g. rtl_ais, Dump1090, Direwolf etc. To run Plane/Sailing Server:
 
 1. Download and unpack the software, or build it yourself. You should have a JAR file and an `application.conf` file.
-2. Ensure your machine has Java 15 installed.
+2. Ensure your machine has Java 11 or later installed.
 3. Edit `application.conf` and set the IP addresses and ports as required. If you don't have a particular server, e.g. you don't do APRS, set `enabled: false` for that section.
 4. Set the base station position, and any airports and seaports you'd like to appear in your data.
-5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION].jar`
+5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION]-jar-with-dependencies.jar`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
 7. Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, but my setup instructions for the full system at https://ianrenton.com/hardware/planesailing contain my setup for a Raspberry Pi.
 8. You may also wish to have clients not connect directly to Plane/Sailing Server but have them connect via a web server such as Lighttpd providing a reverse proxy setup. This allows use of things like HTTPS certificates. Instructions are at the link above.
+9. If things aren't connecting the way you expect, don't forget to check firewalls etc.
 
 ## Client Usage
 
