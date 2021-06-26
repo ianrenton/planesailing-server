@@ -6,7 +6,7 @@ This software receives data from local ADS-B, AIS and APRS receiving software fo
 
 For more information on the Plane/Sailing project, please see https://ianrenton.com/hardware/planesailing
 
-**NOTE: The Plane/Sailing client does not currently connect to this server. Version 2 of the client is still under development at this time!**
+**NOTE: Plane/Sailing version 2 is still in development. The Plane/Sailing client does not currently connect to this server. The instructions on the linked web page have also not yet been updated to reflect version 2. A full client update and setup walkthrough is planned for summer 2021.**
 
 ## Features
 
@@ -18,9 +18,10 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 * Persists data to disk so the content of the track table is not lost on restart
 * Customisable times to drop tracks etc.
 
-## Usage
+## Setup
 
 In order to use this software, you should be running some combination of software to provide the data to it, e.g. rtl_ais, Dump1090, Direwolf etc. To run Plane/Sailing Server:
+
 1. Download and unpack the software, or build it yourself. You should have a JAR file and an `application.conf` file.
 2. Ensure your machine has Java 15 installed.
 3. Edit `application.conf` and set the IP addresses and ports as required. If you don't have a particular server, e.g. you don't do APRS, delete that section from the file.
@@ -28,6 +29,18 @@ In order to use this software, you should be running some combination of softwar
 5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION].jar`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
 7. Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, but my setup instructions for the full system at https://ianrenton.com/hardware/planesailing contain my setup for a Raspberry Pi.
+8. You may also wish to have clients not connect directly to Plane/Sailing Server but have them connect via a web server such as Lighttpd providing a reverse proxy setup. This allows use of things like HTTPS certificates. Instructions are at the link above.
+
+## Client Usage
+
+The Plane/Sailing client, or any other client you write, should do the following:
+
+1. At the start of a user session, make a call to `/first`. The response will be a JSON map of ID to track parameters. All tracks will be included, and if they have a position history, that will be included too. This information should be stored locally, and used to render the tactical picture.
+2. Every few seconds (suggested: 10), make a call to `/update`. The response will be the same JSON map, which should be merged with the original one. There are a few complications to this merge:
+  * The new data won't include position history, to save bandwidth. Rather than overwriting the client's track with the new one, it should preserve the old position history, appending the new position in the track data to the position history list.
+  * Any track the client has that *isn't* in the update data set should be dropped, *except* if it has the `createdByConfig` flag set true. These are the immutable tracks that represent the base station, airports and seaports, and they are only sent in the `/first` call, again to save bandwidth. Their absence in the `/update` call doesn't mean they should be deleted.
+
+Clients are of course free to set their own policies about what tracks to show and hide, how to present the data, etc. If you are writing your own client or fork of Plane/Sailing, I am happy to receive pull requests to add new data into the API.
 
 ## To Do List
 

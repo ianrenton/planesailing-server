@@ -13,7 +13,7 @@ public class Airport extends Track {
 		this.name = name;
 		this.icaoCode = icaoCode;
 		addPosition(lat, lon);
-		setFixed(true);
+		setCreatedByConfig(true);
 		setTrackType(TrackType.AIRPORT);
 		setSymbolCode(AIRPORT_SYMBOL);
 	}

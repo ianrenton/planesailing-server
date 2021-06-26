@@ -5,7 +5,7 @@
 	<groupId>com.ianrenton</groupId>
 	<artifactId>plane-sailing-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Plane Sailing Server</name>
+	<name>Plane/Sailing Server</name>
 
 	<properties>
 		<maven.compiler.release>15</maven.compiler.release>
@@ -14,6 +14,13 @@
 	</properties>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
 		<plugins>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -49,9 +56,9 @@
 			<version>3.2.1</version>
 		</dependency>
 		<dependency>
-			<!-- This is not in Maven Central etc. and so must be downloaded and installed with
-			Maven into your local .m2 before you can compile Plane/Sailing Server. This can be
-			sourced from https://github.com/ab0oo/javAPRSlib -->
+			<!-- This is not in Maven Central etc. and so must be downloaded and installed 
+				with Maven into your local .m2 before you can compile Plane/Sailing Server. 
+				This can be sourced from https://github.com/ab0oo/javAPRSlib -->
 			<groupId>net.ab0oo.aprs</groupId>
 			<artifactId>javAPRSlib</artifactId>
 			<version>0.0.1-SNAPSHOT</version>

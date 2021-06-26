@@ -28,6 +28,7 @@ public abstract class Track implements Serializable {
 	protected Double speed; // knots
 	protected Long metaDataTime = System.currentTimeMillis(); // UTC millis since epoch. Set to current time on track creation.
 	protected boolean fixed = false;
+	protected boolean createdByConfig = false;
 
 	public Track(String id) {
 		this.id = id;
@@ -223,8 +224,11 @@ public abstract class Track implements Serializable {
 	}
 
 	/**
-	 * Is this a fixed track (e.g. the base station, airport or sea port) that
-	 * should never time out and be deleted?
+	 * Is this a fixed track (i.e. it is known to be immobile)? If so it will never
+	 * be dropped from the track table and its position history will never be sent.
+	 * Note this is slightly different to "createdByConfig" - all createdByConfig
+	 * tracks are fixed, but not all fixed tracks are createdByConfig, e.g. AIS
+	 * and APRS base stations.
 	 */
 	public boolean isFixed() {
 		return fixed;
@@ -232,6 +236,23 @@ public abstract class Track implements Serializable {
 
 	public void setFixed(boolean fixed) {
 		this.fixed = fixed;
+	}
+
+	/**
+	 * Is this a track that was created by config (i.e. base station, airport or
+	 * seaport)? If so we only send info about it in the "first" call not in
+	 * "update" because it can never be created, destroyed or modified.
+	 * @return
+	 */
+	public boolean isCreatedByConfig() {
+		return createdByConfig;
+	}
+
+	public void setCreatedByConfig(boolean createdByConfig) {
+		this.createdByConfig = createdByConfig;
+		if (createdByConfig) {
+			this.fixed = true;
+		}
 	}
 
 	/**
@@ -321,17 +342,24 @@ public abstract class Track implements Serializable {
 	 * Get a map of data for this track that will be provided to the client,
 	 * including all metadata, the current position, and the position history, used
 	 * for the "first" API call.
+	 * 
+	 * Note that position history is only provided for tracks that are not "fixed",
+	 * i.e. if a track is known to be incapable of movement, this structure can
+	 * be omitted to save bandwidth.
 	 */
 	public Map<String, Object> getFirstCallData() {
 		Map<String, Object> map = getAllCallData();
-		List<Map<String, Object>> posHistory = new ArrayList<>();
-		for (TimestampedPosition p : positionHistory) {
-			Map<String, Object> m = new HashMap<>();
-			m.put("lat", p.getLatitude());
-			m.put("lon", p.getLongitude());
-			posHistory.add(m);
+		
+		if (!fixed) {
+			List<Map<String, Object>> posHistory = new ArrayList<>();
+			for (TimestampedPosition p : positionHistory) {
+				Map<String, Object> m = new HashMap<>();
+				m.put("lat", p.getLatitude());
+				m.put("lon", p.getLongitude());
+				posHistory.add(m);
+			}
+			map.put("poshistory", posHistory);
 		}
-		map.put("poshistory", posHistory);
 		return map;
 	}
 
@@ -355,6 +383,7 @@ public abstract class Track implements Serializable {
 		map.put("tracktype", getTrackType().toString());
 		map.put("symbolcode", getSymbolCode());
 		map.put("fixed", isFixed());
+		map.put("createdByConfig", isCreatedByConfig());
 
 		TimestampedPosition p = getPosition();
 		if (p != null) {

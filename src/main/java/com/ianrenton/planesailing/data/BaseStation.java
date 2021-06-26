@@ -13,7 +13,7 @@ public class BaseStation extends Track {
 		this.name = name;
 		this.softwareVersion = softwareVersion;
 		addPosition(lat, lon);
-		setFixed(true);
+		setCreatedByConfig(true);
 		setTrackType(TrackType.BASE_STATION);
 		setSymbolCode(BASE_STATION_SYMBOL);
 	}

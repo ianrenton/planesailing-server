@@ -1,5 +1,9 @@
 package com.ianrenton.planesailing.app;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,6 +23,7 @@ public class Application {
 	public static final Config CONFIG = ConfigFactory.load().getConfig("plane-sailing-server");
 	
 	private static final Logger LOGGER = LogManager.getLogger(Application.class);
+	private static String softwareVersion = "Plane/Sailing Server (version unknown)";
 	
 	private final TrackTable trackTable = new TrackTable();
 
@@ -37,6 +42,18 @@ public class Application {
 	}
 	
 	public Application() {
+		// Fetch software version
+		Properties p = new Properties();
+		InputStream is = DataMaps.class.getClassLoader().getResourceAsStream("version.properties");
+		try {
+			p.load(is);
+			if (p.containsKey("software")) {
+				softwareVersion = p.getProperty("software");
+			}
+		} catch (IOException e) {
+			// Failed to load, just use the default
+		}
+		
 		// Load data
 		DataMaps.initialise();
 		
@@ -109,4 +126,7 @@ public class Application {
 		LOGGER.info("Plane Sailing Server is up and running!");
 	}
 
+	protected static String getSoftwareVersion() {
+		return softwareVersion;
+	}
 }

@@ -67,7 +67,9 @@ public class TrackTable extends HashMap<String, Track> {
 	
 	/**
 	 * Returns JSON corresponding to the "first" API call of the server, which
-	 * includes all position history.
+	 * includes all tracks (including base station, airports and seaports), and the
+	 * complete position history for all tracks that have it, so that the client
+	 * can populate both the full current picture and the snail trail for tracks.
 	 */
 	public String getFirstCallJSON() {
 		Map<String, Object> map = new HashMap<>();
@@ -85,7 +87,11 @@ public class TrackTable extends HashMap<String, Track> {
 	
 	/**
 	 * Returns JSON corresponding to the "update" API call of the server, which
-	 * includes all metadata but only the latest position and timestamp.
+	 * is designed to update a picture previously populated by the "first" call.
+	 * To save bandwidth, no position history is sent - the client is expected
+	 * to append the reported position to its own position history store. This
+	 * call also omits the base station, airports and seaports that can't
+	 * change.
 	 */
 	public String getUpdateCallJSON() {
 		Map<String, Object> map = new HashMap<>();
@@ -175,7 +181,7 @@ public class TrackTable extends HashMap<String, Track> {
 		ConfigList baseStationConfigs = Application.CONFIG.getList("custom-tracks.base-stations");
 		for (ConfigValue c : baseStationConfigs) {
 			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-			BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"), (String) data.get("software-version"));
+			BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"), Application.getSoftwareVersion());
 			put(bs.getID(), bs);
 		}
 		LOGGER.info("Loaded {} base stations from config file", baseStationConfigs.size());

@@ -11,7 +11,7 @@ public class Seaport extends Track {
 		super("SEAPORT-" + seaportCount++);
 		this.name = name;
 		addPosition(lat, lon);
-		setFixed(true);
+		setCreatedByConfig(true);
 		setTrackType(TrackType.SEAPORT);
 		setSymbolCode(SEAPORT_SYMBOL);
 	}
