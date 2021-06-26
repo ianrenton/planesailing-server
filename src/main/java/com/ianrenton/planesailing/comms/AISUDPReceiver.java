@@ -94,7 +94,7 @@ public class AISUDPReceiver {
 		switch (m.getMessageType()) {
 		case AidToNavigationReport:
 			AidToNavigationReport m2 = (AidToNavigationReport) m;
-			s.setName(m2.getName().trim());
+			s.setName(m2.getName().replaceAll("_", "").replaceAll("@", "").trim());
 			s.addPosition(m2.getLatitude(), m2.getLongitude());
 			s.setTrackType(TrackType.AIS_ATON);
 			s.setFixed(true);
@@ -109,7 +109,7 @@ public class AISUDPReceiver {
 		case ClassBCSStaticDataReport:
 			ClassBCSStaticDataReport m4 = (ClassBCSStaticDataReport) m;
 			if (m4.getShipName() != null) {
-				s.setName(m4.getShipName().trim());
+				s.setName(m4.getShipName().replaceAll("_", "").replaceAll("@", "").trim());
 			}
 			s.setCallsign(m4.getCallsign().trim());
 			s.setShipType(m4.getShipType());
@@ -117,7 +117,7 @@ public class AISUDPReceiver {
 			break;
 		case ExtendedClassBEquipmentPositionReport:
 			ExtendedClassBEquipmentPositionReport m5 = (ExtendedClassBEquipmentPositionReport) m;
-			s.setName(m5.getShipName().trim());
+			s.setName(m5.getShipName().replaceAll("_", "").replaceAll("@", "").trim());
 			s.addPosition(m5.getLatitude(), m5.getLongitude());
 			if (m5.getCourseOverGround() != 511) {
 				s.setCourse(m5.getCourseOverGround());
@@ -166,7 +166,7 @@ public class AISUDPReceiver {
 			break;
 		case ShipAndVoyageRelatedData:
 			ShipAndVoyageData m10 = (ShipAndVoyageData) m;
-			s.setName(m10.getShipName().trim());
+			s.setName(m10.getShipName().replaceAll("_", "").replaceAll("@", "").trim());
 			s.setCallsign(m10.getCallsign().trim());
 			s.setShipType(m10.getShipType());
 			s.setDestination(m10.getDestination());
