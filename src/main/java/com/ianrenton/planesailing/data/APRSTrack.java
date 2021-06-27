@@ -6,6 +6,7 @@ public class APRSTrack extends Track {
 	
 	public APRSTrack(String id) {
 		super(id);
+		setTrackType(TrackType.APRS_TRACK);
 		setSymbolCode(DEFAULT_APRS_SYMBOL);
 		positionHistory.setHistoryLength(60 * 60 * 1000); // 1 hour
 	}
