@@ -64,6 +64,7 @@ public class SBSTCPClient extends TCPClient {
 				String course = fields[13].trim();
 				if (!course.isEmpty()) {
 					a.setCourse(Double.valueOf(course));
+					a.setHeading(Double.valueOf(course)); // SBS will never give us a separate mag heading so just use course as heading
 				}
 			}
 
