@@ -27,7 +27,7 @@ In order to use this software, you should be running some combination of softwar
 5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION]-jar-with-dependencies.jar`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
 7. Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, but my setup instructions for the full system at https://ianrenton.com/hardware/planesailing contain my setup for a Raspberry Pi.
-8. You may also wish to have clients not connect directly to Plane/Sailing Server but have them connect via a web server such as Lighttpd providing a reverse proxy setup. This allows use of things like HTTPS certificates. Instructions are at the link above.
+8. You may also wish to have clients not connect directly to Plane/Sailing Server but have them connect via a web server such as Lighttpd providing a reverse proxy setup. This allows use of things like HTTPS certificates, and hosting the client and server software - as well as other things - on the same PC. Instructions are at the link above.
 9. If things aren't connecting the way you expect, don't forget to check firewalls etc.
 
 ## Client Usage
