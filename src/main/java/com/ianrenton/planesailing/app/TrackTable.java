@@ -155,8 +155,10 @@ public class TrackTable extends HashMap<String, Track> {
 	 */
 	public void saveToFile() {
 		try {
+			LOGGER.info("Saving to track data store...");
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serializationFile));
-			oos.writeObject(this);
+			HashMap<String, Track> copy = new HashMap<>(this);
+			oos.writeObject(copy);
 			oos.flush();
 			oos.close();
 			LOGGER.info("Saved {} tracks to track data store at {}", size(), serializationFile.getAbsolutePath());
