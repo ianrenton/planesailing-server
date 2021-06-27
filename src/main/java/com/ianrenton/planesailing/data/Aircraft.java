@@ -162,9 +162,9 @@ public class Aircraft extends Track {
 			ret += "FL" + Math.round(altitude / 100.0);
 			if (verticalRate != null) {
 				if (verticalRate > 2) {
-					ret += "\u25b2";
+					ret += " + ";
 				} else if (verticalRate < -2) {
-					ret += "\u25bc";
+					ret += " - ";
 				}
 			}
 		}
