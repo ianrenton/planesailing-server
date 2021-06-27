@@ -376,6 +376,10 @@ public abstract class Track implements Serializable {
 	 * Get a map of metadata for this track that will be provided to the client in
 	 * all API calls. This should be enough to generate all the information the
 	 * client needs, and shouldn't need overriding in subclasses.
+	 * Most numeric parameters like course and speed also come with "display"
+	 * versions as strings, designed for use in the MIL-STD2525 symbols. Position
+	 * and time don't, because the client has to reformat these in several ways
+	 * anyway so we can save some space and just provide raw numeric values.
 	 */
 	private Map<String, Object> getAllCallData() {
 		Map<String, Object> map = new LinkedHashMap<>();

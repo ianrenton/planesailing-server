@@ -6,8 +6,6 @@ This software receives data from local ADS-B, AIS and APRS receiving software fo
 
 For more information on the Plane/Sailing project, please see https://ianrenton.com/hardware/planesailing
 
-**NOTE: Plane/Sailing version 2 is still in development. The main branch of the Plane/Sailing client does not currently connect to this server. The instructions on the linked web page have also not yet been updated to reflect version 2. A full client update and setup walkthrough is planned for summer 2021.**
-
 ## Features
 
 * Receives NMEA-0183 format AIS messages (e.g. from rtl_ais)
