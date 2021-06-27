@@ -160,6 +160,7 @@ public class TrackTable extends HashMap<String, Track> {
 	public void saveToFile() {
 		try {
 			LOGGER.info("Saving to track data store...");
+			serializationFile.delete();
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serializationFile));
 			HashMap<String, Track> copy = new HashMap<>(this);
 			oos.writeObject(copy);
