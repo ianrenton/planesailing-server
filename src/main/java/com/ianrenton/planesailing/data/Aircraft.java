@@ -13,7 +13,6 @@ public class Aircraft extends Track {
 	
 	private boolean onGround;
 	private Integer squawk;
-	private Double verticalRate; // feet per second
 	private String category; // e.g. "A1" = light
 	private String categoryDescription; // e.g. "Light"
 	private String registration; // aka Tail Number
@@ -35,10 +34,6 @@ public class Aircraft extends Track {
 
 	public Integer getSquawk() {
 		return squawk;
-	}
-
-	public Double getVerticalRate() {
-		return verticalRate;
 	}
 
 	public boolean isOnGround() {
@@ -73,11 +68,6 @@ public class Aircraft extends Track {
 
 	public void setSquawk(int squawk) {
 		this.squawk = squawk;
-		updateMetadataTime();
-	}
-
-	public void setVerticalRate(double verticalRate) {
-		this.verticalRate = verticalRate;
 		updateMetadataTime();
 	}
 

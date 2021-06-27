@@ -23,6 +23,7 @@ public abstract class Track implements Serializable {
 	protected String symbolCode;
 	protected final PositionHistory positionHistory = new PositionHistory();
 	protected Double altitude; // feet
+	protected Double verticalRate; // feet per second
 	protected Double course; // degrees
 	protected Double heading; // degrees
 	protected Double speed; // knots
@@ -128,12 +129,27 @@ public abstract class Track implements Serializable {
 		return new TimestampedPosition(endLatitudeDegrees, endLongitudeDegrees, System.currentTimeMillis());
 	}
 
+	/**
+	 * Get the altitude in feet. May be null if altitude is unknown.
+	 */
 	public Double getAltitude() {
 		return altitude;
 	}
 
 	public void setAltitude(double altitude) {
 		this.altitude = altitude;
+		updateMetadataTime();
+	}
+
+	/**
+	 * Get the rate of change of altitude in feet per second. May be null if rate is unknown.
+	 */
+	public Double getVerticalRate() {
+		return verticalRate;
+	}
+
+	public void setVerticalRate(Double verticalRate) {
+		this.verticalRate = verticalRate;
 		updateMetadataTime();
 	}
 
@@ -301,34 +317,6 @@ public abstract class Track implements Serializable {
 	}
 
 	/**
-	 * Get the altitude, formatted for display.
-	 */
-	public String getDisplayAltitude() {
-		return (altitude != null) ? String.format("%.0f ft", altitude) : "";
-	}
-
-	/**
-	 * Get the heading, formatted for display.
-	 */
-	public String getDisplayHeading() {
-		return (heading != null) ? String.format("%03d", heading.intValue()) : "";
-	}
-
-	/**
-	 * Get the course, formatted for display.
-	 */
-	public String getDisplayCourse() {
-		return (course != null) ? String.format("%03d", course.intValue()) : "";
-	}
-
-	/**
-	 * Get the speed, formatted for display.
-	 */
-	public String getDisplaySpeed() {
-		return (speed != null) ? String.format("%d", speed.intValue()) + "KTS" : "";
-	}
-
-	/**
 	 * Get the first line of description for display.
 	 */
 	public abstract String getDisplayDescription1();
@@ -376,10 +364,6 @@ public abstract class Track implements Serializable {
 	 * Get a map of metadata for this track that will be provided to the client in
 	 * all API calls. This should be enough to generate all the information the
 	 * client needs, and shouldn't need overriding in subclasses.
-	 * Most numeric parameters like course and speed also come with "display"
-	 * versions as strings, designed for use in the MIL-STD2525 symbols. Position
-	 * and time don't, because the client has to reformat these in several ways
-	 * anyway so we can save some space and just provide raw numeric values.
 	 */
 	private Map<String, Object> getAllCallData() {
 		Map<String, Object> map = new LinkedHashMap<>();
@@ -400,10 +384,8 @@ public abstract class Track implements Serializable {
 		map.put("course", getCourse());
 		map.put("heading", getHeading());
 		map.put("speed", getSpeed());
-		map.put("courseText", getDisplayCourse());
-		map.put("headingText", getDisplayHeading());
-		map.put("speedText", getDisplaySpeed());
-		map.put("altitudeText", getDisplayAltitude());
+		map.put("altitude", getAltitude());
+		map.put("altrate", getVerticalRate());
 		map.put("desc1", getDisplayDescription1().toUpperCase());
 		map.put("desc2", getDisplayDescription2().toUpperCase());
 		map.put("datatime", getMetaDataTime());
