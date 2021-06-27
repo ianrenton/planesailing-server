@@ -6,12 +6,10 @@ public class BaseStation extends Track {
 	private static int baseStationCount;
 	
 	private final String name;
-	private final String softwareVersion;
 	
-	public BaseStation(String name, double lat, double lon, String softwareVersion) {
+	public BaseStation(String name, double lat, double lon) {
 		super("BASESTATION-" + baseStationCount++);
 		this.name = name;
-		this.softwareVersion = softwareVersion;
 		addPosition(lat, lon);
 		setCreatedByConfig(true);
 		setTrackType(TrackType.BASE_STATION);
@@ -21,10 +19,6 @@ public class BaseStation extends Track {
 	public String getName() {
 		return name;
 	}
-
-	public String getSoftwareVersion() {
-		return softwareVersion;
-	}
 	
 	@Override
 	public String getDisplayName() {
@@ -33,7 +27,7 @@ public class BaseStation extends Track {
 
 	@Override
 	public String getDisplayDescription1() {
-		return softwareVersion;
+		return "";
 	}
 
 	@Override

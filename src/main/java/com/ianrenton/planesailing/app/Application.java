@@ -23,7 +23,7 @@ public class Application {
 	public static final Config CONFIG = ConfigFactory.load().getConfig("plane-sailing-server");
 	
 	private static final Logger LOGGER = LogManager.getLogger(Application.class);
-	private static String softwareVersion = "Plane/Sailing Server (version unknown)";
+	private static String softwareVersion = "Unknown";
 	
 	private final TrackTable trackTable = new TrackTable();
 
@@ -47,12 +47,13 @@ public class Application {
 		InputStream is = DataMaps.class.getClassLoader().getResourceAsStream("version.properties");
 		try {
 			p.load(is);
-			if (p.containsKey("software")) {
-				softwareVersion = p.getProperty("software");
+			if (p.containsKey("version")) {
+				softwareVersion = p.getProperty("version");
 			}
 		} catch (IOException e) {
 			// Failed to load, just use the default
 		}
+		LOGGER.info("This is Plane/Sailing Server v{}", softwareVersion);
 		
 		// Load data
 		DataMaps.initialise();
@@ -114,7 +115,7 @@ public class Application {
 			}
 		});
 		
-		LOGGER.info("Plane Sailing Server is up and running!");
+		LOGGER.info("Plane/Sailing Server is up and running!");
 	}
 
 	protected static String getSoftwareVersion() {

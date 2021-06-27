@@ -70,10 +70,13 @@ public class TrackTable extends HashMap<String, Track> {
 	 * includes all tracks (including base station, airports and seaports), and the
 	 * complete position history for all tracks that have it, so that the client
 	 * can populate both the full current picture and the snail trail for tracks.
+	 * It also includes the server's current time, so that clients can determine
+	 * the age of tracks correctly, and the server version number.
 	 */
 	public String getFirstCallJSON() {
 		Map<String, Object> map = new HashMap<>();
 		map.put("time", System.currentTimeMillis());
+		map.put("version", Application.getSoftwareVersion());
 		
 		Map<String, Map<String, Object>> tracks = new HashMap<>();
 		for (Track t : values()) {
@@ -91,7 +94,8 @@ public class TrackTable extends HashMap<String, Track> {
 	 * To save bandwidth, no position history is sent - the client is expected
 	 * to append the reported position to its own position history store. This
 	 * call also omits the base station, airports and seaports that can't
-	 * change.
+	 * change. It also includes the server's current time, so that clients can
+	 * determine the age of tracks correctly.
 	 */
 	public String getUpdateCallJSON() {
 		Map<String, Object> map = new HashMap<>();
@@ -183,7 +187,7 @@ public class TrackTable extends HashMap<String, Track> {
 		ConfigList baseStationConfigs = Application.CONFIG.getList("custom-tracks.base-stations");
 		for (ConfigValue c : baseStationConfigs) {
 			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-			BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"), Application.getSoftwareVersion());
+			BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"));
 			put(bs.getID(), bs);
 		}
 		LOGGER.info("Loaded {} base stations from config file", baseStationConfigs.size());
