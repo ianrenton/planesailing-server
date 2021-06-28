@@ -2,7 +2,7 @@
 
 Server-side code for Plane/Sailing version 2.
 
-This software receives data from local ADS-B, AIS and APRS receiving software for tracking planes, ships and amateur radio stations respectively. It combines them into one large "track table", and provides a web interface by which the Plane/Sailing client can fetch data via JSON.
+This software receives data from local ADS-B, AIS and APRS receiving software for tracking planes, ships and amateur radio stations respectively. It combines them into one large "track table", and provides a web interface by which the [Plane/Sailing client](https://github.com/ianrenton/planesailing) can fetch data via JSON.
 
 For more information on the Plane/Sailing project, please see https://ianrenton.com/hardware/planesailing
 
@@ -20,15 +20,70 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 
 In order to use this software, you should be running some combination of software to provide the data to it, e.g. rtl_ais, Dump1090, Direwolf etc. To run Plane/Sailing Server:
 
-1. Download and unpack the software, or build it yourself. You should have a JAR file and an `application.conf` file.
-2. Ensure your machine has Java 11 or later installed.
+1. Ensure your machine has Java 11 or later installed, e.g. `sudo apt install openjdk-11-jre-headless`
+2. [Download the software from the Releases area](https://github.com/ianrenton/planesailing-server/releases/) and unpack it, or build it yourself using Maven and a JDK. You should have a JAR file and an `application.conf` file.
 3. Edit `application.conf` and set the IP addresses and ports as required. If you don't have a particular server, e.g. you don't do APRS, set `enabled: false` for that section.
 4. Set the base station position, and any airports and seaports you'd like to appear in your data.
 5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION]-jar-with-dependencies.jar`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
-7. Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, but my setup instructions for the full system at https://ianrenton.com/hardware/planesailing contain my setup for a Raspberry Pi.
-8. You may also wish to have clients not connect directly to Plane/Sailing Server but have them connect via a web server such as Lighttpd providing a reverse proxy setup. This allows use of things like HTTPS certificates, and hosting the client and server software - as well as other things - on the same PC. Instructions are at the link above.
-9. If things aren't connecting the way you expect, don't forget to check firewalls etc.
+
+Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, on most Linux systems that use systemd, like Ubuntu and Raspbian, you will want to create a file like `/etc/systemd/system/plane-sailing-server.service` with the contents similar to this:
+
+```
+[Unit]
+Description=Plane/Sailing Server
+After=network.target
+
+[Service]
+ExecStart=java -jar /home/pi/plane-sailing-server/plane-sailing-server-[VERSION]-jar-with-dependencies.jar
+WorkingDirectory=/home/pi/plane-sailing-server
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then to complete the setup by running:
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable plane-sailing-server
+sudo systemctl start plane-sailing-server
+```
+
+You may also wish to have clients not connect directly to Plane/Sailing Server but have them connect via a web server such as Lighttpd providing a reverse proxy setup. There are several reasons you might want to do this:
+
+* It allows the use HTTPS certificates, e.g. from Let's Encrypt, so the client can connect securely
+* It allows Plane/Sailing Server to run on a port that Linux will let it open with normal user privileges (by default 8080) while still making it accessible to the internet on port 80 and/or 443
+* You can host other software, e.g. Plane/Sailing Client, Dump1090 etc. on the same machine.
+
+An example Lighttp config could be placed at `/etc/lighttpd/conf-enabled/90-plane-sailing-server.conf` and would forward all incoming requests to Plane/Sailing Server, if that's the only thing the machine will run:
+
+```
+server.modules += ( "mod_setenv" )
+
+$HTTP["url"] =~ "(^.*)" {
+  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8080 )))
+  setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
+}
+```
+
+Or you could use a setup like this to make it look like your copy of Plane/Sailing Server called "pss", so you could put Dump1090 in its own "folder" alongside it, etc.
+
+```
+server.modules += ( "mod_setenv" )
+
+$HTTP["url"] =~ "(^/pss/.*)" {
+  url.rewrite-once = ( "^/pss/(.*)$" => "/$1" )
+  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8080 )))
+  setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
+}
+```
+
+Make sure you `sudo systemctl restart lighttpd` to reload config when you're done. If things aren't connecting the way you expect, don't forget to check firewalls etc. If you get stuck, let me know and I'll see if I can help!
 
 ## Client Usage
 
