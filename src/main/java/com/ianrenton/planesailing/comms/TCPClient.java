@@ -85,6 +85,7 @@ public abstract class TCPClient {
 						clientSocket = new Socket(remoteHost, remotePort);
 						clientSocket.setSoTimeout(60000);
 						clientSocket.setSoLinger(false, 0);
+						clientSocket.setKeepAlive(true);
 						in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 						getLogger().info("TCP socket for {} connected.", getDataType());
 						break;
