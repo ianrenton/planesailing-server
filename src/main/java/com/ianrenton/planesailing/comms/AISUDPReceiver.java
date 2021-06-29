@@ -122,7 +122,7 @@ public class AISUDPReceiver {
 			if (m5.getCourseOverGround() != 511) {
 				s.setCourse(m5.getCourseOverGround());
 			}
-			if (m5.getTrueHeading() != 511) {
+			if (m5.getTrueHeading() != 0 && m5.getTrueHeading() != 511) {
 				s.setHeading(m5.getTrueHeading());
 			}
 			s.setSpeed(m5.getSpeedOverGround());
@@ -144,7 +144,7 @@ public class AISUDPReceiver {
 			if (m7.getCourseOverGround() != 511) {
 				s.setCourse(m7.getCourseOverGround());
 			}
-			if (m7.getTrueHeading() != 511) {
+			if (m7.getTrueHeading() != 0 && m7.getTrueHeading() != 511) {
 				s.setHeading(m7.getTrueHeading());
 			}
 			s.setSpeed(m7.getSpeedOverGround());
@@ -157,7 +157,7 @@ public class AISUDPReceiver {
 			if (m9.getCourseOverGround() != 511) {
 				s.setCourse(m9.getCourseOverGround());
 			}
-			if (m9.getTrueHeading() != 511) {
+			if (m9.getTrueHeading() != 0 && m9.getTrueHeading() != 511) {
 				s.setHeading(m9.getTrueHeading());
 			}
 			s.setSpeed(m9.getSpeedOverGround());
@@ -178,7 +178,7 @@ public class AISUDPReceiver {
 			if (m11.getCourseOverGround() != 511) {
 				s.setCourse(m11.getCourseOverGround());
 			}
-			if (m11.getTrueHeading() != 511) {
+			if (m11.getTrueHeading() != 0 && m11.getTrueHeading() != 511) {
 				s.setHeading(m11.getTrueHeading());
 			}
 			s.setSpeed(m11.getSpeedOverGround());
