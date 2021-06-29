@@ -60,10 +60,10 @@ You may also wish to have clients not connect directly to Plane/Sailing Server b
 * It allows Plane/Sailing Server to run on a port that Linux will let it open with normal user privileges (by default 8080) while still making it accessible to the internet on port 80 and/or 443
 * You can host other software, e.g. Plane/Sailing Client, Dump1090 etc. on the same machine.
 
-An example Lighttp config could be placed at `/etc/lighttpd/conf-enabled/90-plane-sailing-server.conf` and would forward all incoming requests to Plane/Sailing Server, if that's the only thing the machine will run:
+An example Lighttp config could be placed at `/etc/lighttpd/conf-available/90-plane-sailing-server.conf` and would forward all incoming requests to Plane/Sailing Server, if that's the only thing the machine will run:
 
 ```
-server.modules += ( "mod_setenv" )
+server.modules += ( "mod_setenv", "mod_proxy" )
 
 $HTTP["url"] =~ "(^.*)" {
   proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8080 )))
@@ -71,10 +71,10 @@ $HTTP["url"] =~ "(^.*)" {
 }
 ```
 
-Or you could use a setup like this to make it look like your copy of Plane/Sailing Server called "pss", so you could put Dump1090 in its own "folder" alongside it, etc.
+Or you could use a URL rewriter like this to make it look like your copy of Plane/Sailing Server called "pss", so you could put Dump1090 in its own "folder" alongside it, etc.
 
 ```
-server.modules += ( "mod_setenv" )
+server.modules += ( "mod_setenv", "mod_proxy" )
 
 $HTTP["url"] =~ "(^/pss/.*)" {
   url.rewrite-once = ( "^/pss/(.*)$" => "/$1" )
@@ -83,7 +83,9 @@ $HTTP["url"] =~ "(^/pss/.*)" {
 }
 ```
 
-Make sure you `sudo systemctl restart lighttpd` to reload config when you're done. If things aren't connecting the way you expect, don't forget to check firewalls etc. If you get stuck, let me know and I'll see if I can help!
+There are guides on the web that will show you how to extend these to support HTTPS, and anything else you'd like to do with Lighttpd.
+
+Make sure you `sudo lighttpd-enable-mod plane-sailing-server` and `sudo service lighttpd force-reload` to enable and reload the config when you're done. If things aren't connecting the way you expect, don't forget to check firewalls etc. If you get stuck, let me know and I'll see if I can help!
 
 ## Client Usage
 
