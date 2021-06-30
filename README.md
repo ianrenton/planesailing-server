@@ -1,6 +1,10 @@
 # Plane Sailing Server
 
-Server-side code for Plane/Sailing version 2.
+*The home situational awareness display nobody wanted or needed!*
+
+![Plane Sailing Banner](./banner.png)
+
+This is the server-side code for Plane/Sailing version 2.
 
 This software receives data from local ADS-B, AIS and APRS receiving software for tracking planes, ships and amateur radio stations respectively. It combines them into one large "track table", and provides a web interface by which the [Plane/Sailing client](https://github.com/ianrenton/planesailing) can fetch data via JSON.
 
