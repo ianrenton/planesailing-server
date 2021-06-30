@@ -16,6 +16,7 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 * Receives SBS-format messages derived from ADS-B (e.g. from Dump1090)
 * Receives APRS messages via TCP (e.g. from Direwolf)
 * Includes support for config-based addition of extra tracks for the base station, airports and seaports
+* Includes support for config-based addition of AIS track names, to cover the period between getting a position message and a details message
 * Includes look-up tables to determine aircraft operators, types, and the correct MIL-STD2525C symbols to use for a variety of tracks
 * Persists data to disk so the content of the track table is not lost on restart
 * Customisable times to drop tracks etc.

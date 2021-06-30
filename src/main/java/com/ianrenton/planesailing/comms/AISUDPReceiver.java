@@ -87,6 +87,10 @@ public class AISUDPReceiver {
 		if (!trackTable.containsKey(mmsiString)) {
 			trackTable.put(mmsiString, new Ship(mmsi));
 			trackTable.get(mmsiString).setTrackType(TrackType.SHIP); // Assume ship by default
+			// If we have a cached name for this ship, use it
+			if (trackTable.getAISNameCache().containsKey(mmsi)) {
+				((Ship) trackTable.get(mmsiString)).setName(trackTable.getAISNameCache().get(mmsi));
+			}
 		}
 		
 		// Extract the data and update the track
@@ -99,6 +103,7 @@ public class AISUDPReceiver {
 			s.setTrackType(TrackType.AIS_ATON);
 			s.setFixed(true);
 			break;
+			
 		case BaseStationReport:
 			BaseStationReport m3 = (BaseStationReport) m;
 			s.setShoreStation(true);
@@ -106,18 +111,25 @@ public class AISUDPReceiver {
 			s.setTrackType(TrackType.AIS_SHORE_STATION);
 			s.setFixed(true);
 			break;
+			
 		case ClassBCSStaticDataReport:
 			ClassBCSStaticDataReport m4 = (ClassBCSStaticDataReport) m;
 			if (m4.getShipName() != null) {
-				s.setName(m4.getShipName().replaceAll("_", "").replaceAll("@", "").trim());
+				String name = m4.getShipName().replaceAll("_", "").replaceAll("@", "").trim(); 
+				s.setName(name);
+				trackTable.getAISNameCache().put(mmsi, name);
 			}
 			s.setCallsign(m4.getCallsign().trim());
 			s.setShipType(m4.getShipType());
 			s.setTrackType(TrackType.SHIP);
 			break;
+			
 		case ExtendedClassBEquipmentPositionReport:
 			ExtendedClassBEquipmentPositionReport m5 = (ExtendedClassBEquipmentPositionReport) m;
-			s.setName(m5.getShipName().replaceAll("_", "").replaceAll("@", "").trim());
+			String name = m5.getShipName().replaceAll("_", "").replaceAll("@", "").trim(); 
+			s.setName(name);
+			trackTable.getAISNameCache().put(mmsi, name);
+			
 			s.addPosition(m5.getLatitude(), m5.getLongitude());
 			if (m5.getCourseOverGround() != 511) {
 				s.setCourse(m5.getCourseOverGround());
@@ -128,6 +140,7 @@ public class AISUDPReceiver {
 			s.setSpeed(m5.getSpeedOverGround());
 			s.setTrackType(TrackType.SHIP);
 			break;
+			
 		case LongRangeBroadcastMessage:
 			LongRangeBroadcastMessage m6 = (LongRangeBroadcastMessage) m;
 			s.addPosition(m6.getLatitude(), m6.getLongitude());
@@ -138,6 +151,7 @@ public class AISUDPReceiver {
 			s.setNavStatus(m6.getNavigationalStatus());
 			s.setTrackType(TrackType.SHIP);
 			break;
+			
 		case PositionReportClassAAssignedSchedule:
 			PositionReportClassAAssignedSchedule m7 = (PositionReportClassAAssignedSchedule) m;
 			s.addPosition(m7.getLatitude(), m7.getLongitude());
@@ -151,6 +165,7 @@ public class AISUDPReceiver {
 			s.setNavStatus(m7.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
 			break;
+			
 		case PositionReportClassAScheduled:
 			PositionReportClassAScheduled m9 = (PositionReportClassAScheduled) m;
 			s.addPosition(m9.getLatitude(), m9.getLongitude());
@@ -164,14 +179,19 @@ public class AISUDPReceiver {
 			s.setNavStatus(m9.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
 			break;
+			
 		case ShipAndVoyageRelatedData:
 			ShipAndVoyageData m10 = (ShipAndVoyageData) m;
-			s.setName(m10.getShipName().replaceAll("_", "").replaceAll("@", "").trim());
+			String name10 = m10.getShipName().replaceAll("_", "").replaceAll("@", "").trim(); 
+			s.setName(name10);
+			trackTable.getAISNameCache().put(mmsi, name10);
+			
 			s.setCallsign(m10.getCallsign().trim());
 			s.setShipType(m10.getShipType());
 			s.setDestination(m10.getDestination());
 			s.setTrackType(TrackType.SHIP);
 			break;
+			
 		case StandardClassBCSPositionReport:
 			StandardClassBCSPositionReport m11 = (StandardClassBCSPositionReport) m;
 			s.addPosition(m11.getLatitude(), m11.getLongitude());
@@ -184,6 +204,7 @@ public class AISUDPReceiver {
 			s.setSpeed(m11.getSpeedOverGround());
 			s.setTrackType(TrackType.SHIP);
 			break;
+			
 		default:
 			// Nothing useful we can do with this type
 			break;

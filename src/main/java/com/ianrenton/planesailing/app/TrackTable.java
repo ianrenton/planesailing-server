@@ -33,8 +33,10 @@ public class TrackTable extends HashMap<String, Track> {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
-	
+
 	private transient final File serializationFile = new File("track_data_store.dat");
+	
+	private final Map<Integer, String> aisNameCache = new HashMap<>();
 	
 	private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 	@SuppressWarnings("rawtypes")
@@ -141,13 +143,14 @@ public class TrackTable extends HashMap<String, Track> {
 			try {
 				clear();
 				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(serializationFile));
-				@SuppressWarnings("unchecked")
-				Map<String, Track> newTT = (HashMap<String, Track>) ois.readObject();
+				TrackTable newTT = (TrackTable) ois.readObject();
 				ois.close();
-				putAll(newTT);
+				copy(newTT);
 				LOGGER.info("Loaded {} tracks from track data store at {}", size(), serializationFile.getAbsolutePath());
-			} catch (SerializationException | IOException | ClassNotFoundException ex) {
-				LOGGER.error("Exception loading track data store", ex);
+				LOGGER.info("Loaded {} AIS names from track data store", aisNameCache.size());
+			} catch (SerializationException | IOException | ClassNotFoundException | ClassCastException ex) {
+				LOGGER.error("Exception loading track data store. Deleting the file so this doesn't reoccur.", ex);
+				serializationFile.delete();
 			}
 		} else {
 			LOGGER.info("Track table file did not exist in {}, probably first startup.", serializationFile.getAbsolutePath());
@@ -162,14 +165,24 @@ public class TrackTable extends HashMap<String, Track> {
 			LOGGER.info("Saving to track data store...");
 			serializationFile.delete();
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serializationFile));
-			HashMap<String, Track> copy = new HashMap<>(this);
+			TrackTable copy = new TrackTable();
+			copy.copy(this);
 			oos.writeObject(copy);
 			oos.flush();
 			oos.close();
 			LOGGER.info("Saved {} tracks to track data store at {}", size(), serializationFile.getAbsolutePath());
+			LOGGER.info("Saved {} AIS names to track data store", aisNameCache.size());
 		} catch (IOException e) {
 			LOGGER.error("Could not save track table to {}", serializationFile.getAbsolutePath(), e);
 		}
+	}
+	
+	/**
+	 * Copy another track table into this one
+	 */
+	private void copy(TrackTable tt) {
+		this.putAll(tt);
+		this.aisNameCache.putAll(tt.getAISNameCache());
 	}
 
 	/**
@@ -208,6 +221,23 @@ public class TrackTable extends HashMap<String, Track> {
 			put(sp.getID(), sp);
 		}
 		LOGGER.info("Loaded {} seaports from config file", seaportConfigs.size());
+	}
+
+	/**
+	 * Read the "custom AIS names" from the config file and populate the track table.
+	 */
+	@SuppressWarnings("unchecked")
+	public void loadCustomAISNamesFromConfig() {
+		ConfigList aisNameConfigs = Application.CONFIG.getList("custom-ais-names");
+		for (ConfigValue c : aisNameConfigs) {
+			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
+			aisNameCache.put((Integer) data.get("mmsi"), (String) data.get("name"));
+		}
+		LOGGER.info("Loaded {} AIS names from config file", aisNameConfigs.size());
+	}
+
+	public Map<Integer, String> getAISNameCache() {
+		return aisNameCache;
 	}
 
 	/**
