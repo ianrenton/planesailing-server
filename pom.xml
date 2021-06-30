@@ -40,6 +40,8 @@
 								<resource>
 									<directory>${project.basedir}/src/main/resources</directory>
 									<include>application.conf</include>
+									<include>run.sh</include>
+									<filtering>true</filtering>
 								</resource>
 							</resources>
 						</configuration>

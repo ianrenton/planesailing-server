@@ -28,7 +28,7 @@ In order to use this software, you should be running some combination of softwar
 2. [Download the software from the Releases area](https://github.com/ianrenton/planesailing-server/releases/) and unpack it, or build it yourself using Maven and a JDK. You should have a JAR file and an `application.conf` file.
 3. Edit `application.conf` and set the IP addresses and ports as required. If you don't have a particular server, e.g. you don't do APRS, set `enabled: false` for that section.
 4. Set the base station position, and any airports and seaports you'd like to appear in your data.
-5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION]-jar-with-dependencies.jar`
+5. Save `application.conf` and run the application, e.g. `chmod +x run.sh`, `./run.sh`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
 
 ### Automatic Run on Startup
@@ -41,7 +41,7 @@ Description=Plane/Sailing Server
 After=network.target
 
 [Service]
-ExecStart=java -jar /home/pi/plane-sailing-server/run.sh
+ExecStart=/home/pi/plane-sailing-server/run.sh
 WorkingDirectory=/home/pi/plane-sailing-server
 StandardOutput=inherit
 StandardError=inherit
