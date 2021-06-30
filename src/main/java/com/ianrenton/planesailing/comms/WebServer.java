@@ -37,6 +37,7 @@ public class WebServer {
 			server = HttpServer.create(new InetSocketAddress(localPort), 0);
 			server.createContext("/first", new CallHandler(Call.FIRST));
 			server.createContext("/update", new CallHandler(Call.UPDATE));
+			server.createContext("/", new CallHandler(Call.HOME));
 			server.setExecutor(null);
 		} catch (IOException ex) {
 			LOGGER.error("Could not set up web server", ex);
@@ -63,12 +64,17 @@ public class WebServer {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
 			String response = "";
+			String contentType = "application/json";
 			switch (call) {
 			case FIRST:
 				response = trackTable.getFirstCallJSON();
 				break;
 			case UPDATE:
 				response = trackTable.getUpdateCallJSON();
+				break;
+			case HOME:
+				response = "Plane/Sailing Server is up and running!";
+				contentType = "text/html";
 				break;
 			}
 			
@@ -78,7 +84,7 @@ public class WebServer {
                 headers.add("Access-Control-Allow-Origin", "*");
                 switch (requestMethod) {
                     case "GET":
-                        headers.set("Content-Type", String.format("application/json; charset=%s", "UTF8"));
+                        headers.set("Content-Type", String.format(contentType + "; charset=%s", "UTF8"));
                         final byte[] rawResponseBody = response.getBytes("UTF8");
                         t.sendResponseHeaders(200, rawResponseBody.length);
                         t.getResponseBody().write(rawResponseBody);
@@ -101,6 +107,6 @@ public class WebServer {
 	}
 
 	private enum Call {
-		FIRST, UPDATE
+		FIRST, UPDATE, HOME
 	};
 }
