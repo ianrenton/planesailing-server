@@ -31,6 +31,8 @@ In order to use this software, you should be running some combination of softwar
 5. Save `application.conf` and run the application, e.g. `java -jar plane-sailing-server-[VERSION]-jar-with-dependencies.jar`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
 
+### Automatic Run on Startup
+
 Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, on most Linux systems that use systemd, like Ubuntu and Raspbian, you will want to create a file like `/etc/systemd/system/plane-sailing-server.service` with the contents similar to this:
 
 ```
@@ -39,7 +41,7 @@ Description=Plane/Sailing Server
 After=network.target
 
 [Service]
-ExecStart=java -jar /home/pi/plane-sailing-server/plane-sailing-server-[VERSION]-jar-with-dependencies.jar
+ExecStart=java -jar /home/pi/plane-sailing-server/run.sh
 WorkingDirectory=/home/pi/plane-sailing-server
 StandardOutput=inherit
 StandardError=inherit
@@ -58,11 +60,15 @@ sudo systemctl enable plane-sailing-server
 sudo systemctl start plane-sailing-server
 ```
 
-You may also wish to have clients not connect directly to Plane/Sailing Server but have them connect via a web server such as Lighttpd providing a reverse proxy setup. There are several reasons you might want to do this:
+You can achieve similar things on Windows using NSSM to install Plane/Sailing Server as a service, or with Scheduled Tasks, a shortcut in your Startup items, etc.
 
-* It allows the use HTTPS certificates, e.g. from Let's Encrypt, so the client can connect securely
-* It allows Plane/Sailing Server to run on a port that Linux will let it open with normal user privileges (by default 8080) while still making it accessible to the internet on port 80 and/or 443
-* You can host other software, e.g. Plane/Sailing Client, Dump1090 etc. on the same machine.
+### Reverse Proxy Setup
+
+The client can quite happily connect to the Plane/Sailing Server on its default port of 8000. However, you may wish to use a "proper" web server such as Lighttpd providing a reverse proxy setup. There are several reasons you might want to do this:
+
+* It allows the use HTTPS (with certificates, e.g. from Let's Encrypt), so the client can connect securely
+* It allows Plane/Sailing Server to run on a port that Linux will let it open with normal user privileges (by default 8000) while still making it accessible to the internet on port 80 and/or 443
+* You can host other software on the same machine, e.g. Plane/Sailing Client, Dump1090, AIS Dispatcher etc. via the same public port.
 
 An example Lighttp config could be placed at `/etc/lighttpd/conf-available/90-plane-sailing-server.conf` and would forward all incoming requests to Plane/Sailing Server, if that's the only thing the machine will run:
 
@@ -70,7 +76,7 @@ An example Lighttp config could be placed at `/etc/lighttpd/conf-available/90-pl
 server.modules += ( "mod_setenv", "mod_proxy" )
 
 $HTTP["url"] =~ "(^.*)" {
-  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8080 )))
+  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8000 )))
   setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
 }
 ```
@@ -82,8 +88,13 @@ server.modules += ( "mod_setenv", "mod_proxy" )
 
 $HTTP["url"] =~ "(^/pss/.*)" {
   url.rewrite-once = ( "^/pss/(.*)$" => "/$1" )
-  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8080 )))
+  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8000 )))
   setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
+}
+
+$HTTP["url"] =~ "(^/dump1090/.*)" {
+  url.rewrite-once = ( "^/dump1090/(.*)$" => "/$1" )
+  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8080 )))
 }
 ```
 
