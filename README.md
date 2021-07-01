@@ -55,7 +55,7 @@ WantedBy=multi-user.target
 
 Then to complete the setup by running:
 
-```
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable plane-sailing-server
 sudo systemctl start plane-sailing-server
@@ -71,37 +71,72 @@ The client can quite happily connect to the Plane/Sailing Server on its default 
 * It allows Plane/Sailing Server to run on a port that Linux will let it open with normal user privileges (by default 8000) while still making it accessible to the internet on port 80 and/or 443
 * You can host other software on the same machine, e.g. Plane/Sailing Client, Dump1090, AIS Dispatcher etc. via the same public port.
 
-An example Lighttp config could be placed at `/etc/lighttpd/conf-available/90-plane-sailing-server.conf` and would forward all incoming requests to Plane/Sailing Server, if that's the only thing the machine will run:
+An example Lighttp config could be placed at `/etc/lighttpd/conf-available/50-plane-sailing-server.conf` and would forward all incoming requests to Plane/Sailing Server, if that's the only thing the machine will run:
 
 ```
-server.modules += ( "mod_setenv", "mod_proxy" )
-
+server.modules += ( "mod_proxy", "mod_setenv" )
 $HTTP["url"] =~ "(^.*)" {
   proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8000 )))
   setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
 }
 ```
 
-Or you could use a URL rewriter like this to make it look like your copy of Plane/Sailing Server called "pss", so you could put Dump1090 in its own "folder" alongside it, etc.
+Or you could use a URL rewriter like this to make it look like your copy of Plane/Sailing Server called "pss", so you could put Dump1090 and AIS Dispatcher's web interfaces in their own "folder" alongside it:
 
 ```
-server.modules += ( "mod_setenv", "mod_proxy" )
-
+server.modules += ( "mod_proxy", "mod_setenv", "mod_rewrite" )
 $HTTP["url"] =~ "(^/pss/.*)" {
   url.rewrite-once = ( "^/pss/(.*)$" => "/$1" )
   proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8000 )))
   setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
 }
-
-$HTTP["url"] =~ "(^/dump1090/.*)" {
-  url.rewrite-once = ( "^/dump1090/(.*)$" => "/$1" )
-  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8080 )))
-}
 ```
 
-There are guides on the web that will show you how to extend these to support HTTPS, and anything else you'd like to do with Lighttpd.
+To enable the new config, run:
 
-Make sure you `sudo lighttpd-enable-mod plane-sailing-server` and `sudo service lighttpd force-reload` to enable and reload the config when you're done. If things aren't connecting the way you expect, don't forget to check firewalls etc. If you get stuck, let me know and I'll see if I can help!
+```bash
+sudo lighttpd-enable-mod plane-sailing-server
+sudo service lighttpd force-reload
+```
+
+### HTTPS Setup
+
+You can use Let's Encrypt to enable HTTPS on your Lighttpd server, so the client can request data securely. The easiest way is using Certbot, so following the [instructions here](https://certbot.eff.org/lets-encrypt/debianbuster-other):
+
+```bash
+sudo apt install snapd
+sudo snap install core
+sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo systemctl stop lighttpd
+sudo certbot certonly --standalone
+```
+
+At this stage you will be prompted to enter your contact details and domain information.
+
+After that completes successfully, make a note of the `.pem` file that it has created. In my case it's `/etc/letsencrypt/live/planesailingserver.ianrenton.com/fullchain.pem`. We will need to do some combining of files, because [Lighttpd requires the private key and the certificate to be in the same file](https://community.letsencrypt.org/t/lighttpd-usable-chained-file/3357/2):
+
+
+////// todo
+
+
+
+To get back up and running again, enable the SSL module and start the web server back up:
+
+```bash
+sudo lighttpd-enable-mod ssl
+sudo systemctl start lighttpd
+```
+
+Finally, add hooks so that Certbot knows how to stop and start Lighttpd and do the key merging job again in future when it comes to certificate renewal time:
+
+```bash
+sudo sh -c 'printf "#!/bin/sh\nsystemctl stop lighttpd\n" > /etc/letsencrypt/renewal-hooks/pre/lighttpd.sh'
+sudo sh -c 'printf "#!/bin/sh\nsystemctl start lighttpd\n" > /etc/letsencrypt/renewal-hooks/post/lighttpd.sh'
+sudo chmod 755 /etc/letsencrypt/renewal-hooks/pre/lighttpd.sh
+sudo chmod 755 /etc/letsencrypt/renewal-hooks/post/lighttpd.sh
+```
 
 ## Client Usage
 
