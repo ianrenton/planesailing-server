@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -132,7 +133,12 @@ public class TrackTable extends HashMap<String, Track> {
 	 * Drop any tracks that have no current data
 	 */
 	private void dropExpiredTracks() {
-		values().removeIf(t -> t.shouldDrop());
+		for (Iterator<Entry<String, Track>> it = entrySet().iterator(); it.hasNext();) {
+            Track t = it.next().getValue();
+            if (t.shouldDrop()) {
+				it.remove();
+			}
+        }
 	}
 
 	/**
@@ -256,9 +262,13 @@ public class TrackTable extends HashMap<String, Track> {
 
 		@Override
 		public void run() {
-			printStatusData();
-			cullOldPositionData();
-			dropExpiredTracks();
+			try {
+				printStatusData();
+				cullOldPositionData();
+				dropExpiredTracks();
+			} catch (Throwable t) {
+				LOGGER.error("Caught exception in maintenance task, continuing...", t);
+			}
 		}
 
 		/**
@@ -298,7 +308,11 @@ public class TrackTable extends HashMap<String, Track> {
 
 		@Override
 		public void run() {
-			saveToFile();
+			try {
+				saveToFile();
+			} catch (Throwable t) {
+				LOGGER.error("Caught exception in backup task, continuing...", t);
+			}
 		}
 	}
 }
