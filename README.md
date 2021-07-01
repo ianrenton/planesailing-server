@@ -83,7 +83,6 @@ server {
 
     location / {
         proxy_pass http://127.0.0.1:8000;
-        add_header Access-Control-Allow-Origin *;
     }
 }
 ```
@@ -112,7 +111,6 @@ server {
 
     location /pss {
         proxy_pass http://127.0.0.1:8000;
-        add_header Access-Control-Allow-Origin *;
     }
 
     location /dump1090 {
@@ -136,7 +134,7 @@ sudo certbot --nginx
 
 At this stage you will be prompted to enter your contact details and domain information, but Certbot will take it from there&mdash;it will automatically validate the server as being reachable from the (sub)domain you specified, issue a certificate, install it, and reconfigure nginx to use it.
 
-What you'll probably find is that Certbot has helpfully reconfigured your server to *force* HTTPS, and HTTP now returns a 404 error. This could be a problem for local testing because HTTPS will only show a valid certificate from *outside* your LAN, when the URL is e.g. `planesailingserver.ianrenton.com`, but your certificate is invalid *inside* your LAN, when accessing it via an IP address. To re-enable both HTTP and HTTPS to show the same thing, you need to delete the extra "server" block in `/etc/nginx/sites-enabled/plane-sailing-server.conf` and add `listen 80` back into the main block. You should end up with something like this (with your own domain names in there):
+What you'll probably find is that Certbot has helpfully reconfigured your server to use *only* HTTPS, and HTTP now returns a 404 error. In my opinion it would be best for both versions to provide the same response. To re-enable both HTTP and HTTPS, you need to delete the extra "server" block in `/etc/nginx/sites-enabled/plane-sailing-server.conf` and add `listen 80` back into the main block. You should end up with something like this (with your own domain names in there):
 
 ```
 server {
@@ -146,7 +144,6 @@ server {
 
     location / {
         proxy_pass http://127.0.0.1:8000;
-        add_header Access-Control-Allow-Origin *;
     }
 
     ssl_certificate /etc/letsencrypt/live/planesailingserver.ianrenton.com/full$
