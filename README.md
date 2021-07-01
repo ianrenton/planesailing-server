@@ -65,43 +65,65 @@ You can achieve similar things on Windows using NSSM to install Plane/Sailing Se
 
 ### Reverse Proxy Setup
 
-The client can quite happily connect to the Plane/Sailing Server on its default port of 8000. However, you may wish to use a "proper" web server such as Lighttpd providing a reverse proxy setup. There are several reasons you might want to do this:
+The client can quite happily connect to the Plane/Sailing Server on its default port of 8000. However, you may wish to add a "proper" web server providing a reverse proxy setup. There are several reasons you might want to do this:
 
 * It allows the use HTTPS (with certificates, e.g. from Let's Encrypt), so the client can connect securely
 * It allows Plane/Sailing Server to run on a port that Linux will let it open with normal user privileges (by default 8000) while still making it accessible to the internet on port 80 and/or 443
 * You can host other software on the same machine, e.g. Plane/Sailing Client, Dump1090, AIS Dispatcher etc. via the same public port.
 
-An example Lighttp config could be placed at `/etc/lighttpd/conf-available/50-plane-sailing-server.conf` and would forward all incoming requests to Plane/Sailing Server, if that's the only thing the machine will run:
+In this example, we will use Nginx due to its relatively easy config and support in Let's Encrypt Certbot, but you could use Apache, Lighttpd, HAProxy or anything you like that supports a reverse proxy configuration.
+
+Start off by installing Nginx, e.g. `sudo apt install nginx`. You should then be able to enter the IP address of the server using a web browser and see the "Welcome to nginx" page. Next we need to change that default setup to instead provide a reverse proxy pointing at Plane/Sailing Server. Create a file like `/etc/nginx/sites-available/plane-sailing-server.conf` with contents similar to the following:
 
 ```
-server.modules += ( "mod_proxy", "mod_setenv" )
-$HTTP["url"] =~ "(^.*)" {
-  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8000 )))
-  setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name planesailingserver.ianrenton.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        add_header Access-Control-Allow-Origin *;
+    }
 }
 ```
 
-Or you could use a URL rewriter like this to make it look like your copy of Plane/Sailing Server called "pss", so you could put Dump1090 and AIS Dispatcher's web interfaces in their own "folder" alongside it:
+If you don't plan on enabling HTTPS, you can skip "listen 443 ssl" and the "server_name" line. If you *do* intend to enable HTTPS, you'll be generating a certificate for a certain domain or subdomain that points at your server, and that (sub)domain must be in the "server_name" line.
 
-```
-server.modules += ( "mod_proxy", "mod_setenv", "mod_rewrite" )
-$HTTP["url"] =~ "(^/pss/.*)" {
-  url.rewrite-once = ( "^/pss/(.*)$" => "/$1" )
-  proxy.server  = ( "" => ("" => ( "host" => "127.0.0.1", "port" => 8000 )))
-  setenv.set-response-header = ( "Access-Control-Allow-Origin" => "*" )
-}
-```
-
-To enable the new config, run:
+Once you're finished creating that filte, delete the default site, enable the new one, and restart nginx:
 
 ```bash
-sudo lighttpd-enable-mod plane-sailing-server
-sudo service lighttpd force-reload
+sudo rm /etc/nginx/sites-enabled/default
+sudo ln -s /etc/nginx/sites-available/plane-sailing-server.conf /etc/nginx/sites-enabled/plane-sailing-server.conf
+sudo systemctl restart nginx
+```
+
+When you now visit the IP address of your server using a web browser, you should instead see "Plane/Sailing Server is up and running!". Your reverse proxy setup is now complete, and a client pointed at the default HTTP port (80) on that PC will now be able to communicate with Plane/Sailing Server.
+
+If nginx didn't restart properly, you may have mistyped your configuration. Try `sudo nginx -t` to find out what the problem is.
+
+You may wish to set up variants of this configuration, e.g. if you wanted Plane/Sailing Server to look like it was in a directory `/pss/`, and then have Dump1090 on `/dump1090/` and AIS Dispatcher's web interface on `/aisdispatcher/` too, all on port 80. You can do that by tweaking the "location" parameter, e.g.:
+
+```
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name planesailingserver.ianrenton.com;
+
+    location /pss {
+        proxy_pass http://127.0.0.1:8000;
+        add_header Access-Control-Allow-Origin *;
+    }
+
+    location /dump1090 {
+        proxy_pass http://127.0.0.1:8080;
+    }
+}
 ```
 
 ### HTTPS Setup
 
-You can use Let's Encrypt to enable HTTPS on your Lighttpd server, so the client can request data securely. The easiest way is using Certbot, so following the [instructions here](https://certbot.eff.org/lets-encrypt/debianbuster-other):
+You can use Let's Encrypt to enable HTTPS on your Nginx server, so the client can request data securely. The easiest way is using Certbot, so following the [instructions here](https://certbot.eff.org/lets-encrypt/debianbuster-nginx):
 
 ```bash
 sudo apt install snapd
@@ -109,34 +131,33 @@ sudo snap install core
 sudo snap refresh core
 sudo snap install --classic certbot
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
-sudo systemctl stop lighttpd
-sudo certbot certonly --standalone
+sudo certbot --nginx
 ```
 
-At this stage you will be prompted to enter your contact details and domain information.
+At this stage you will be prompted to enter your contact details and domain information, but Certbot will take it from there&mdash;it will automatically validate the server as being reachable from the (sub)domain you specified, issue a certificate, install it, and reconfigure nginx to use it.
 
-After that completes successfully, make a note of the `.pem` file that it has created. In my case it's `/etc/letsencrypt/live/planesailingserver.ianrenton.com/fullchain.pem`. We will need to do some combining of files, because [Lighttpd requires the private key and the certificate to be in the same file](https://community.letsencrypt.org/t/lighttpd-usable-chained-file/3357/2):
+What you'll probably find is that Certbot has helpfully reconfigured your server to *force* HTTPS, and HTTP now returns a 404 error. This could be a problem for local testing because HTTPS will only show a valid certificate from *outside* your LAN, when the URL is e.g. `planesailingserver.ianrenton.com`, but your certificate is invalid *inside* your LAN, when accessing it via an IP address. To re-enable both HTTP and HTTPS to show the same thing, you need to delete the extra "server" block in `/etc/nginx/sites-enabled/plane-sailing-server.conf` and add `listen 80` back into the main block. You should end up with something like this (with your own domain names in there):
 
+```
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name planesailingserver.ianrenton.com;
 
-////// todo
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        add_header Access-Control-Allow-Origin *;
+    }
 
+    ssl_certificate /etc/letsencrypt/live/planesailingserver.ianrenton.com/full$
+    ssl_certificate_key /etc/letsencrypt/live/planesailingserver.ianrenton.com/$
+}
 
-
-To get back up and running again, enable the SSL module and start the web server back up:
-
-```bash
-sudo lighttpd-enable-mod ssl
-sudo systemctl start lighttpd
 ```
 
-Finally, add hooks so that Certbot knows how to stop and start Lighttpd and do the key merging job again in future when it comes to certificate renewal time:
+Finally, `sudo systemctl restart nginx` and you should now find that Plane/Sailing Server is accessible via both HTTP and HTTPS. The good news is, Certbot should automatically renew your certificate when required, and shouldn't mess with your config again.
 
-```bash
-sudo sh -c 'printf "#!/bin/sh\nsystemctl stop lighttpd\n" > /etc/letsencrypt/renewal-hooks/pre/lighttpd.sh'
-sudo sh -c 'printf "#!/bin/sh\nsystemctl start lighttpd\n" > /etc/letsencrypt/renewal-hooks/post/lighttpd.sh'
-sudo chmod 755 /etc/letsencrypt/renewal-hooks/pre/lighttpd.sh
-sudo chmod 755 /etc/letsencrypt/renewal-hooks/post/lighttpd.sh
-```
+Job. Done.
 
 ## Client Usage
 
@@ -149,7 +170,3 @@ The Plane/Sailing client, or any other client you write, should do the following
 3. Rather than just reporting tracks' last known locations, clients may wish to "dead reckon" their current position and update the display with that more often than every 10 seconds. Because the server and client's clocks may not match, the server provides a "time" field (milliseconds since UNIX epoch) in every response. The position data for each track has a time field too. The combination of these can be used to determine how old the track's data is without having to use the local system clock.
 
 Clients are of course free to set their own policies about what tracks to show and hide, how to present the data, etc. If you are writing your own client or fork of Plane/Sailing, I am happy to receive pull requests to add new data into the API.
-
-## To Do List
-
-* Finish APRS support - may require additions to javAPRSlib to support course, speed etc. Currently hampered by low volume of APRS traffic here and lack of a handheld transmitter I can use for testing
