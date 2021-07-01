@@ -7,12 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ianrenton.planesailing.app.Application;
-
 public abstract class Track implements Serializable {
 	private static final long serialVersionUID = 1L;
-
-	private static final Long DEFAULT_SHOW_ANTICIPATED_TIME = Application.CONFIG.getLong("timing.show-anticipated-after");
 
 	protected String id; // unique ID. ICAO Hex is used for aircraft, MMSI for ships, callsign for APRS
 							// tracks. These are all sufficiently different that each track should be
@@ -280,13 +276,6 @@ public abstract class Track implements Serializable {
 	 */
 	public boolean shouldDrop() {
 		return !isFixed() && getPositionHistory().isEmpty() && getMetaDataAge() > getPositionHistory().getHistoryLength();
-	}
-
-	/**
-	 * Show the "anticipated" version of the symbol?
-	 */
-	public boolean shouldShowAnticipatedSymbol() {
-		return getPositionAge() != null && getPositionAge() > DEFAULT_SHOW_ANTICIPATED_TIME;
 	}
 
 	/**

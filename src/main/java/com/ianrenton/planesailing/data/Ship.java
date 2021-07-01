@@ -14,7 +14,6 @@ public class Ship extends Track {
 	private static final String SHORE_STATION_SYMBOL = "SUGPUUS-----";
 	private static final Long DROP_STATIC_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-static-after");
 	private static final Long DROP_MOVING_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-moving-after");
-	private static final Long SHIP_SHOW_ANTICIPATED_TIME = Application.CONFIG.getLong("timing.ship-show-anticipated-after");
 	
 	private final int mmsi;
 	private String name;
@@ -120,13 +119,6 @@ public class Ship extends Track {
 		} else {
 			return getTimeSinceLastUpdate() > DROP_MOVING_SHIP_TRACK_TIME;
 		}
-	}
-	
-	/**
-	 * Longer "anticipated" threshold for ships
-	 */
-	public boolean shouldShowAnticipatedSymbol() {
-		return getPositionAge() != null && getPositionAge() > SHIP_SHOW_ANTICIPATED_TIME;
 	}
 	
 	@Override
