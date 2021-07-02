@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import com.ianrenton.planesailing.data.Airport;
 import com.ianrenton.planesailing.data.BaseStation;
 import com.ianrenton.planesailing.data.Seaport;
+import com.ianrenton.planesailing.data.Ship;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
 import com.typesafe.config.ConfigList;
@@ -237,7 +238,12 @@ public class TrackTable extends HashMap<String, Track> {
 		ConfigList aisNameConfigs = Application.CONFIG.getList("custom-ais-names");
 		for (ConfigValue c : aisNameConfigs) {
 			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-			aisNameCache.put((Integer) data.get("mmsi"), (String) data.get("name"));
+			int mmsi = (Integer) data.get("mmsi");
+			String name = (String) data.get("name");
+			aisNameCache.put(mmsi, name);
+			if (containsKey(Integer.toString(mmsi))) {
+				((Ship) get(Integer.toString(mmsi))).setName(name);
+			}
 		}
 		LOGGER.info("Loaded {} AIS names from config file", aisNameConfigs.size());
 	}
