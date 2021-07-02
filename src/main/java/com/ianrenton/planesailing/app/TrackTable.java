@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -172,8 +173,9 @@ public class TrackTable extends HashMap<String, Track> {
 			LOGGER.info("Saving to track data store...");
 			serializationFile.delete();
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serializationFile));
-			TrackTable copy = new TrackTable();
-			copy.copy(this);
+			// Deep copy to avoid concurrent modification problems when the track table
+			// contents are modified during save.
+			TrackTable copy = SerializationUtils.clone(this);
 			oos.writeObject(copy);
 			oos.flush();
 			oos.close();
