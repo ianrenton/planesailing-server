@@ -61,7 +61,9 @@ sudo systemctl enable plane-sailing-server
 sudo systemctl start plane-sailing-server
 ```
 
-You can achieve similar things on Windows using NSSM to install Plane/Sailing Server as a service, or with Scheduled Tasks, a shortcut in your Startup items, etc.
+If you want to check it's working, use e.g. `systemctl status plane-sailing-server` to check it's alive, and `journalctl -u plane-sailing-server.service -f` to see its logs in real time.
+
+If you are running Plane/Sailing Server on Windows you can make it start automatically by using NSSM to install Plane/Sailing Server as a service, or with Scheduled Tasks, a shortcut in your Startup items, etc.
 
 ### Reverse Proxy Setup
 
