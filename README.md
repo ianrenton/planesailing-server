@@ -103,22 +103,35 @@ When you now visit the IP address of your server using a web browser, you should
 
 If nginx didn't restart properly, you may have mistyped your configuration. Try `sudo nginx -t` to find out what the problem is.
 
-You may wish to set up variants of this configuration, e.g. if you wanted Plane/Sailing Server to look like it was in a directory `/pss/`, and then have Dump1090 on `/dump1090/` and AIS Dispatcher's web interface on `/aisdispatcher/` too, all on port 80. You can do that by tweaking the "location" parameter, e.g.:
+You may wish to add extra features to this configuration. For example if you wanted Plane/Sailing Server accessible in the root directory as normal, but then have Dump1090 on `/dump1090-fa` and AIS Dispatcher's web interface on `/aisdispatcher` too, all on port 80, you can do that by tweaking the adding new "location" parameters as follows. They are handled in order so Plane/Sailing Server comes *last*, only if the URL doesn't match any of the other locations.
 
 ```
-server {
+server {   
     listen 80;
     listen 443 ssl;
     server_name planesailingserver.ianrenton.com;
 
-    location /pss {
-        proxy_pass http://127.0.0.1:8000;
+    # Dump1090 web interface
+    rewrite ^/dump1090-fa$ /dump1090-fa/ permanent;
+    location /dump1090-fa/ {
+        alias /usr/share/dump1090-fa/html/;
+    }
+    location /dump1090-fa/data/ {
+        alias /run/dump1090-fa/;
     }
 
-    location /dump1090 {
+    # AIS Dispatcher web interface
+    rewrite ^/aisdispatcher$ /aisdispatcher/ permanent;
+    location /aisdispatcher/ {
         proxy_pass http://127.0.0.1:8080;
     }
+
+    # Plane/Sailing Server
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+    }
 }
+
 ```
 
 ### HTTPS Setup
