@@ -61,7 +61,7 @@ sudo systemctl enable plane-sailing-server
 sudo systemctl start plane-sailing-server
 ```
 
-If you want to check it's working, use e.g. `systemctl status plane-sailing-server` to check it's alive, and `journalctl -u plane-sailing-server.service -f` to see its logs in real time.
+If you want to check it's working, use e.g. `systemctl status plane-sailing-server` to check it's alive, and `journalctl -u plane-sailing-server.service -f` to see its logs in real time. You should see it successfully start up its interfaces to Dump1090, AIS Dispatcher and Direwolf (assuming they are all enabled) and the regular track table messages should indicate several ships, aircraft and APRS tracks depending on what's around you.
 
 If you are running Plane/Sailing Server on Windows you can make it start automatically by using NSSM to install Plane/Sailing Server as a service, or with Scheduled Tasks, a shortcut in your Startup items, etc.
 
