@@ -118,6 +118,8 @@ server {
     }
     location /dump1090-fa/data/ {
         alias /run/dump1090-fa/;
+        # Allow CORS requests to /data/ for UMID1090 - not necessarily required for your server!
+        add_header Access-Control-Allow-Origin *;
     }
 
     # AIS Dispatcher web interface
