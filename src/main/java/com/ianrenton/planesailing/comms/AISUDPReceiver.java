@@ -23,9 +23,11 @@ import dk.tbsalling.aismessages.ais.messages.ClassBCSStaticDataReport;
 import dk.tbsalling.aismessages.ais.messages.ExtendedClassBEquipmentPositionReport;
 import dk.tbsalling.aismessages.ais.messages.LongRangeBroadcastMessage;
 import dk.tbsalling.aismessages.ais.messages.PositionReportClassAAssignedSchedule;
+import dk.tbsalling.aismessages.ais.messages.PositionReportClassAResponseToInterrogation;
 import dk.tbsalling.aismessages.ais.messages.PositionReportClassAScheduled;
 import dk.tbsalling.aismessages.ais.messages.ShipAndVoyageData;
 import dk.tbsalling.aismessages.ais.messages.StandardClassBCSPositionReport;
+import dk.tbsalling.aismessages.ais.messages.UTCAndDateResponse;
 
 /**
  * Receiver for AIS NMEA-0183 messages from a UDP socket.
@@ -166,6 +168,20 @@ public class AISUDPReceiver {
 			s.setTrackType(TrackType.SHIP);
 			break;
 			
+		case PositionReportClassAResponseToInterrogation:
+			PositionReportClassAResponseToInterrogation m8 = (PositionReportClassAResponseToInterrogation) m;
+			s.addPosition(m8.getLatitude(), m8.getLongitude());
+			if (m8.getCourseOverGround() != 511) {
+				s.setCourse(m8.getCourseOverGround());
+			}
+			if (m8.getTrueHeading() != 0 && m8.getTrueHeading() != 511) {
+				s.setHeading(m8.getTrueHeading());
+			}
+			s.setSpeed(m8.getSpeedOverGround());
+			s.setNavStatus(m8.getNavigationStatus());
+			s.setTrackType(TrackType.SHIP);
+			break;
+			
 		case PositionReportClassAScheduled:
 			PositionReportClassAScheduled m9 = (PositionReportClassAScheduled) m;
 			s.addPosition(m9.getLatitude(), m9.getLongitude());
@@ -203,6 +219,11 @@ public class AISUDPReceiver {
 			}
 			s.setSpeed(m11.getSpeedOverGround());
 			s.setTrackType(TrackType.SHIP);
+			break;
+			
+		case UTCAndDateResponse:
+			UTCAndDateResponse m12 = (UTCAndDateResponse) m;
+			s.addPosition(m12.getLatitude(), m12.getLongitude());
 			break;
 			
 		default:
