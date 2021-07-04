@@ -115,6 +115,8 @@ server {
     rewrite ^/dump1090-fa$ /dump1090-fa/ permanent;
     location /dump1090-fa/ {
         alias /usr/share/dump1090-fa/html/;
+        # Allow CORS requests to / for UMID1090 - not necessarily required for your server!
+        add_header Access-Control-Allow-Origin *;
     }
     location /dump1090-fa/data/ {
         alias /run/dump1090-fa/;
