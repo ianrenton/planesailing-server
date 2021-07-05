@@ -226,6 +226,10 @@ public class AISUDPReceiver {
 			s.addPosition(m12.getLatitude(), m12.getLongitude());
 			break;
 			
+		case StandardSARAircraftPositionReport:
+			// This aircraft will have ADS-B as well, so don't worry about its AIS track
+			break;
+			
 		default:
 			// Nothing useful we can do with this type
 			break;
