@@ -8,8 +8,8 @@ import com.ianrenton.planesailing.utils.DataMaps;
 public class Aircraft extends Track {
 	private static final long serialVersionUID = 1L;
 	private static final String DEFAULT_AIRCRAFT_SYMBOL = "SUAPCF----";
-	private static final Long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = Application.CONFIG.getLong("timing.drop-air-track-after");
-	private static final Long DROP_AIR_TRACK_TIME = Application.CONFIG.getLong("timing.drop-air-track-at-zero-alt-after");
+	private static final Long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = Application.CONFIG.getLong("timing.drop-air-track-at-zero-alt-after");
+	private static final Long DROP_AIR_TRACK_TIME = Application.CONFIG.getLong("timing.drop-air-track-after");
 	
 	private boolean onGround;
 	private Integer squawk;
