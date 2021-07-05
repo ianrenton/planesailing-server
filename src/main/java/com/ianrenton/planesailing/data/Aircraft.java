@@ -46,7 +46,7 @@ public class Aircraft extends Track {
 	 * @return
 	 */
 	public boolean isOnGround() {
-		return onGround || (altitude != null && altitude <= 100) || (altitude != null && altitude <= 500 && verticalRate < -2.0);
+		return onGround || (altitude != null && altitude <= 100) || (altitude != null && verticalRate != null && altitude <= 500 && verticalRate < -2.0);
 	}
 
 	@Override

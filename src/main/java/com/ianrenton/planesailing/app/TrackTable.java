@@ -125,8 +125,12 @@ public class TrackTable extends HashMap<String, Track> {
 	 */
 	private void cullOldPositionData() {
 		for (Track t : values()) {
-			if (!t.isFixed()) {
-				t.getPositionHistory().cull();
+			try {
+				if (!t.isFixed()) {
+					t.getPositionHistory().cull();
+				}
+			} catch (Exception ex) {
+				LOGGER.error("Caught exception when culling old position data for {}, continuing...", t.getDisplayName(), ex);
 			}
 		}
 	}
@@ -137,8 +141,12 @@ public class TrackTable extends HashMap<String, Track> {
 	private void dropExpiredTracks() {
 		for (Iterator<Entry<String, Track>> it = entrySet().iterator(); it.hasNext();) {
             Track t = it.next().getValue();
-            if (t.shouldDrop()) {
-				it.remove();
+			try {
+	            if (t.shouldDrop()) {
+					it.remove();
+				}
+			} catch (Exception ex) {
+				LOGGER.error("Caught exception when checking if {} should be dropped, continuing...", t.getDisplayName(), ex);
 			}
         }
 	}
