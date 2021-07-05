@@ -61,7 +61,9 @@ sudo systemctl enable plane-sailing-server
 sudo systemctl start plane-sailing-server
 ```
 
-You can achieve similar things on Windows using NSSM to install Plane/Sailing Server as a service, or with Scheduled Tasks, a shortcut in your Startup items, etc.
+If you want to check it's working, use e.g. `systemctl status plane-sailing-server` to check it's alive, and `journalctl -u plane-sailing-server.service -f` to see its logs in real time. You should see it successfully start up its interfaces to Dump1090, AIS Dispatcher and Direwolf (assuming they are all enabled) and the regular track table messages should indicate several ships, aircraft and APRS tracks depending on what's around you.
+
+If you are running Plane/Sailing Server on Windows you can make it start automatically by using NSSM to install Plane/Sailing Server as a service, or with Scheduled Tasks, a shortcut in your Startup items, etc.
 
 ### Reverse Proxy Setup
 
@@ -101,22 +103,39 @@ When you now visit the IP address of your server using a web browser, you should
 
 If nginx didn't restart properly, you may have mistyped your configuration. Try `sudo nginx -t` to find out what the problem is.
 
-You may wish to set up variants of this configuration, e.g. if you wanted Plane/Sailing Server to look like it was in a directory `/pss/`, and then have Dump1090 on `/dump1090/` and AIS Dispatcher's web interface on `/aisdispatcher/` too, all on port 80. You can do that by tweaking the "location" parameter, e.g.:
+You may wish to add extra features to this configuration. For example if you wanted Plane/Sailing Server accessible in the root directory as normal, but then have Dump1090 on `/dump1090-fa` and AIS Dispatcher's web interface on `/aisdispatcher` too, all on port 80, you can do that by tweaking the adding new "location" parameters as follows. They are handled in order so Plane/Sailing Server comes *last*, only if the URL doesn't match any of the other locations.
 
 ```
-server {
+server {   
     listen 80;
     listen 443 ssl;
     server_name planesailingserver.ianrenton.com;
 
-    location /pss {
-        proxy_pass http://127.0.0.1:8000;
+    # Dump1090 web interface
+    rewrite ^/dump1090-fa$ /dump1090-fa/ permanent;
+    location /dump1090-fa/ {
+        alias /usr/share/dump1090-fa/html/;
+        # Allow CORS requests to / for UMID1090 - not necessarily required for your server!
+        add_header Access-Control-Allow-Origin *;
+    }
+    location /dump1090-fa/data/ {
+        alias /run/dump1090-fa/;
+        # Allow CORS requests to /data/ for UMID1090 - not necessarily required for your server!
+        add_header Access-Control-Allow-Origin *;
     }
 
-    location /dump1090 {
+    # AIS Dispatcher web interface
+    rewrite ^/aisdispatcher$ /aisdispatcher/ permanent;
+    location /aisdispatcher/ {
         proxy_pass http://127.0.0.1:8080;
     }
+
+    # Plane/Sailing Server
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+    }
 }
+
 ```
 
 ### HTTPS Setup

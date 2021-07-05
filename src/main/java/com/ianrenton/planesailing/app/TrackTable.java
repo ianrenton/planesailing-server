@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 import com.ianrenton.planesailing.data.Airport;
 import com.ianrenton.planesailing.data.BaseStation;
 import com.ianrenton.planesailing.data.Seaport;
+import com.ianrenton.planesailing.data.Ship;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
 import com.typesafe.config.ConfigList;
@@ -171,8 +173,9 @@ public class TrackTable extends HashMap<String, Track> {
 			LOGGER.info("Saving to track data store...");
 			serializationFile.delete();
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serializationFile));
-			TrackTable copy = new TrackTable();
-			copy.copy(this);
+			// Deep copy to avoid concurrent modification problems when the track table
+			// contents are modified during save.
+			TrackTable copy = SerializationUtils.clone(this);
 			oos.writeObject(copy);
 			oos.flush();
 			oos.close();
@@ -237,7 +240,12 @@ public class TrackTable extends HashMap<String, Track> {
 		ConfigList aisNameConfigs = Application.CONFIG.getList("custom-ais-names");
 		for (ConfigValue c : aisNameConfigs) {
 			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-			aisNameCache.put((Integer) data.get("mmsi"), (String) data.get("name"));
+			int mmsi = (Integer) data.get("mmsi");
+			String name = (String) data.get("name");
+			aisNameCache.put(mmsi, name);
+			if (containsKey(Integer.toString(mmsi))) {
+				((Ship) get(Integer.toString(mmsi))).setName(name);
+			}
 		}
 		LOGGER.info("Loaded {} AIS names from config file", aisNameConfigs.size());
 	}

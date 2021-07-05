@@ -36,8 +36,17 @@ public class Aircraft extends Track {
 		return squawk;
 	}
 
+	/**
+	 * Consider an aircraft on the ground if:
+	 * 1) Its ADS-B flag says it is, or
+	 * 2) Altitude is under 100ft, or
+	 * 3) Altitude is under 500ft, and falling.
+	 * This is an arbitrary bit of logic to try and stop aircraft that have clearly landed
+	 * being dead reckoned well beyond the runway.
+	 * @return
+	 */
 	public boolean isOnGround() {
-		return onGround || (altitude != null && altitude <= 100);
+		return onGround || (altitude != null && altitude <= 100) || (altitude != null && altitude <= 500 && verticalRate < -2.0);
 	}
 
 	@Override

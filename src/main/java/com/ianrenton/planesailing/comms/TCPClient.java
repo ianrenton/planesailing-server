@@ -91,7 +91,7 @@ public abstract class TCPClient {
 						break;
 					} catch (IOException e) {
 						try {
-							getLogger().warn("TCP Socket could not connect, trying again in one minute...");
+							getLogger().warn("TCP Socket could for {} not connect, trying again in one minute...", getDataType());
 							TimeUnit.MINUTES.sleep(1);
 						} catch (InterruptedException ie) {
 						}
@@ -101,9 +101,27 @@ public abstract class TCPClient {
 				while (run) {
 					try {
 						String line = in.readLine();
-						handle(line);
+						if (line != null) {
+							try {
+								handle(line);
+							} catch (Exception ex) {
+								getLogger().warn("TCP Socket for {} encountered an exception handling line {}", getDataType(), line, ex);
+							}
+						} else {
+							getLogger().warn("TCP Socket for {} read no data, reconnecting...", getDataType());
+							try {
+								clientSocket.close();
+							} catch (IOException e) {
+								// Probably closed anyway
+							}
+						}
 					} catch (IOException ex) {
-						getLogger().warn("TCP Socket exception, reconnecting...");
+						getLogger().warn("TCP Socket for {} threw an exception, reconnecting...", getDataType());
+						try {
+							clientSocket.close();
+						} catch (IOException e) {
+							// Probably closed anyway
+						}
 						break;
 					}
 				}
