@@ -110,16 +110,18 @@ public abstract class TCPClient {
 						} else {
 							getLogger().warn("TCP Socket for {} read no data, reconnecting...", getDataType());
 							try {
+								Thread.sleep(1000);
 								clientSocket.close();
-							} catch (IOException e) {
+							} catch (IOException | InterruptedException e) {
 								// Probably closed anyway
 							}
 						}
 					} catch (IOException ex) {
 						getLogger().warn("TCP Socket for {} threw an exception, reconnecting...", getDataType());
 						try {
+							Thread.sleep(1000);
 							clientSocket.close();
-						} catch (IOException e) {
+						} catch (IOException | InterruptedException e) {
 							// Probably closed anyway
 						}
 						break;
