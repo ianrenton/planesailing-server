@@ -65,20 +65,21 @@ public class WebServer {
 		public void handle(HttpExchange t) throws IOException {
 			String response = "";
 			String contentType = "application/json";
-			switch (call) {
-			case FIRST:
-				response = trackTable.getFirstCallJSON();
-				break;
-			case UPDATE:
-				response = trackTable.getUpdateCallJSON();
-				break;
-			case HOME:
-				response = "Plane/Sailing Server is up and running!";
-				contentType = "text/html";
-				break;
-			}
 			
 			try {
+				switch (call) {
+				case FIRST:
+					response = trackTable.getFirstCallJSON();
+					break;
+				case UPDATE:
+					response = trackTable.getUpdateCallJSON();
+					break;
+				case HOME:
+					response = "Plane/Sailing Server is up and running!";
+					contentType = "text/html";
+					break;
+				}
+			
                 final Headers headers = t.getResponseHeaders();
                 final String requestMethod = t.getRequestMethod().toUpperCase();
                 headers.add("Access-Control-Allow-Origin", "*");
@@ -100,7 +101,10 @@ public class WebServer {
                         t.sendResponseHeaders(405, -1);
                         break;
                 }
-            } finally {
+            } catch (Exception ex) {
+            	LOGGER.error("Exception responding to web request", ex);
+            }
+            finally {
                 t.close();
             }
 		}

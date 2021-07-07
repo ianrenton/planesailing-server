@@ -67,11 +67,12 @@ If you are running Plane/Sailing Server on Windows you can make it start automat
 
 ### Reverse Proxy Setup
 
-The client can quite happily connect to the Plane/Sailing Server on its default port of 8000. However, you may wish to add a "proper" web server providing a reverse proxy setup. There are several reasons you might want to do this:
+The client can quite happily connect to the Plane/Sailing Server directly on its default port of 8000. However, you may wish to add a "proper" web server providing a reverse proxy setup. There are several reasons you might want to do this:
 
 * It allows the use HTTPS (with certificates, e.g. from Let's Encrypt), so the client can connect securely
 * It allows Plane/Sailing Server to run on a port that Linux will let it open with normal user privileges (by default 8000) while still making it accessible to the internet on port 80 and/or 443
 * You can host other software on the same machine, e.g. Plane/Sailing Client, Dump1090, AIS Dispatcher etc. via the same public port.
+* You can [enable caching in the web server](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/), so that no matter how many visitors your site gets, the server itself sees a stable number of requests and doesn't get overloaded.
 
 In this example, we will use Nginx due to its relatively easy config and support in Let's Encrypt Certbot, but you could use Apache, Lighttpd, HAProxy or anything you like that supports a reverse proxy configuration.
 

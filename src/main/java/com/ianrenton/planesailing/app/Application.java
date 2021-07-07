@@ -21,6 +21,7 @@ import com.typesafe.config.ConfigFactory;
  */
 public class Application {	
 	public static final Config CONFIG = ConfigFactory.load().getConfig("plane-sailing-server");
+	public static final long START_TIME = System.currentTimeMillis();
 	
 	private static final Logger LOGGER = LogManager.getLogger(Application.class);
 	private static String softwareVersion = "Unknown";

@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,6 +27,7 @@ import com.ianrenton.planesailing.data.Seaport;
 import com.ianrenton.planesailing.data.Ship;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
+import com.sun.management.OperatingSystemMXBean;
 import com.typesafe.config.ConfigList;
 import com.typesafe.config.ConfigValue;
 
@@ -36,6 +38,10 @@ public class TrackTable extends HashMap<String, Track> {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
+	private static final OperatingSystemMXBean OS_BEAN = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+	// Work-around to specify total memory size of the PC manually (here, 2GB to match my
+	// Raspberry Pi) for JDKs where querying it doesn't work properly
+	private static final long TOTAL_MEM_BYTES = (OS_BEAN.getTotalPhysicalMemorySize() != 0) ? OS_BEAN.getTotalPhysicalMemorySize() : 2000000000;
 
 	private transient final File serializationFile = new File("track_data_store.dat");
 	
@@ -82,6 +88,7 @@ public class TrackTable extends HashMap<String, Track> {
 		Map<String, Object> map = new HashMap<>();
 		map.put("time", System.currentTimeMillis());
 		map.put("version", Application.getSoftwareVersion());
+		map.put("stats", getStatsForJSON());
 		
 		Map<String, Map<String, Object>> tracks = new HashMap<>();
 		for (Track t : values()) {
@@ -105,6 +112,7 @@ public class TrackTable extends HashMap<String, Track> {
 	public String getUpdateCallJSON() {
 		Map<String, Object> map = new HashMap<>();
 		map.put("time", System.currentTimeMillis());
+		map.put("stats", getStatsForJSON());
 		
 		Map<String, Map<String, Object>> tracks = new HashMap<>();
 		for (Track t : values()) {
@@ -114,6 +122,18 @@ public class TrackTable extends HashMap<String, Track> {
 		
 		JSONObject o = new JSONObject(map);
 		return o.toString(readableJSON ? 2 : 0);
+	}
+	
+	/**
+	 * Get a map of some useful stats for inclusion in API responses
+	 */
+	private Map<String, String> getStatsForJSON() {
+		Map<String, String> stats = new HashMap<>();
+		stats.put("cpuLoad", String.format("%.0f", OS_BEAN.getSystemCpuLoad() * 100.0));
+		stats.put("memUsed", String.format("%.0f", (1.0 - (OS_BEAN.getFreePhysicalMemorySize() / (double) TOTAL_MEM_BYTES)) * 100.0));
+		stats.put("diskUsed", String.format("%.0f", (1.0 - (serializationFile.getFreeSpace() / (double) serializationFile.getTotalSpace())) * 100.0));
+		stats.put("uptime", String.format("%d", System.currentTimeMillis() - Application.START_TIME));
+		return stats;
 	}
 	
 	private long countTracksOfType(TrackType t) {
