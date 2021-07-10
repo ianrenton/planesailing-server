@@ -100,7 +100,7 @@ public class AISUDPReceiver {
 		switch (m.getMessageType()) {
 		case AidToNavigationReport:
 			AidToNavigationReport m2 = (AidToNavigationReport) m;
-			s.setName(m2.getName().replaceAll("_", "").replaceAll("@", "").trim());
+			s.setName(m2.getName().replaceAll("_", " ").replaceAll("@", " ").trim());
 			s.addPosition(m2.getLatitude(), m2.getLongitude());
 			s.setTrackType(TrackType.AIS_ATON);
 			s.setFixed(true);
@@ -117,7 +117,7 @@ public class AISUDPReceiver {
 		case ClassBCSStaticDataReport:
 			ClassBCSStaticDataReport m4 = (ClassBCSStaticDataReport) m;
 			if (m4.getShipName() != null) {
-				String name = m4.getShipName().replaceAll("_", "").replaceAll("@", "").trim(); 
+				String name = m4.getShipName().replaceAll("_", " ").replaceAll("@", " ").trim(); 
 				s.setName(name);
 				trackTable.getAISNameCache().put(mmsi, name);
 			}
@@ -128,7 +128,7 @@ public class AISUDPReceiver {
 			
 		case ExtendedClassBEquipmentPositionReport:
 			ExtendedClassBEquipmentPositionReport m5 = (ExtendedClassBEquipmentPositionReport) m;
-			String name = m5.getShipName().replaceAll("_", "").replaceAll("@", "").trim(); 
+			String name = m5.getShipName().replaceAll("_", " ").replaceAll("@", " ").trim(); 
 			s.setName(name);
 			trackTable.getAISNameCache().put(mmsi, name);
 			
@@ -198,7 +198,7 @@ public class AISUDPReceiver {
 			
 		case ShipAndVoyageRelatedData:
 			ShipAndVoyageData m10 = (ShipAndVoyageData) m;
-			String name10 = m10.getShipName().replaceAll("_", "").replaceAll("@", "").trim(); 
+			String name10 = m10.getShipName().replaceAll("_", " ").replaceAll("@", " ").trim(); 
 			s.setName(name10);
 			trackTable.getAISNameCache().put(mmsi, name10);
 			
