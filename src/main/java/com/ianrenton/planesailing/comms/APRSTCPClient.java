@@ -131,7 +131,7 @@ public class APRSTCPClient extends TCPClient {
 	private void addDataToTrack(APRSPacket packet) {
 		// Extract core data
 		String callsign = packet.getSourceCall();
-		String receiver = packet.getDestinationCall();
+		String destCall = packet.getDestinationCall();
 		String route = packet.getDigiString();
 
 		// If this is a new track, add it to the track table
@@ -146,11 +146,11 @@ public class APRSTCPClient extends TCPClient {
 
 		// Tweak formatting of route, and only keep the comment
 		// if it contains human-entered data, approximated here
-		// by being more than three characters long
+		// by being more than five characters long
 		if (route.startsWith(",")) {
 			route = route.replaceFirst(",", "");
 		}
-		if (comment.length() < 3) {
+		if (comment.length() < 5) {
 			comment = null;
 		}
 
@@ -171,18 +171,20 @@ public class APRSTCPClient extends TCPClient {
 		}
 
 		// Update the track.
-		if (receiver != null) {
-			a.setReceiver(receiver);
+		if (destCall != null) {
+			a.setPacketDestCall(destCall);
 		}
 		if (route != null) {
-			a.setRoute(route);
+			a.setPacketRoute(route);
 		}
 		if (comment != null) {
 			a.setComment(comment);
 		}
 		if (p != null) {
 			a.addPosition(p.getLatitude(), p.getLongitude());
-			a.setAltitude(p.getAltitude());
+			if (p.getAltitude() > 0) {
+				a.setAltitude(p.getAltitude());
+			}
 		}
 		if (course != null) {
 			a.setCourse(course);

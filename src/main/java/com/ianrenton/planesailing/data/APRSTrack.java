@@ -4,12 +4,12 @@ import com.ianrenton.planesailing.app.Application;
 
 public class APRSTrack extends Track {
 	private static final long serialVersionUID = 1L;
-	private static final String DEFAULT_APRS_SYMBOL = "SFGPU-------";
+	private static final String DEFAULT_APRS_SYMBOL = "SUGPEVC-----";
 	private static final Long DROP_STATIC_APRS_TRACK_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-static-after");
 	private static final Long DROP_MOVING_APRS_TRACK_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-moving-after");
 
-	private String receiver = null;
-	private String route = null; 
+	private String packetDestCall = null;
+	private String packetRoute = null; 
 	private String comment = null; 
 	
 	public APRSTrack(String id) {
@@ -19,20 +19,20 @@ public class APRSTrack extends Track {
 		positionHistory.setHistoryLength(60 * 60 * 1000); // 1 hour
 	}
 
-	public String getReceiver() {
-		return receiver;
+	public String getPacketDestCall() {
+		return packetDestCall;
 	}
 
-	public void setReceiver(String receiver) {
-		this.receiver = receiver;
+	public void setPacketDestCall(String packetDestCall) {
+		this.packetDestCall = packetDestCall;
 	}
 
-	public String getRoute() {
-		return route;
+	public String getPacketRoute() {
+		return packetRoute;
 	}
 
-	public void setRoute(String route) {
-		this.route = route;
+	public void setPacketRoute(String packetRoute) {
+		this.packetRoute = packetRoute;
 	}
 
 	public String getComment() {
@@ -54,19 +54,11 @@ public class APRSTrack extends Track {
 
 	@Override
 	public String getDisplayDescription1() {
-		if (comment != null && !comment.isEmpty()) {
-			return comment;
-		} else {
-			return (receiver != null && !receiver.isEmpty()) ? "RX BY " + receiver : "";
-		}
+		return (comment != null && !comment.isEmpty()) ? comment : "";
 	}
 
 	@Override
 	public String getDisplayDescription2() {
-		if (comment != null && !comment.isEmpty()) {
-			return (receiver != null && !receiver.isEmpty()) ? "RX BY " + receiver : "" + ((route != null && !route.isEmpty()) ? "  ROUTE " + route : "");
-		} else {
-			return (route != null && !route.isEmpty()) ? "ROUTE " + route : "";
-		}
+		return ((packetDestCall != null && !packetDestCall.isEmpty()) ? (">" + packetDestCall) : "") + ((packetRoute != null && !packetRoute.isEmpty()) ? ("," + packetRoute) : "");
 	}
 }
