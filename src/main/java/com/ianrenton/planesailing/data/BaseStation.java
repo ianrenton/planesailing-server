@@ -2,7 +2,7 @@ package com.ianrenton.planesailing.data;
 
 public class BaseStation extends Track {
 	private static final long serialVersionUID = 1L;
-	private static final String BASE_STATION_SYMBOL = "SFGPUUS-----";
+	private static final String BASE_STATION_SYMBOL = "SFGPUUSR----";
 	private static int baseStationCount;
 	
 	private final String name;

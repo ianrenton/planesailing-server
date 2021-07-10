@@ -28,6 +28,7 @@ public class DataMaps {
 	public static final Map<String, String> SHIP_NAV_STATUS_TO_DESCRIPTION = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_SYMBOL = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_DESCRIPTION = new HashMap<>();
+	public static final Map<String, String> APRS_SSID_TO_SYMBOL = new HashMap<>();
 
 	private static final Logger LOGGER = LogManager.getLogger(DataMaps.class);
 
@@ -42,6 +43,7 @@ public class DataMaps {
 		load("ship_nav_status_to_description.csv", SHIP_NAV_STATUS_TO_DESCRIPTION);
 		load("ship_type_to_symbol.csv", SHIP_TYPE_TO_SYMBOL);
 		load("ship_type_to_description.csv", SHIP_TYPE_TO_DESCRIPTION);
+		load("aprs_ssid_to_symbol.csv", APRS_SSID_TO_SYMBOL);
 	}
 
 	/**

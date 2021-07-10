@@ -1,6 +1,9 @@
 package com.ianrenton.planesailing.data;
 
+import java.util.Map.Entry;
+
 import com.ianrenton.planesailing.app.Application;
+import com.ianrenton.planesailing.utils.DataMaps;
 
 public class APRSTrack extends Track {
 	private static final long serialVersionUID = 1L;
@@ -10,7 +13,8 @@ public class APRSTrack extends Track {
 
 	private String packetDestCall = null;
 	private String packetRoute = null; 
-	private String comment = null; 
+	private String comment = null;
+	private String ssid = null;
 	
 	public APRSTrack(String id) {
 		super(id);
@@ -42,7 +46,23 @@ public class APRSTrack extends Track {
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
-	
+
+	public String getSSID() {
+		return ssid;
+	}
+
+	public void setSSID(String ssid) {
+		this.ssid = ssid;
+		
+		// Set the right symbol for the SSID if known
+		for (Entry<String, String> e : DataMaps.APRS_SSID_TO_SYMBOL.entrySet()) {
+			if (ssid.equals(e.getKey())) {
+				setSymbolCode(e.getValue());
+				break;
+			}
+		}
+	}
+
 	@Override
 	public boolean shouldDrop() {
 		if (getSpeed() == null || getSpeed() < 1.0) {

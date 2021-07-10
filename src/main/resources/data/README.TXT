@@ -4,7 +4,8 @@ aircraft_cat_to_description.csv
 aircraft_cat_to_symbol.csv
 ship_nav_status_to_description.csv
 ship_type_to_description.csv
-ship_type_to_symbol.csv:
+ship_type_to_symbol.csv
+aprs_ssid_to_symbol.csv:
 
 Created by Ian Renton.
 
