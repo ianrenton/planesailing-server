@@ -1,8 +1,7 @@
 package com.ianrenton.planesailing.comms;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
@@ -34,13 +33,21 @@ public abstract class TCPClient {
 		this.remotePort = remotePort;
 		this.trackTable = trackTable;
 	}
-	
+
 	/**
-	 * Handle an incoming message.
+	 * Read data from the stream, and process it if appropriate.
+	 * This method can block for as long as it likes trying to
+	 * read, but the TCP server implements a socket timeout so
+	 * after a certain amount of time any read operation on the
+	 * stream will fail.
 	 * 
-	 * @param m
+	 * @param in The input stream to read data from.
+	 * @return true if data was successfully read this time,
+	 * regardless of whether we chose to process it or not. False
+	 * if the read operation failed, and we need to reconnect
+	 * the socket.
 	 */
-	protected abstract void handle(String m);
+	protected abstract boolean read(InputStream in);
 	
 	/**
 	 * Get the data type this connection handles, used only for logging.
@@ -74,7 +81,7 @@ public abstract class TCPClient {
 	class Receiver implements Runnable {
 
 		private Socket clientSocket;
-		private BufferedReader in;
+		private InputStream in;
 
 		public void run() {
 			while (run) {
@@ -86,7 +93,7 @@ public abstract class TCPClient {
 						clientSocket.setSoTimeout(60000);
 						clientSocket.setSoLinger(false, 0);
 						clientSocket.setKeepAlive(true);
-						in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+						in = clientSocket.getInputStream();
 						getLogger().info("TCP socket for {} connected.", getDataType());
 						break;
 					} catch (IOException e) {
@@ -99,36 +106,18 @@ public abstract class TCPClient {
 				}
 
 				while (run) {
-					try {
-						String line = in.readLine();
-						if (line != null) {
-							try {
-								handle(line);
-							} catch (Exception ex) {
-								getLogger().warn("TCP Socket for {} encountered an exception handling line {}", getDataType(), line, ex);
-							}
-						} else {
-							getLogger().warn("TCP Socket for {} read no data, reconnecting...", getDataType());
-							try {
-								Thread.sleep(1000);
-								clientSocket.close();
-							} catch (IOException | InterruptedException e) {
-								// Probably closed anyway
-							}
-						}
-					} catch (IOException ex) {
-						getLogger().warn("TCP Socket for {} threw an exception, reconnecting...", getDataType());
+					boolean ok = read(in);
+					if (!ok) {
+						getLogger().warn("TCP Socket for {} read failed, reconnecting...", getDataType());
 						try {
 							Thread.sleep(1000);
 							clientSocket.close();
 						} catch (IOException | InterruptedException e) {
 							// Probably closed anyway
 						}
-						break;
 					}
 				}
 			}
 		}
 	}
-
 }
