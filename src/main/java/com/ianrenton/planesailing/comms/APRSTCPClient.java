@@ -194,6 +194,11 @@ public class APRSTCPClient extends TCPClient {
 	}
 
 	@Override
+	protected int getSocketTimeoutMillis() {
+		return 3600000;
+	}
+
+	@Override
 	protected String getDataType() {
 		return "APRS data";
 	}

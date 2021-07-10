@@ -35,6 +35,21 @@ public abstract class TCPClient {
 	}
 
 	/**
+	 * Run the client.
+	 */
+	public void run() {
+		run = true;
+		new Thread(receiver).start();
+	}
+
+	/**
+	 * Stop the client.
+	 */
+	public void stop() {
+		run = false;
+	}
+
+	/**
 	 * Read data from the stream, and process it if appropriate.
 	 * This method can block for as long as it likes trying to
 	 * read, but the TCP server implements a socket timeout so
@@ -60,25 +75,17 @@ public abstract class TCPClient {
 	protected abstract Logger getLogger();
 
 	/**
-	 * Run the client.
+	 * Means for implementations to provide their preferred socket timeout.
+	 * We typically get many SBS messages a second, but APRS only rarely,
+	 * so they have different timeouts.
 	 */
-	public void run() {
-		run = true;
-		new Thread(receiver).start();
-	}
-
-	/**
-	 * Stop the client.
-	 */
-	public void stop() {
-		run = false;
-	}
+	protected abstract int getSocketTimeoutMillis();
 
 	/**
 	 * Inner receiver thread. Reads lines from the TCP socket, and provides them
 	 * to the handle() method.
 	 */
-	class Receiver implements Runnable {
+	private class Receiver implements Runnable {
 
 		private Socket clientSocket;
 		private InputStream in;
@@ -90,7 +97,7 @@ public abstract class TCPClient {
 					try {
 						getLogger().info("Trying to make TCP connection to {}:{} to receive {}...", remoteHost, remotePort, getDataType());
 						clientSocket = new Socket(remoteHost, remotePort);
-						clientSocket.setSoTimeout(60000);
+						clientSocket.setSoTimeout(getSocketTimeoutMillis());
 						clientSocket.setSoLinger(false, 0);
 						clientSocket.setKeepAlive(true);
 						in = clientSocket.getInputStream();

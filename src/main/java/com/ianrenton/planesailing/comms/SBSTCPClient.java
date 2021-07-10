@@ -128,6 +128,11 @@ public class SBSTCPClient extends TCPClient {
 	}
 
 	@Override
+	protected int getSocketTimeoutMillis() {
+		return 60000;
+	}
+
+	@Override
 	protected String getDataType() {
 		return "ADS-B (SBS) data";
 	}
