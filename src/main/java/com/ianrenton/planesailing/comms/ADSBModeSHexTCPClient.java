@@ -103,18 +103,24 @@ public class ADSBModeSHexTCPClient extends TCPClient {
 			// parity field to the result of the CRC polynomial division
 			if (tools.isZero(msg.getParity()) || msg.checkParity()) { // CRC is ok
 
-				// now check the message type
+				// now check the message type, first looking for ADS-B types:
 				switch (msg.getType()) {
 				case ADSB_AIRBORN_POSITION_V0:
 				case ADSB_AIRBORN_POSITION_V1:
 				case ADSB_AIRBORN_POSITION_V2:
 					AirbornePositionV0Msg ap0 = (AirbornePositionV0Msg) msg;
 
-					// use CPR to decode position
-					// CPR needs at least 2 positions or a reference, otherwise we get null here
+					// Figure out a position. If we have a real position decoded "properly" using two packets
+					// (odd and even) then use it. Otherwise, we fall back on the "local position" provided
+					// in the single packet we just received. This will be less accurate and will only work
+					// for planes within 180 nmi of the base station, but should be good enough to get us
+					// some kind of position rather than having it blank in the track table and no icon shown.
 					Position airPos = decoder.decodePosition(System.currentTimeMillis(), ap0, trackTable.getBaseStationPositionForADSB());
+					Position localPos = ap0.getLocalPosition(trackTable.getBaseStationPositionForADSB());
 					if (airPos != null) {
 						a.addPosition(airPos.getLatitude(), airPos.getLongitude());
+					} else if (localPos != null) {
+						a.addPosition(localPos.getLatitude(), localPos.getLongitude());
 					}
 
 					// Get an altitude, this could be barometric or geometric but Plane/Sailing doesn't really care
@@ -131,11 +137,17 @@ public class ADSBModeSHexTCPClient extends TCPClient {
 				case ADSB_SURFACE_POSITION_V2:
 					SurfacePositionV0Msg sp0 = (SurfacePositionV0Msg) msg;
 
-					// use CPR to decode position
-					// CPR needs at least 2 positions or a reference, otherwise we get null here
+					// Figure out a position. If we have a real position decoded "properly" using two packets
+					// (odd and even) then use it. Otherwise, we fall back on the "local position" provided
+					// in the single packet we just received. This will be less accurate and will only work
+					// for planes within 180 nmi of the base station, but should be good enough to get us
+					// some kind of position rather than having it blank in the track table and no icon shown.
 					Position surPos	= decoder.decodePosition(System.currentTimeMillis(), sp0, trackTable.getBaseStationPositionForADSB());
+					Position localPos2 = sp0.getLocalPosition(trackTable.getBaseStationPositionForADSB());
 					if (surPos != null) {
 						a.addPosition(surPos.getLatitude(), surPos.getLongitude());
+					} else if (localPos2 != null) {
+						a.addPosition(localPos2.getLatitude(), localPos2.getLongitude());
 					}
 
 					if (sp0.hasGroundSpeed()) {
@@ -223,7 +235,7 @@ public class ADSBModeSHexTCPClient extends TCPClient {
 					break;
 				}
 				
-			} else if (msg.getDownlinkFormat() != 17) { // CRC failed
+			} else if (msg.getDownlinkFormat() != 17) { // CRC failed, if it's not ADS-B then check some other Mode S types that we support
 				switch (msg.getType()) {
 					
 				case SHORT_ACAS:
