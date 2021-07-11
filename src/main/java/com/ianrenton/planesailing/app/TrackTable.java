@@ -244,8 +244,8 @@ public class TrackTable extends HashMap<String, Track> {
 			BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"));
 			put(bs.getID(), bs);
 			// Special case - store the first base station's position as the ADS-B decoder
-			// will want that.
-			baseStationPositionForADSB = new Position((Double) data.get("lat"), (Double) data.get("lon"), ((Number) data.get("alt")).doubleValue());
+			// will want that. Note Position takes longitude first!
+			baseStationPositionForADSB = new Position((Double) data.get("lon"), (Double) data.get("lat"), ((Number) data.get("alt")).doubleValue());
 		}
 		LOGGER.info("Loaded {} base stations from config file", baseStationConfigs.size());
 
