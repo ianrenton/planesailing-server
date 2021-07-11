@@ -14,6 +14,9 @@ import com.ianrenton.planesailing.data.Aircraft;
 /**
  * Receiver for SBS messages from a TCP server. See:
  * http://woodair.net/sbs/article/barebones42_socket_data.htm
+ * @deprecated Kept in the codebase for reference, we now prefer
+ * to get ADS-B Mode S data in Hex format as it contains more
+ * data.
  */
 public class SBSTCPClient extends TCPClient {
 

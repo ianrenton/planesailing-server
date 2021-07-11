@@ -20,6 +20,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.opensky.libadsb.Position;
 
 import com.ianrenton.planesailing.data.Airport;
 import com.ianrenton.planesailing.data.BaseStation;
@@ -44,8 +45,10 @@ public class TrackTable extends HashMap<String, Track> {
 	private static final long TOTAL_MEM_BYTES = (OS_BEAN.getTotalPhysicalMemorySize() != 0) ? OS_BEAN.getTotalPhysicalMemorySize() : 2000000000;
 
 	private transient final File serializationFile = new File("track_data_store.dat");
-	
+
 	private final Map<Integer, String> aisNameCache = new HashMap<>();
+	
+	private Position baseStationPositionForADSB = null;
 	
 	private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 	@SuppressWarnings("rawtypes")
@@ -240,6 +243,9 @@ public class TrackTable extends HashMap<String, Track> {
 			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
 			BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"));
 			put(bs.getID(), bs);
+			// Special case - store the first base station's position as the ADS-B decoder
+			// will want that.
+			baseStationPositionForADSB = new Position((Double) data.get("lat"), (Double) data.get("lon"), ((Number) data.get("alt")).doubleValue());
 		}
 		LOGGER.info("Loaded {} base stations from config file", baseStationConfigs.size());
 
@@ -280,6 +286,10 @@ public class TrackTable extends HashMap<String, Track> {
 
 	public Map<Integer, String> getAISNameCache() {
 		return aisNameCache;
+	}
+
+	public Position getBaseStationPositionForADSB() {
+		return baseStationPositionForADSB;
 	}
 
 	/**

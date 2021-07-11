@@ -13,7 +13,7 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 ## Features
 
 * Receives NMEA-0183 format AIS messages (e.g. from rtl_ais)
-* Receives SBS-format messages derived from ADS-B (e.g. from Dump1090)
+* Receives ADS-B Mode S messages (e.g. from Dump1090)
 * Receives APRS messages via KISS TCP (e.g. from Direwolf)
 * Includes support for config-based addition of extra tracks for the base station, airports and seaports
 * Includes support for config-based addition of AIS track names, to cover the period between getting a position message and a details message

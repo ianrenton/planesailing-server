@@ -7,9 +7,9 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.ianrenton.planesailing.comms.ADSBModeSHexTCPClient;
 import com.ianrenton.planesailing.comms.AISUDPReceiver;
 import com.ianrenton.planesailing.comms.APRSTCPClient;
-import com.ianrenton.planesailing.comms.SBSTCPClient;
 import com.ianrenton.planesailing.comms.TCPClient;
 import com.ianrenton.planesailing.comms.WebServer;
 import com.ianrenton.planesailing.utils.DataMaps;
@@ -30,7 +30,7 @@ public class Application {
 
 	private WebServer webServer;
 	private AISUDPReceiver aisReceiver;
-	private TCPClient sbsReceiver;
+	private TCPClient adsbReceiver;
 	private TCPClient aprsReceiver;
 
 	/**
@@ -73,8 +73,8 @@ public class Application {
 		if (CONFIG.getBoolean("comms.ais-receiver.enabled")) {
 			aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
 		}
-		if (CONFIG.getBoolean("comms.sbs-receiver.enabled")) {
-			sbsReceiver = new SBSTCPClient(CONFIG.getString("comms.sbs-receiver.host"), CONFIG.getInt("comms.sbs-receiver.port"), trackTable);
+		if (CONFIG.getBoolean("comms.adsb-receiver.enabled")) {
+			adsbReceiver = new ADSBModeSHexTCPClient(CONFIG.getString("comms.adsb-receiver.host"), CONFIG.getInt("comms.adsb-receiver.port"), trackTable);
 		}
 		if (CONFIG.getBoolean("comms.aprs-receiver.enabled")) {
 			aprsReceiver = new APRSTCPClient(CONFIG.getString("comms.aprs-receiver.host"), CONFIG.getInt("comms.aprs-receiver.port"), trackTable);
@@ -91,8 +91,8 @@ public class Application {
 		if (aisReceiver != null) {
 			aisReceiver.run();
 		}
-		if (sbsReceiver != null) {
-			sbsReceiver.run();
+		if (adsbReceiver != null) {
+			adsbReceiver.run();
 		}
 		if (aprsReceiver != null) {
 			aprsReceiver.run();
@@ -107,8 +107,8 @@ public class Application {
 				if (aisReceiver != null) {
 					aisReceiver.stop();
 				}
-				if (sbsReceiver != null) {
-					sbsReceiver.stop();
+				if (adsbReceiver != null) {
+					adsbReceiver.stop();
 				}
 				if (aprsReceiver != null) {
 					aprsReceiver.stop();

@@ -19,7 +19,7 @@ public abstract class Track implements Serializable {
 	protected String symbolCode;
 	protected final PositionHistory positionHistory = new PositionHistory();
 	protected Double altitude; // feet
-	protected Double verticalRate; // feet per second
+	protected Double verticalRate; // feet per minute
 	protected Double course; // degrees
 	protected Double heading; // degrees
 	protected Double speed; // knots
@@ -138,7 +138,7 @@ public abstract class Track implements Serializable {
 	}
 
 	/**
-	 * Get the rate of change of altitude in feet per second. May be null if rate is unknown.
+	 * Get the rate of change of altitude in feet per minute. May be null if rate is unknown.
 	 */
 	public Double getVerticalRate() {
 		return verticalRate;
@@ -370,11 +370,11 @@ public abstract class Track implements Serializable {
 			map.put("postime", p.getTime());
 		}
 
-		map.put("course", getCourse());
-		map.put("heading", getHeading());
-		map.put("speed", getSpeed());
-		map.put("altitude", getAltitude());
-		map.put("altrate", getVerticalRate());
+		map.put("course", (getCourse() != null) ? Math.round(getCourse()) : null);
+		map.put("heading", (getHeading() != null) ? Math.round(getHeading()) : null);
+		map.put("speed", (getSpeed() != null) ? Math.round(getSpeed()) : null);
+		map.put("altitude", (getAltitude() != null) ? Math.round(getAltitude()) : null);
+		map.put("altrate", (getVerticalRate() != null) ? Math.round(getVerticalRate()) : null);
 		map.put("desc1", getDisplayDescription1().toUpperCase());
 		map.put("desc2", getDisplayDescription2().toUpperCase());
 		map.put("datatime", getMetaDataTime());

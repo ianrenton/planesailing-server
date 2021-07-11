@@ -19,6 +19,13 @@ public class Aircraft extends Track {
 	private String aircraftTypeShort; // e.g. "A320"
 	private String aircraftTypeLong; // e.g. "Airbus A320"
 	private String operator; // e.g. "Ryanair"
+	
+	// We prefer to use a symbol created from the airline code, because that
+	// lets us show symbols for military flights, but we can also set a
+	// symbol based on aircraft category. If we have set it based on airline
+	// code at least once, this flag is set true to prevent it being overridden
+	// when category information arrives. 
+	private boolean setSymbolBasedOnAirlineCode;
 
 	public Aircraft(String id) {
 		super(id);
@@ -57,6 +64,7 @@ public class Aircraft extends Track {
 		for (Entry<String, String> e : DataMaps.AIRCRAFT_AIRLINE_CODE_TO_SYMBOL.entrySet()) {
 			if (callsign.startsWith(e.getKey())) {
 				setSymbolCode(e.getValue());
+				setSymbolBasedOnAirlineCode = true;
 				break;
 			}
 		}
@@ -96,6 +104,24 @@ public class Aircraft extends Track {
 
 	public void setCategory(String category) {
 		this.category = category;
+
+		// Set the right description for the category if known
+		for (Entry<String, String> e : DataMaps.AIRCRAFT_CATEGORY_TO_DESCRIPTION.entrySet()) {
+			if (category.equals(e.getKey())) {
+				categoryDescription = e.getValue();
+				break;
+			}
+		}
+
+		// Set the right symbol for the category if known
+		if (!setSymbolBasedOnAirlineCode) {
+			for (Entry<String, String> e : DataMaps.AIRCRAFT_CATEGORY_TO_SYMBOL.entrySet()) {
+				if (category.equals(e.getKey())) {
+					setSymbolCode(e.getValue());
+					break;
+				}
+			}
+		}
 
 		updateMetadataTime();
 	}

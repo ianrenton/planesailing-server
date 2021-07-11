@@ -134,7 +134,7 @@ public class Ship extends Track {
 		if (shoreStation) {
 			return "AIS SHORE STATION";
 		} else if (shipTypeDescription != null) {
-			return shipTypeDescription.toUpperCase();
+			return "SHIP (" + shipTypeDescription.toUpperCase() + ")";
 		} else {
 			return "SHIP (UNKNOWN TYPE)";
 		}
