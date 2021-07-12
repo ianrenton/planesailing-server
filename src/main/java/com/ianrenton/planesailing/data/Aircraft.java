@@ -172,8 +172,11 @@ public class Aircraft extends Track {
 	public String getDisplayName() {
 		if (callsign != null) {
 			return callsign;
+		} else if (registration != null) {
+			return registration;
+		} else {
+			return "ICAO " + id;
 		}
-		return "ICAO " + id;
 	}
 
 	/**
