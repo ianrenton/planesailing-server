@@ -12,14 +12,14 @@ import com.ianrenton.planesailing.app.TrackTable;
 import com.ianrenton.planesailing.data.Aircraft;
 
 /**
- * Receiver for SBS messages from a TCP server. See:
- * http://woodair.net/sbs/article/barebones42_socket_data.htm
- * @deprecated Kept in the codebase for reference, we now prefer
- * to get ADS-B Mode S data in Hex format as it contains more
- * data.
+ * Receiver for aircraft data in SBS ("BaseStation") format: comma-separated
+ * values and line breaks. (This is output by Dump1090 on port 30003 for
+ * directly received messages, and MLAT information can be output in the same
+ * format by enabling a config option.)
  */
 public class SBSTCPClient extends TCPClient {
 
+	private static final String DATA_TYPE = "SBS format (ADS-B) data";
 	private static final Logger LOGGER = LogManager.getLogger(SBSTCPClient.class);
 
 	/**
@@ -49,6 +49,7 @@ public class SBSTCPClient extends TCPClient {
 
 	/**
 	 * Handle a new line of SBS format data.
+	 * 
 	 * @param m
 	 */
 	private void handle(String m) {
@@ -137,7 +138,7 @@ public class SBSTCPClient extends TCPClient {
 
 	@Override
 	protected String getDataType() {
-		return "ADS-B (SBS) data";
+		return DATA_TYPE;
 	}
 
 	@Override

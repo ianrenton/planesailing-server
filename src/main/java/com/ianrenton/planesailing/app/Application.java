@@ -7,9 +7,11 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.ianrenton.planesailing.comms.ADSBModeSHexTCPClient;
 import com.ianrenton.planesailing.comms.AISUDPReceiver;
 import com.ianrenton.planesailing.comms.APRSTCPClient;
+import com.ianrenton.planesailing.comms.BEASTAVRTCPClient;
+import com.ianrenton.planesailing.comms.BEASTBinaryTCPClient;
+import com.ianrenton.planesailing.comms.SBSTCPClient;
 import com.ianrenton.planesailing.comms.TCPClient;
 import com.ianrenton.planesailing.comms.WebServer;
 import com.ianrenton.planesailing.utils.DataMaps;
@@ -74,7 +76,20 @@ public class Application {
 			aisReceiver = new AISUDPReceiver(CONFIG.getInt("comms.ais-receiver.port"), trackTable);
 		}
 		if (CONFIG.getBoolean("comms.adsb-receiver.enabled")) {
-			adsbReceiver = new ADSBModeSHexTCPClient(CONFIG.getString("comms.adsb-receiver.host"), CONFIG.getInt("comms.adsb-receiver.port"), trackTable);
+			switch (CONFIG.getString("comms.adsb-receiver.protocol")) {
+			case "beastbinary":
+				adsbReceiver = new BEASTBinaryTCPClient(CONFIG.getString("comms.adsb-receiver.host"), CONFIG.getInt("comms.adsb-receiver.port"), trackTable);
+				break;
+			case "beastavr":
+				adsbReceiver = new BEASTAVRTCPClient(CONFIG.getString("comms.adsb-receiver.host"), CONFIG.getInt("comms.adsb-receiver.port"), trackTable);
+				break;
+			case "sbs":
+				adsbReceiver = new SBSTCPClient(CONFIG.getString("comms.adsb-receiver.host"), CONFIG.getInt("comms.adsb-receiver.port"), trackTable);
+				break;
+			default:
+				LOGGER.error("Unknown air data protocol '{}'. Options are 'beastbinary', 'beastavr' and 'sbs'.", CONFIG.getString("comms.adsb-receiver.protocol"));
+			}
+			
 		}
 		if (CONFIG.getBoolean("comms.aprs-receiver.enabled")) {
 			aprsReceiver = new APRSTCPClient(CONFIG.getString("comms.aprs-receiver.host"), CONFIG.getInt("comms.aprs-receiver.port"), trackTable);

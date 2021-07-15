@@ -54,7 +54,7 @@ public class APRSTCPClient extends TCPClient {
 	@Override
 	protected boolean read(InputStream in) {
 		try {
-			byte[] bytes = new byte[1000];
+			byte[] buffer = new byte[1000];
 			int bytesReceived = 0;
 			int i;
 			while ((i = in.read()) != -1) {
@@ -63,7 +63,7 @@ public class APRSTCPClient extends TCPClient {
 					// Delimiter found, process contents of byte buffer.
 					if (bytesReceived > 0) {
 						byte[] aprsMessage = new byte[bytesReceived];
-						System.arraycopy(bytes, 0, aprsMessage, 0, bytesReceived);
+						System.arraycopy(buffer, 0, aprsMessage, 0, bytesReceived);
 						try {
 							aprsMessage = processEscapedBytes(aprsMessage);
 							extractAPRSData(aprsMessage);
@@ -73,11 +73,11 @@ public class APRSTCPClient extends TCPClient {
 					}
 
 					// Reset the buffer
-					bytes = new byte[1000];
+					buffer = new byte[1000];
 					bytesReceived = 0;
 				} else {
 					// New non-delimiter byte found, add to the buffer
-					bytes[bytesReceived++] = b;
+					buffer[bytesReceived++] = b;
 				}
 			}
 			return true;
