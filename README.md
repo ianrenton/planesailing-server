@@ -12,8 +12,9 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 
 ## Features
 
-* Receives NMEA-0183 format AIS messages (e.g. from rtl_ais)
-* Receives Mode S format messages, primarily ADS-B (e.g. from Dump1090)
+* Receives AIS messages in NMEA-0183 format via UDP (e.g. from rtl_ais)
+* Receives Mode-S/A/C & ADS-B messages in BEAST Binary, BEAST AVR and SBS/BaseStation format (e.g. from Dump1090)
+* Receives MLAT messages in BEAST Binary and SBS/BaseStation format (e.g. from PiAware)
 * Receives APRS messages via KISS TCP (e.g. from Direwolf)
 * Includes support for config-based addition of extra tracks for the base station, airports and seaports
 * Includes support for config-based addition of AIS track names, to cover the period between getting a position message and a details message
@@ -23,7 +24,9 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 
 ## Setup
 
-In order to use this software, you should be running some combination of software to provide the data to it, e.g. rtl_ais, Dump1090, Direwolf etc. To run Plane/Sailing Server:
+In order to use this software, you should be running some combination of software to provide the data to it, e.g. rtl_ais, Dump1090, PiAware, Direwolf etc. You can find more information on how to install and set those up on the [Plane/Sailing build guide](https://ianrenton.com/hardware/planesailing). 
+
+To run Plane/Sailing Server:
 
 1. Ensure your machine has Java 11 or later installed, e.g. `sudo apt install openjdk-11-jre-headless`
 2. [Download the software from the Releases area](https://github.com/ianrenton/planesailing-server/releases/) and unpack it, or build it yourself using Maven and a JDK. You should have a JAR file and an `application.conf` file.
@@ -187,17 +190,3 @@ The Plane/Sailing client, or any other client you write, should do the following
 3. Rather than just reporting tracks' last known locations, clients may wish to "dead reckon" their current position and update the display with that more often than every 10 seconds. Because the server and client's clocks may not match, the server provides a "time" field (milliseconds since UNIX epoch) in every response. The position data for each track has a time field too. The combination of these can be used to determine how old the track's data is without having to use the local system clock.
 
 Clients are of course free to set their own policies about what tracks to show and hide, how to present the data, etc. If you are writing your own client or fork of Plane/Sailing, I am happy to receive pull requests to add new data into the API.
-
-## A Note about Mode S and Multilateration
-
-Mode S, and Mode A & C that came before it, were designed to supplement air traffic control radar and not to replace it&mdash;their intention was always to be used in conjunction with a primary radar that could localise the plane horizontally. Mode A & C extended that to provide squawk codes and altitude, to give air traffic controllers the ability to identify aircraft and de-risk their flight paths vertically as well. Mode S extends that to provide selective interrogation, i.e. the ability to query one aircraft at a time, instead of the Mode A & C pulses that would trigger a response from all aircraft in the direction of the interrogator beam. But the responses an aircraft would give were still largely confined to altitude and squawk codes.
-
-ADS-B takes the system to the next level, allowing aircraft to transmit many types of data in their response, including latitude & longitude, heading, speed, the status of their autopilot, and much more. It's this data on which Plane/Sailing largely depends.
-
-There's an excellent write-up of the history and implementation of these protocols [here](https://mode-s.org/decode/content/introduction.html).
-
-Although all aircraft in UK & European airspace have Mode S transponders, not all are equipped with ADS-B, which is a specific set of messages within the Mode S framework. This means that some aircraft appear within the Plane/Sailing system appear with an ICAO 24-bit hexadecimal code and an altitude, but never any more information than this. However, if you go onto a website like FlightRadar24, you'll see it has a position!
-
-Websites such as FR24 can provide position fixes for these aircraft using an approach called multilateration, or MLAT. This takes advantage of the fact that there are many receivers detecting and decoding Mode S information for any one aircraft. Provided these receivers have synchronised clocks, their time of reception can be measured very accurately, and used to determine the position of the aircraft via triangulation. This is handled server-side, since each individual receiver does not have enough information to complete the calculation.
-
-It is possible to receive and use this multilateration data, but Plane/Sailing Server does not support it yet. This is planned for a future version.

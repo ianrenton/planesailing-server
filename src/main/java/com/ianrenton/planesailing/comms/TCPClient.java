@@ -119,6 +119,7 @@ public abstract class TCPClient {
 						try {
 							Thread.sleep(1000);
 							clientSocket.close();
+							break;
 						} catch (IOException | InterruptedException e) {
 							// Probably closed anyway
 						}

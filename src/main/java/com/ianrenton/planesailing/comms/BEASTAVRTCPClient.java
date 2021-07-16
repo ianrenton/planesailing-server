@@ -58,7 +58,7 @@ public class BEASTAVRTCPClient extends TCPClient {
 	 */
 	private void handle(String hex) {
 		try {
-			BEASTBinaryTCPClient.handle(decoder.decode(hex), trackTable);
+			BEASTBinaryTCPClient.handle(decoder.decode(hex), trackTable, DATA_TYPE);
 		} catch (BadFormatException e) {
 			LOGGER.debug("Malformed message skipped. Message: {}", e.getMessage());
 		} catch (UnspecifiedFormatError e) {

@@ -19,18 +19,26 @@ import com.ianrenton.planesailing.data.Aircraft;
  */
 public class SBSTCPClient extends TCPClient {
 
-	private static final String DATA_TYPE = "SBS format (ADS-B) data";
+	private static final String DATA_TYPE_ADSB = "SBS format (ADS-B) data";
+	private static final String DATA_TYPE_MLAT = "SBS format (MLAT) data";
 	private static final Logger LOGGER = LogManager.getLogger(SBSTCPClient.class);
 
+	private final String dataType;
+	private final int socketTimeoutMillis;
+	
 	/**
 	 * Create the client
 	 * 
 	 * @param remoteHost Host to connect to.
 	 * @param remotePort Port to connect to.
 	 * @param trackTable The track table to use.
+	 * @param mlat true if this connection will be receiving MLAT data, false if it
+	 * will be receiving Mode-S/ADS-B data from a local radio.
 	 */
-	public SBSTCPClient(String remoteHost, int remotePort, TrackTable trackTable) {
+	public SBSTCPClient(String remoteHost, int remotePort, TrackTable trackTable, boolean mlat) {
 		super(remoteHost, remotePort, trackTable);
+		dataType = mlat ? DATA_TYPE_MLAT : DATA_TYPE_ADSB;
+		socketTimeoutMillis = mlat ? 600000 : 60000; // 1 min for local data, 10 min for MLAT from server
 	}
 
 	@Override
@@ -133,12 +141,12 @@ public class SBSTCPClient extends TCPClient {
 
 	@Override
 	protected int getSocketTimeoutMillis() {
-		return 60000;
+		return socketTimeoutMillis;
 	}
 
 	@Override
 	protected String getDataType() {
-		return DATA_TYPE;
+		return dataType;
 	}
 
 	@Override
