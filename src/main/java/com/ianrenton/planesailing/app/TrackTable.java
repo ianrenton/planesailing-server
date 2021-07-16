@@ -133,7 +133,7 @@ public class TrackTable extends HashMap<String, Track> {
 	private Map<String, String> getStatsForJSON() {
 		Map<String, String> stats = new HashMap<>();
 		stats.put("cpuLoad", String.format("%.0f", OS_BEAN.getSystemCpuLoad() * 100.0));
-		stats.put("memUsed", String.format("%.0f", (1.0 - (OS_BEAN.getFreePhysicalMemorySize() / (double) TOTAL_MEM_BYTES)) * 100.0));
+		stats.put("memUsed", String.format("%.0f", ((OS_BEAN.getCommittedVirtualMemorySize() / (double) TOTAL_MEM_BYTES)) * 100.0));
 		stats.put("diskUsed", String.format("%.0f", (1.0 - (serializationFile.getFreeSpace() / (double) serializationFile.getTotalSpace())) * 100.0));
 		stats.put("uptime", String.format("%d", System.currentTimeMillis() - Application.START_TIME));
 		return stats;

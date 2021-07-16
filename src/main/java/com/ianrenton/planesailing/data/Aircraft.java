@@ -32,8 +32,8 @@ public class Aircraft extends Track {
 		setTrackType(TrackType.AIRCRAFT);
 		setSymbolCode(DEFAULT_AIRCRAFT_SYMBOL);
 		positionHistory.setHistoryLength(60 * 60 * 1000); // 1 hour
-		registration = DataMaps.AIRCRAFT_ICAO_HEX_TO_REGISTRATION.getOrDefault(id, null);
-		aircraftTypeShort = DataMaps.AIRCRAFT_ICAO_HEX_TO_TYPE.getOrDefault(id, null);
+		registration = DataMaps.AIRCRAFT_ICAO_HEX_TO_REGISTRATION.getOrDefault(id.toUpperCase(), null);
+		aircraftTypeShort = DataMaps.AIRCRAFT_ICAO_HEX_TO_TYPE.getOrDefault(id.toUpperCase(), null);
 		if (aircraftTypeShort != null) {
 			aircraftTypeLong = DataMaps.AIRCRAFT_TYPE_SHORT_TO_LONG.getOrDefault(aircraftTypeShort, null);
 		}
