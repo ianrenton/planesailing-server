@@ -201,11 +201,11 @@ public class Aircraft extends Track {
 
 	@Override
 	public String getDisplayDescription1() {
-		if (aircraftTypeLong != null) {
+		if (aircraftTypeLong != null && !aircraftTypeLong.isEmpty()) {
 			return aircraftTypeLong.toUpperCase();
-		} else if (aircraftTypeShort != null) {
+		} else if (aircraftTypeShort != null && !aircraftTypeShort.isEmpty()) {
 			return aircraftTypeShort.toUpperCase();
-		} else if (categoryDescription != null) {
+		} else if (categoryDescription != null && !categoryDescription.isEmpty()) {
 			return "AIRCRAFT (" + categoryDescription.toUpperCase() + ")";
 		} else {
 			return "AIRCRAFT (UNKNOWN TYPE)";
