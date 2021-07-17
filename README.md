@@ -115,8 +115,9 @@ server {
     listen 443 ssl;
     server_name planesailingserver.ianrenton.com;
 
-    # Dump1090 web interface
+    # Dump1090/Skyaware web interface
     rewrite ^/dump1090-fa$ /dump1090-fa/ permanent;
+    rewrite ^/skyaware$ /skyaware/ permanent;
     location /dump1090-fa/ {
         alias /usr/share/dump1090-fa/html/;
         # Allow CORS requests to / for UMID1090 - not necessarily required for your server!
@@ -126,6 +127,12 @@ server {
         alias /run/dump1090-fa/;
         # Allow CORS requests to /data/ for UMID1090 - not necessarily required for your server!
         add_header Access-Control-Allow-Origin *;
+    }
+    location /skyaware/ {
+        alias /usr/share/skyaware/html/;
+    }
+    location /skyaware/data/ {
+        alias /run/dump1090-fa/;
     }
 
     # AIS Dispatcher web interface
