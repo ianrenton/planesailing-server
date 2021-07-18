@@ -203,6 +203,8 @@ public class Aircraft extends Track {
 	public String getDisplayDescription1() {
 		if (aircraftTypeLong != null && !aircraftTypeLong.isEmpty()) {
 			return aircraftTypeLong.toUpperCase();
+		} else if (aircraftTypeShort != null && !aircraftTypeShort.isEmpty() && categoryDescription != null && !categoryDescription.isEmpty()) {
+			return aircraftTypeShort.toUpperCase() + " (" + categoryDescription.toUpperCase() + ")";
 		} else if (aircraftTypeShort != null && !aircraftTypeShort.isEmpty()) {
 			return aircraftTypeShort.toUpperCase();
 		} else if (categoryDescription != null && !categoryDescription.isEmpty()) {

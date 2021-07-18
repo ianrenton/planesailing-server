@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ianrenton</groupId>
 	<artifactId>plane-sailing-server</artifactId>
-	<version>2.4.1-SNAPSHOT</version>
+	<version>2.4.1</version>
 	<name>Plane/Sailing Server</name>
 
 	<properties>
