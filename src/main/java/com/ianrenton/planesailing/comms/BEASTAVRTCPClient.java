@@ -40,6 +40,7 @@ public class BEASTAVRTCPClient extends TCPClient {
 		try {
 			String line = new BufferedReader(new InputStreamReader(in)).readLine();
 			if (line != null && line.length() > 2) {
+				updatePacketReceivedTime();
 				// Remove asterisk and semicolon
 				String hex = line.substring(1, line.length() - 1);
 				handle(hex);

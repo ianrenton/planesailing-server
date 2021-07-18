@@ -34,6 +34,8 @@ import dk.tbsalling.aismessages.ais.messages.UTCAndDateResponse;
  */
 public class AISUDPReceiver {
 	private static final Logger LOGGER = LogManager.getLogger(AISUDPReceiver.class);
+	// Expected milliseconds between receiving packets
+	private static final long PACKET_RX_RATE_MILLIS = 120000;
 	private final int localPort;
 	private final TrackTable trackTable;
 	private final UDPReceiver udpReceiverThread = new UDPReceiver();
@@ -42,6 +44,8 @@ public class AISUDPReceiver {
 	private final PipedOutputStream pipeOS = new PipedOutputStream();
 	private InputStream pipeIS;
 	private boolean run = true;
+	private boolean online;
+	private long lastReceivedTime;
 
 	/**
 	 * Create the receiver
@@ -65,6 +69,7 @@ public class AISUDPReceiver {
 	 */
 	public void run() {
 		run = true;
+		online = true;
 		new Thread(udpReceiverThread).start();
 		new Thread(aisReceiverThread).start();
 	}
@@ -74,6 +79,7 @@ public class AISUDPReceiver {
 	 */
 	public void stop() {
 		run = false;
+		online = false;
 		aisReader.requestStop();
 	}
 
@@ -236,6 +242,18 @@ public class AISUDPReceiver {
 		}
 	}
 
+	public ConnectionStatus getStatus() {
+		if (online) {
+			if (System.currentTimeMillis() - lastReceivedTime <= PACKET_RX_RATE_MILLIS * 2) {
+				return ConnectionStatus.ACTIVE;
+			} else {
+				return ConnectionStatus.ONLINE;
+			}
+		} else {
+			return ConnectionStatus.OFFLINE;
+		}
+	}
+
 	/**
 	 * Inner receiver thread. Reads datagrams from the UDP socket, pipes them
 	 * over to the third-party AISInputStreamReader.
@@ -254,6 +272,7 @@ public class AISUDPReceiver {
 					socket.receive(p);
 					String line = new String(p.getData(), StandardCharsets.US_ASCII).trim() + "\r\n";
 					pipeOS.write(line.getBytes());
+					lastReceivedTime = System.currentTimeMillis();
 
 					Thread.sleep(10);
 				}

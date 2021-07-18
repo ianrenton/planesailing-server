@@ -46,6 +46,7 @@ public class SBSTCPClient extends TCPClient {
 		try {
 			String line = new BufferedReader(new InputStreamReader(in)).readLine();
 			if (line != null) {
+				updatePacketReceivedTime();
 				handle(line);
 			}
 			return true;

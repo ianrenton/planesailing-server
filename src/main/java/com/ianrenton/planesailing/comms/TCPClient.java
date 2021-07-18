@@ -20,6 +20,8 @@ public abstract class TCPClient {
 	protected final TrackTable trackTable;
 	private final Receiver receiver = new Receiver();
 	protected boolean run = true;
+	private boolean online;
+	private long lastReceivedTime;
 
 	/**
 	 * Create the client
@@ -80,6 +82,14 @@ public abstract class TCPClient {
 	 * so they have different timeouts.
 	 */
 	protected abstract int getSocketTimeoutMillis();
+	
+	/**
+	 * Means for implementations to update the "last received time" so
+	 * we know packets are arriving.
+	 */
+	protected void updatePacketReceivedTime() {
+		lastReceivedTime = System.currentTimeMillis();
+	}
 
 	/**
 	 * Inner receiver thread. Reads lines from the TCP socket, and provides them
@@ -101,6 +111,7 @@ public abstract class TCPClient {
 						clientSocket.setSoLinger(false, 0);
 						clientSocket.setKeepAlive(true);
 						in = clientSocket.getInputStream();
+						online = true;
 						getLogger().info("TCP socket for {} connected.", getDataType());
 						break;
 					} catch (IOException e) {
@@ -117,6 +128,7 @@ public abstract class TCPClient {
 					if (!ok) {
 						getLogger().warn("TCP Socket for {} read failed, reconnecting...", getDataType());
 						try {
+							online = false;
 							Thread.sleep(1000);
 							clientSocket.close();
 							break;
@@ -126,6 +138,18 @@ public abstract class TCPClient {
 					}
 				}
 			}
+		}
+	}
+
+	public ConnectionStatus getStatus() {
+		if (online) {
+			if (System.currentTimeMillis() - lastReceivedTime <= getSocketTimeoutMillis()) {
+				return ConnectionStatus.ACTIVE;
+			} else {
+				return ConnectionStatus.ONLINE;
+			}
+		} else {
+			return ConnectionStatus.OFFLINE;
 		}
 	}
 }

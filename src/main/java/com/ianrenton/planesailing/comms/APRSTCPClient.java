@@ -62,6 +62,7 @@ public class APRSTCPClient extends TCPClient {
 				if (b == FEND) {
 					// Delimiter found, process contents of byte buffer.
 					if (bytesReceived > 0) {
+						updatePacketReceivedTime();
 						byte[] aprsMessage = new byte[bytesReceived];
 						System.arraycopy(buffer, 0, aprsMessage, 0, bytesReceived);
 						try {

@@ -84,6 +84,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 						// goes in there. Minimum message size is Mode A/C at
 						// 10 bytes so if it's shorter than that, skip it
 						if (bytesReceived >= 10) {
+							updatePacketReceivedTime();
 							byte[] beastBytes = new byte[bytesReceived];
 							System.arraycopy(buffer, 0, beastBytes, 0, bytesReceived);
 							try {

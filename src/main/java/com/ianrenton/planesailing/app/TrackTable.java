@@ -40,11 +40,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
-	private static final OperatingSystemMXBean OS_BEAN = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-	// Work-around to specify total memory size of the PC manually (here, 2GB to match my
-	// Raspberry Pi) for JDKs where querying it doesn't work properly
-	private static final long TOTAL_MEM_BYTES = (OS_BEAN.getTotalPhysicalMemorySize() != 0) ? OS_BEAN.getTotalPhysicalMemorySize() : 2000000000;
-
+	
 	private transient final File serializationFile = new File("track_data_store.dat");
 
 	private final Map<Integer, String> aisNameCache = new ConcurrentHashMap<>();
@@ -58,7 +54,6 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 	private transient ScheduledFuture backupTask;
 
 	private transient boolean printTrackTableToStdOut = Application.CONFIG.getBoolean("print-track-table-to-stdout");
-	private transient boolean readableJSON = Application.CONFIG.getBoolean("comms.web-server.readable-json");
 
 	/**
 	 * Set up the track table, using data found on disk if present. Spawns internal
@@ -78,66 +73,6 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 		// Set up tasks to run in the background
 		maintenanceTask = scheduledExecutorService.scheduleWithFixedDelay(new MaintenanceTask(), 10, 10, TimeUnit.SECONDS);
 		backupTask = scheduledExecutorService.scheduleWithFixedDelay(new BackupTask(), 10, 600, TimeUnit.SECONDS);
-	}
-	
-	/**
-	 * Returns JSON corresponding to the "first" API call of the server, which
-	 * includes all tracks (including base station, airports and seaports), and the
-	 * complete position history for all tracks that have it, so that the client
-	 * can populate both the full current picture and the snail trail for tracks.
-	 * It also includes the server's current time, so that clients can determine
-	 * the age of tracks correctly, and the server version number.
-	 */
-	public String getFirstCallJSON() {
-		Map<String, Object> map = new HashMap<>();
-		map.put("time", System.currentTimeMillis());
-		map.put("version", Application.getSoftwareVersion());
-		map.put("stats", getStatsForJSON());
-		
-		Map<String, Map<String, Object>> tracks = new HashMap<>();
-		for (Track t : values()) {
-			tracks.put(t.getID(), t.getFirstCallData());
-		}
-		map.put("tracks", tracks);
-		
-		JSONObject o = new JSONObject(map);
-		return o.toString(readableJSON ? 2 : 0);
-	}
-	
-	/**
-	 * Returns JSON corresponding to the "update" API call of the server, which
-	 * is designed to update a picture previously populated by the "first" call.
-	 * To save bandwidth, no position history is sent - the client is expected
-	 * to append the reported position to its own position history store. This
-	 * call also omits the base station, airports and seaports that can't
-	 * change. It also includes the server's current time, so that clients can
-	 * determine the age of tracks correctly.
-	 */
-	public String getUpdateCallJSON() {
-		Map<String, Object> map = new HashMap<>();
-		map.put("time", System.currentTimeMillis());
-		map.put("stats", getStatsForJSON());
-		
-		Map<String, Map<String, Object>> tracks = new HashMap<>();
-		for (Track t : values()) {
-			tracks.put(t.getID(), t.getUpdateCallData());
-		}
-		map.put("tracks", tracks);
-		
-		JSONObject o = new JSONObject(map);
-		return o.toString(readableJSON ? 2 : 0);
-	}
-	
-	/**
-	 * Get a map of some useful stats for inclusion in API responses
-	 */
-	private Map<String, String> getStatsForJSON() {
-		Map<String, String> stats = new HashMap<>();
-		stats.put("cpuLoad", String.format("%.0f", OS_BEAN.getSystemCpuLoad() * 100.0));
-		stats.put("memUsed", String.format("%.0f", ((OS_BEAN.getCommittedVirtualMemorySize() / (double) TOTAL_MEM_BYTES)) * 100.0));
-		stats.put("diskUsed", String.format("%.0f", (1.0 - (serializationFile.getFreeSpace() / (double) serializationFile.getTotalSpace())) * 100.0));
-		stats.put("uptime", String.format("%d", System.currentTimeMillis() - Application.START_TIME));
-		return stats;
 	}
 	
 	private long countTracksOfType(TrackType t) {

@@ -11,6 +11,7 @@ import com.ianrenton.planesailing.comms.AISUDPReceiver;
 import com.ianrenton.planesailing.comms.APRSTCPClient;
 import com.ianrenton.planesailing.comms.BEASTAVRTCPClient;
 import com.ianrenton.planesailing.comms.BEASTBinaryTCPClient;
+import com.ianrenton.planesailing.comms.ConnectionStatus;
 import com.ianrenton.planesailing.comms.SBSTCPClient;
 import com.ianrenton.planesailing.comms.TCPClient;
 import com.ianrenton.planesailing.comms.WebServer;
@@ -71,7 +72,7 @@ public class Application {
 		
 		// Set up connections
 		if (CONFIG.getBoolean("comms.web-server.enabled")) {
-			webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), trackTable);
+			webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), this);
 		}
 		
 		if (CONFIG.getBoolean("comms.ais-receiver.enabled")) {
@@ -157,7 +158,52 @@ public class Application {
 		LOGGER.info("Plane/Sailing Server is up and running!");
 	}
 
-	protected static String getSoftwareVersion() {
+	public static String getSoftwareVersion() {
 		return softwareVersion;
 	}
+
+	public TrackTable getTrackTable() {
+		return trackTable;
+	}
+	
+	public ConnectionStatus getWebServerStatus() {
+		if (webServer != null) {
+			return webServer.getStatus();
+		} else {
+			return ConnectionStatus.DISABLED;
+		}
+	}
+	
+	public ConnectionStatus getADSBReceiverStatus() {
+		if (adsbReceiver != null) {
+			return adsbReceiver.getStatus();
+		} else {
+			return ConnectionStatus.DISABLED;
+		}
+	}
+	
+	public ConnectionStatus getMLATReceiverStatus() {
+		if (mlatReceiver != null) {
+			return mlatReceiver.getStatus();
+		} else {
+			return ConnectionStatus.DISABLED;
+		}
+	}
+	
+	public ConnectionStatus getAISReceiverStatus() {
+		if (aisReceiver != null) {
+			return aisReceiver.getStatus();
+		} else {
+			return ConnectionStatus.DISABLED;
+		}
+	}
+	
+	public ConnectionStatus getAPRSReceiverStatus() {
+		if (aprsReceiver != null) {
+			return aprsReceiver.getStatus();
+		} else {
+			return ConnectionStatus.DISABLED;
+		}
+	};
+
 }
