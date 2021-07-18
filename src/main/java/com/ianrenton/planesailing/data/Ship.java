@@ -53,25 +53,27 @@ public class Ship extends Track {
 	}
 
 	public void setShipType(ShipType shipType) {
-		this.shipType = shipType;
-		
-		// Set the right symbol for the ship type if known
-		for (Entry<String, String> e : DataMaps.SHIP_TYPE_TO_SYMBOL.entrySet()) {
-			if (shipType.getCode().equals(Integer.valueOf(e.getKey()))) {
-				setSymbolCode(e.getValue());
-				break;
+		if (shipType != null) {
+			this.shipType = shipType;
+			
+			// Set the right symbol for the ship type if known
+			for (Entry<String, String> e : DataMaps.SHIP_TYPE_TO_SYMBOL.entrySet()) {
+				if (shipType.getCode().equals(Integer.valueOf(e.getKey()))) {
+					setSymbolCode(e.getValue());
+					break;
+				}
 			}
-		}
-		
-		// Set the right description for the ship type if known
-		for (Entry<String, String> e : DataMaps.SHIP_TYPE_TO_DESCRIPTION.entrySet()) {
-			if (shipType.getCode().equals(Integer.valueOf(e.getKey()))) {
-				shipTypeDescription = e.getValue();
-				break;
+			
+			// Set the right description for the ship type if known
+			for (Entry<String, String> e : DataMaps.SHIP_TYPE_TO_DESCRIPTION.entrySet()) {
+				if (shipType.getCode().equals(Integer.valueOf(e.getKey()))) {
+					shipTypeDescription = e.getValue();
+					break;
+				}
 			}
+			
+			updateMetadataTime();
 		}
-		
-		updateMetadataTime();
 	}
 
 	public boolean isShoreStation() {

@@ -1,12 +1,12 @@
 package com.ianrenton.planesailing.data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Position history for a track.
  */
-public class PositionHistory extends ArrayList<TimestampedPosition> implements Serializable {
+public class PositionHistory extends CopyOnWriteArrayList<TimestampedPosition> implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private long historyLength = Long.MAX_VALUE;
 

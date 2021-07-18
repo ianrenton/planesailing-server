@@ -10,6 +10,7 @@ import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -35,7 +36,7 @@ import com.typesafe.config.ConfigValue;
 /**
  * Track table
  */
-public class TrackTable extends HashMap<String, Track> {
+public class TrackTable extends ConcurrentHashMap<String, Track> {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
@@ -46,7 +47,7 @@ public class TrackTable extends HashMap<String, Track> {
 
 	private transient final File serializationFile = new File("track_data_store.dat");
 
-	private final Map<Integer, String> aisNameCache = new HashMap<>();
+	private final Map<Integer, String> aisNameCache = new ConcurrentHashMap<>();
 	
 	private Position baseStationPositionForADSB = null;
 	
@@ -209,7 +210,9 @@ public class TrackTable extends HashMap<String, Track> {
 			serializationFile.delete();
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serializationFile));
 			// Deep copy to avoid concurrent modification problems when the track table
-			// contents are modified during save.
+			// contents are modified during save. While the top level object uses
+			// ConcurrentHashMap to avoid this problem, we should not be forcing that
+			// implementation detail on the whole tree of objects inside the table.
 			TrackTable copy = SerializationUtils.clone(this);
 			oos.writeObject(copy);
 			oos.flush();
