@@ -144,13 +144,17 @@ public class TrackTable extends HashMap<String, Track> {
 	}
 
 	/**
-	 * Delete position data older than the threshold for all tracks.
+	 * Delete position data older than the threshold for all non-fixed tracks.
+	 * For fixed tracks, just leave the single most recent position (regardless
+	 * of age) since it won't have moved anyway.
 	 */
 	private void cullOldPositionData() {
 		for (Track t : values()) {
 			try {
 				if (!t.isFixed()) {
 					t.getPositionHistory().cull();
+				} else {
+					t.getPositionHistory().keepOnlyLatest();
 				}
 			} catch (Exception ex) {
 				LOGGER.error("Caught exception when culling old position data for {}, continuing...", t.getDisplayName(), ex);

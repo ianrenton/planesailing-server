@@ -61,11 +61,16 @@ public class APRSTrack extends Track {
 				break;
 			}
 		}
+		
+		// SSIDs 0, 10 & 13 represent fixed stations
+		setFixed(ssid.equals("0") || ssid.equals("10") || ssid.equals("13"));
 	}
 
 	@Override
 	public boolean shouldDrop() {
-		if (getSpeed() == null || getSpeed() < 1.0) {
+		if (fixed) {
+			return false;
+		} else if (getSpeed() == null || getSpeed() < 1.0) {
 			return getTimeSinceLastUpdate() > DROP_STATIC_APRS_TRACK_TIME;
 		} else {
 			return getTimeSinceLastUpdate() > DROP_MOVING_APRS_TRACK_TIME;

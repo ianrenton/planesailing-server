@@ -56,4 +56,11 @@ public class PositionHistory extends ArrayList<TimestampedPosition> implements S
 		long threshold = System.currentTimeMillis() - historyLength;
 		removeIf(e -> e.getTime() < threshold);
 	}
+	
+	/**
+	 * Keep only the latest position and remove any older ones.
+	 */
+	public void keepOnlyLatest() {
+		subList(0, size() - 1).clear();
+	}
 }

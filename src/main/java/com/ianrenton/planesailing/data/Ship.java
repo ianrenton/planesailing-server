@@ -114,7 +114,9 @@ public class Ship extends Track {
 	}
 	
 	public boolean shouldDrop() {
-		if (getSpeed() == null || getSpeed() < 1.0) {
+		if (fixed) {
+			return false;
+		} else if (getSpeed() == null || getSpeed() < 1.0) {
 			return getTimeSinceLastUpdate() > DROP_STATIC_SHIP_TRACK_TIME;
 		} else {
 			return getTimeSinceLastUpdate() > DROP_MOVING_SHIP_TRACK_TIME;
