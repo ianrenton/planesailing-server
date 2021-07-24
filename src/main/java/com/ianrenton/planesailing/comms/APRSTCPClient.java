@@ -81,7 +81,7 @@ public class APRSTCPClient extends TCPClient {
 					buffer[bytesReceived++] = b;
 				}
 			}
-			return true;
+			return i != -1;
 		} catch (IOException ex) {
 			getLogger().warn("Exception encountered in TCP Socket for {}.", getDataType(), ex);
 			return false;

@@ -41,7 +41,7 @@ public abstract class TCPClient {
 	 */
 	public void run() {
 		run = true;
-		new Thread(receiver).start();
+		new Thread(receiver, getDataType() + " receiver thread").start();
 	}
 
 	/**
@@ -110,13 +110,14 @@ public abstract class TCPClient {
 						clientSocket.setSoTimeout(getSocketTimeoutMillis());
 						clientSocket.setSoLinger(false, 0);
 						clientSocket.setKeepAlive(true);
+						clientSocket.setReuseAddress(true);
 						in = clientSocket.getInputStream();
 						online = true;
 						getLogger().info("TCP socket for {} connected.", getDataType());
 						break;
 					} catch (IOException e) {
 						try {
-							getLogger().warn("TCP Socket could for {} not connect, trying again in one minute...", getDataType());
+							getLogger().warn("TCP Socket for {} could not connect ({}), trying again in one minute...", getDataType(), e.getLocalizedMessage());
 							TimeUnit.MINUTES.sleep(1);
 						} catch (InterruptedException ie) {
 						}

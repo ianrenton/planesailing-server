@@ -6,8 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.management.ManagementFactory;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,9 +16,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SerializationException;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
 import org.opensky.libadsb.Position;
 
 import com.ianrenton.planesailing.data.Airport;
@@ -29,7 +27,6 @@ import com.ianrenton.planesailing.data.Seaport;
 import com.ianrenton.planesailing.data.Ship;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
-import com.sun.management.OperatingSystemMXBean;
 import com.typesafe.config.ConfigList;
 import com.typesafe.config.ConfigValue;
 
@@ -47,7 +44,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 	
 	private Position baseStationPositionForADSB = null;
 	
-	private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+	private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, new BasicThreadFactory.Builder().namingPattern("Track Table Processing Thread %d").build());
 	@SuppressWarnings("rawtypes")
 	private transient ScheduledFuture maintenanceTask;
 	@SuppressWarnings("rawtypes")

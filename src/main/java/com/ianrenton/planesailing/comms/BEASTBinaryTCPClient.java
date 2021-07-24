@@ -90,10 +90,10 @@ public class BEASTBinaryTCPClient extends TCPClient {
 							try {
 								handle(stripHeader(beastBytes));
 							} catch (Exception ex) {
-								LOGGER.error("Encountered an exception when handling an APRS packet.", ex);
+								LOGGER.error("Encountered an exception when handling a BEAST binary packet.", ex);
 							}
 						} else {
-							LOGGER.debug("Received message too small, skipping...");
+							LOGGER.error("Received message too small, skipping...");
 						}
 
 						// Reset the buffer, and add the extra character to it
@@ -107,7 +107,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 					buffer[bytesReceived++] = b;
 				}
 			}
-			return true;
+			return i != -1;
 		} catch (IOException ex) {
 			getLogger().warn("Exception encountered in TCP Socket for {}.", getDataType(), ex);
 			return false;

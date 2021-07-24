@@ -70,8 +70,8 @@ public class AISUDPReceiver {
 	public void run() {
 		run = true;
 		online = true;
-		new Thread(udpReceiverThread).start();
-		new Thread(aisReceiverThread).start();
+		new Thread(udpReceiverThread, "AIS UDP receiver thread").start();
+		new Thread(aisReceiverThread, "AIS handler thread").start();
 	}
 
 	/**
