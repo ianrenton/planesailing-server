@@ -18,7 +18,7 @@ public class APRSTrack extends Track {
 	
 	public APRSTrack(String id) {
 		super(id);
-		setTrackType(TrackType.APRS_TRACK);
+		setTrackType(TrackType.APRS_MOBILE);
 		setSymbolCode(DEFAULT_APRS_SYMBOL);
 		positionHistory.setHistoryLength(60 * 60 * 1000); // 1 hour
 	}
@@ -63,7 +63,9 @@ public class APRSTrack extends Track {
 		}
 		
 		// SSIDs 0, 10 & 13 represent fixed stations
-		setFixed(ssid.equals("0") || ssid.equals("10") || ssid.equals("13"));
+		boolean tmpFixed = ssid.equals("0") || ssid.equals("10") || ssid.equals("13");
+		setFixed(tmpFixed);
+		setTrackType(tmpFixed ? TrackType.APRS_BASE_STATION : TrackType.APRS_MOBILE);
 	}
 
 	@Override
