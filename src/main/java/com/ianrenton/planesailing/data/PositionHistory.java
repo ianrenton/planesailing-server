@@ -61,6 +61,8 @@ public class PositionHistory extends CopyOnWriteArrayList<TimestampedPosition> i
 	 * Keep only the latest position and remove any older ones.
 	 */
 	public void keepOnlyLatest() {
-		subList(0, size() - 1).clear();
+		if (size() > 1) {
+			subList(0, size() - 1).clear();
+		}
 	}
 }
