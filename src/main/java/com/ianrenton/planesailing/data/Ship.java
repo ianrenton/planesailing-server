@@ -20,6 +20,7 @@ public class Ship extends Track {
 	private ShipType shipType = ShipType.NotAvailable;
 	private String shipTypeDescription = null;
 	private boolean shoreStation = false;
+	private boolean aton = false;
 	private NavigationStatus navStatus = NavigationStatus.Undefined;
 	private String navStatusDescription = null;
 	private String destination = null;
@@ -88,6 +89,15 @@ public class Ship extends Track {
 		updateMetadataTime();
 	}
 
+	public boolean isAtoN() {
+		return aton;
+	}
+
+	public void setAtoN(boolean aton) {
+		this.aton = aton;
+		updateMetadataTime();
+	}
+
 	public NavigationStatus getNavStatus() {
 		return navStatus;
 	}
@@ -135,8 +145,10 @@ public class Ship extends Track {
 
 	@Override
 	public String getDisplayDescription1() {
-		if (shoreStation) {
+		if (shoreStation || trackType == TrackType.AIS_SHORE_STATION) {
 			return "AIS SHORE STATION";
+		} else if (aton || trackType == TrackType.AIS_ATON) {
+			return "AID TO NAVIGATION";
 		} else if (shipTypeDescription != null) {
 			return "SHIP (" + shipTypeDescription.toUpperCase() + ")";
 		} else {

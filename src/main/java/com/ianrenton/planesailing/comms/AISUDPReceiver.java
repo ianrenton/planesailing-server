@@ -106,6 +106,7 @@ public class AISUDPReceiver {
 		switch (m.getMessageType()) {
 		case AidToNavigationReport:
 			AidToNavigationReport m2 = (AidToNavigationReport) m;
+			s.setAtoN(true);
 			s.setName(m2.getName().replaceAll("_", " ").replaceAll("@", " ").trim());
 			s.addPosition(m2.getLatitude(), m2.getLongitude());
 			s.setTrackType(TrackType.AIS_ATON);
