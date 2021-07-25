@@ -25,6 +25,11 @@ public class Airport extends Track {
 	public String getIcaoCode() {
 		return icaoCode;
 	}
+
+	@Override
+	public String getTypeDescription() {
+		return "AIRPORT";
+	}
 	
 	@Override
 	public String getDisplayName() {
@@ -32,12 +37,12 @@ public class Airport extends Track {
 	}
 
 	@Override
-	public String getDisplayDescription1() {
+	public String getDisplayInfo1() {
 		return "";
 	}
 
 	@Override
-	public String getDisplayDescription2() {
+	public String getDisplayInfo2() {
 		return "";
 	}
 }

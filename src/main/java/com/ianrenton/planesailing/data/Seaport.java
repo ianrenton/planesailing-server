@@ -26,12 +26,17 @@ public class Seaport extends Track {
 	}
 
 	@Override
-	public String getDisplayDescription1() {
+	public String getTypeDescription() {
+		return "SEAPORT";
+	}
+
+	@Override
+	public String getDisplayInfo1() {
 		return "";
 	}
 
 	@Override
-	public String getDisplayDescription2() {
+	public String getDisplayInfo2() {
 		return "";
 	}
 }

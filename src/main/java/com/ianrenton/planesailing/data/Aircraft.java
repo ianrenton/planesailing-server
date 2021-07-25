@@ -200,7 +200,7 @@ public class Aircraft extends Track {
 	}
 
 	@Override
-	public String getDisplayDescription1() {
+	public String getTypeDescription() {
 		if (aircraftTypeLong != null && !aircraftTypeLong.isEmpty()) {
 			return aircraftTypeLong.toUpperCase();
 		} else if (aircraftTypeShort != null && !aircraftTypeShort.isEmpty() && categoryDescription != null && !categoryDescription.isEmpty()) {
@@ -215,7 +215,12 @@ public class Aircraft extends Track {
 	}
 
 	@Override
-	public String getDisplayDescription2() {
-		return (operator != null) ? operator.toUpperCase() : "";
+	public String getDisplayInfo1() {
+		return (operator != null) ? ("OPERATOR: " + operator.toUpperCase()) : "";
+	}
+
+	@Override
+	public String getDisplayInfo2() {
+		return "";
 	}
 }

@@ -278,8 +278,8 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 					LOGGER.info("{} {} {} {} {}",
 							String.format("%-20.20s", e.getDisplayName()),
 							String.format("%-10.10s", e.getTrackType()),
-							String.format("%-20.20s", e.getDisplayDescription1()),
-							String.format("%-20.20s", e.getDisplayDescription2()),
+							String.format("%-20.20s", e.getDisplayInfo1()),
+							String.format("%-20.20s", e.getDisplayInfo2()),
 							e.getTimeSinceLastUpdate() != null ? String.format("%-6.6s", e.getTimeSinceLastUpdate()) : "------");
 				}
 				LOGGER.info("----------------------------------------------------------------------------------");

@@ -144,7 +144,7 @@ public class AISTrack extends Track {
 	}
 
 	@Override
-	public String getDisplayDescription1() {
+	public String getTypeDescription() {
 		if (shoreStation || trackType == TrackType.AIS_SHORE_STATION) {
 			return "AIS SHORE STATION";
 		} else if (aton || trackType == TrackType.AIS_ATON) {
@@ -157,17 +157,20 @@ public class AISTrack extends Track {
 	}
 
 	@Override
-	public String getDisplayDescription2() {
-		String ret = "";
+	public String getDisplayInfo1() {
 		if (navStatusDescription != null && !navStatusDescription.equals("Undefined")) {
-			ret += navStatusDescription.toUpperCase();
+			return "NAV STATUS: " + navStatusDescription.toUpperCase();
+		} else {
+			return "";
 		}
+	}
+
+	@Override
+	public String getDisplayInfo2() {
 		if (destination != null) {
-			if (!ret.isEmpty()) {
-				ret += " - ";
-			}
-			ret += destination.toUpperCase();
+			return "DESTINATION: " + destination.toUpperCase();
+		} else {
+			return "";
 		}
-		return ret;
 	}
 }

@@ -98,12 +98,21 @@ public class APRSTrack extends Track {
 	}
 
 	@Override
-	public String getDisplayDescription1() {
+	public String getTypeDescription() {
+		if (isFixed()) {
+			return "APRS BASE STATION";
+		} else {
+			return "APRS MOBILE TRACK";
+		}
+	}
+
+	@Override
+	public String getDisplayInfo1() {
 		return (comment != null && !comment.isEmpty()) ? comment : "";
 	}
 
 	@Override
-	public String getDisplayDescription2() {
+	public String getDisplayInfo2() {
 		return ((packetDestCall != null && !packetDestCall.isEmpty()) ? (">" + packetDestCall) : "") + ((packetRoute != null && !packetRoute.isEmpty()) ? ("," + packetRoute) : "");
 	}
 }

@@ -306,14 +306,19 @@ public abstract class Track implements Serializable {
 	}
 
 	/**
-	 * Get the first line of description for display.
+	 * Get the type description for display.
 	 */
-	public abstract String getDisplayDescription1();
+	public abstract String getTypeDescription();
 
 	/**
-	 * Get the second line of description for display.
+	 * Get the first line of extra information for display.
 	 */
-	public abstract String getDisplayDescription2();
+	public abstract String getDisplayInfo1();
+
+	/**
+	 * Get the second line of extra information for display.
+	 */
+	public abstract String getDisplayInfo2();
 
 	/**
 	 * Get a map of data for this track that will be provided to the client,
@@ -375,8 +380,9 @@ public abstract class Track implements Serializable {
 		map.put("speed", (getSpeed() != null) ? Math.round(getSpeed()) : null);
 		map.put("altitude", (getAltitude() != null) ? Math.round(getAltitude()) : null);
 		map.put("altrate", (getVerticalRate() != null) ? Math.round(getVerticalRate()) : null);
-		map.put("desc1", getDisplayDescription1().toUpperCase());
-		map.put("desc2", getDisplayDescription2().toUpperCase());
+		map.put("typeDesc", getTypeDescription().toUpperCase());
+		map.put("info1", getDisplayInfo1().toUpperCase());
+		map.put("info2", getDisplayInfo2().toUpperCase());
 		map.put("datatime", getMetaDataTime());
 		return map;
 	}
