@@ -171,6 +171,11 @@ public class APRSTCPClient extends TCPClient {
 			course = Double.valueOf(((CourseAndSpeedExtension) data.getExtension()).getCourse());
 			speed = Double.valueOf(((CourseAndSpeedExtension) data.getExtension()).getSpeed());
 		}
+		// Don't trust course = 0 and speed = 0 as valid data
+		if (course == 0.0 && speed == 0.0) {
+			course = null;
+			speed = null;
+		}
 
 		// Update the track.
 		if (ssid != null) {

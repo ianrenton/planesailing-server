@@ -62,10 +62,28 @@ public class APRSTrack extends Track {
 			}
 		}
 		
-		// SSIDs 0, 10 & 13 represent fixed stations
-		boolean tmpFixed = ssid.equals("0") || ssid.equals("10") || ssid.equals("13");
+		// SSIDs 0, 10 & 13 represent fixed stations, unless a course/speed
+		// are known, in which case it must be mobile but the owner hasn't
+		// set the SSID properly.
+		boolean tmpFixed = (ssid.equals("0") || ssid.equals("10") || ssid.equals("13")) && course == null && speed == null;
 		setFixed(tmpFixed);
 		setTrackType(tmpFixed ? TrackType.APRS_BASE_STATION : TrackType.APRS_MOBILE);
+	}
+	
+	@Override
+	public void setCourse(double course) {
+		super.setCourse(course);
+		// Got a valid course, this is not a fixed track no matter what the SSID says
+		setFixed(false);
+		setTrackType(TrackType.APRS_MOBILE);
+	}
+	
+	@Override
+	public void setSpeed(double speed) {
+		super.setSpeed(speed);
+		// Got a valid speed, this is not a fixed track no matter what the SSID says
+		setFixed(false);
+		setTrackType(TrackType.APRS_MOBILE);
 	}
 
 	@Override
