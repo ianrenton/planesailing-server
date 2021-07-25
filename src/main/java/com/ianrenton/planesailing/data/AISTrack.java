@@ -8,7 +8,7 @@ import com.ianrenton.planesailing.utils.DataMaps;
 import dk.tbsalling.aismessages.ais.messages.types.NavigationStatus;
 import dk.tbsalling.aismessages.ais.messages.types.ShipType;
 
-public class Ship extends Track {
+public class AISTrack extends Track {
 	private static final long serialVersionUID = 1L;
 	private static final String DEFAULT_SHIP_SYMBOL = "SUSP------";
 	private static final String SHORE_STATION_SYMBOL = "SUGPUUS-----";
@@ -25,7 +25,7 @@ public class Ship extends Track {
 	private String navStatusDescription = null;
 	private String destination = null;
 
-	public Ship(int mmsi) {
+	public AISTrack(int mmsi) {
 		super(String.valueOf(mmsi));
 		this.mmsi = mmsi;
 		setSymbolCode(DEFAULT_SHIP_SYMBOL);

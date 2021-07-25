@@ -193,7 +193,7 @@ public class APRSTCPClient extends TCPClient {
 		if (p != null) {
 			a.addPosition(p.getLatitude(), p.getLongitude());
 			if (p.getAltitude() > 0) {
-				a.setAltitude(p.getAltitude());
+				a.setAltitude(Double.valueOf(p.getAltitude()));
 			}
 		}
 		if (course != null) {

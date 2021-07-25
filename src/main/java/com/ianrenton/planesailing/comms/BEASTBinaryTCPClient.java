@@ -220,7 +220,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 				// Get an altitude, this could be barometric or geometric but Plane/Sailing
 				// doesn't really care
 				if (ap0.hasAltitude()) {
-					a.setAltitude(ap0.getAltitude());
+					a.setAltitude(ap0.getAltitude().doubleValue());
 				}
 
 				// Got this message so we know this is airborne
@@ -267,7 +267,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 				AirspeedHeadingMsg airspeed = (AirspeedHeadingMsg) msg;
 
 				if (airspeed.hasAirspeedInfo()) {
-					a.setSpeed(airspeed.getAirspeed());
+					a.setSpeed(airspeed.getAirspeed().doubleValue());
 				}
 
 				// Might as well approximate heading as course here,
@@ -311,7 +311,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 			case SHORT_ACAS:
 				ShortACAS acas = (ShortACAS) msg;
 				if (acas.getAltitude() != null) {
-					a.setAltitude(acas.getAltitude());
+					a.setAltitude(acas.getAltitude().doubleValue());
 					a.setOnGround(!acas.isAirborne());
 				}
 				break;
@@ -319,7 +319,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 			case ALTITUDE_REPLY:
 				AltitudeReply alti = (AltitudeReply) msg;
 				if (alti.getAltitude() != null) {
-					a.setAltitude(alti.getAltitude());
+					a.setAltitude(alti.getAltitude().doubleValue());
 					a.setOnGround(alti.isOnGround());
 				}
 				break;
@@ -332,7 +332,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 			case LONG_ACAS:
 				LongACAS long_acas = (LongACAS) msg;
 				if (long_acas.getAltitude() != null) {
-					a.setAltitude(long_acas.getAltitude());
+					a.setAltitude(long_acas.getAltitude().doubleValue());
 					a.setOnGround(!long_acas.isAirborne());
 				}
 				break;
@@ -340,7 +340,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 			case COMM_B_ALTITUDE_REPLY:
 				CommBAltitudeReply commBaltitude = (CommBAltitudeReply) msg;
 				if (commBaltitude.getAltitude() != null) {
-					a.setAltitude(commBaltitude.getAltitude());
+					a.setAltitude(commBaltitude.getAltitude().doubleValue());
 					a.setOnGround(commBaltitude.isOnGround());
 				}
 				break;

@@ -132,7 +132,7 @@ public abstract class Track implements Serializable {
 		return altitude;
 	}
 
-	public void setAltitude(double altitude) {
+	public void setAltitude(Double altitude) {
 		this.altitude = altitude;
 		updateMetadataTime();
 	}
@@ -156,7 +156,7 @@ public abstract class Track implements Serializable {
 		return course;
 	}
 
-	public void setCourse(double course) {
+	public void setCourse(Double course) {
 		this.course = course;
 		updateMetadataTime();
 	}
@@ -168,7 +168,7 @@ public abstract class Track implements Serializable {
 		return heading;
 	}
 
-	public void setHeading(double heading) {
+	public void setHeading(Double heading) {
 		this.heading = heading;
 		updateMetadataTime();
 	}
@@ -180,7 +180,7 @@ public abstract class Track implements Serializable {
 		return speed;
 	}
 
-	public void setSpeed(double speed) {
+	public void setSpeed(Double speed) {
 		this.speed = speed;
 		updateMetadataTime();
 	}

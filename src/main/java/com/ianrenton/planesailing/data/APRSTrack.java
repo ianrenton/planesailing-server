@@ -71,7 +71,7 @@ public class APRSTrack extends Track {
 	}
 	
 	@Override
-	public void setCourse(double course) {
+	public void setCourse(Double course) {
 		super.setCourse(course);
 		// Got a valid course, this is not a fixed track no matter what the SSID says
 		setFixed(false);
@@ -79,7 +79,7 @@ public class APRSTrack extends Track {
 	}
 	
 	@Override
-	public void setSpeed(double speed) {
+	public void setSpeed(Double speed) {
 		super.setSpeed(speed);
 		// Got a valid speed, this is not a fixed track no matter what the SSID says
 		setFixed(false);

@@ -21,10 +21,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opensky.libadsb.Position;
 
+import com.ianrenton.planesailing.data.APRSTrack;
 import com.ianrenton.planesailing.data.Airport;
 import com.ianrenton.planesailing.data.BaseStation;
 import com.ianrenton.planesailing.data.Seaport;
-import com.ianrenton.planesailing.data.Ship;
+import com.ianrenton.planesailing.data.AISTrack;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
 import com.typesafe.config.ConfigList;
@@ -217,7 +218,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 			String name = (String) data.get("name");
 			aisNameCache.put(mmsi, name);
 			if (containsKey(Integer.toString(mmsi))) {
-				((Ship) get(Integer.toString(mmsi))).setName(name);
+				((AISTrack) get(Integer.toString(mmsi))).setName(name);
 			}
 		}
 		LOGGER.info("Loaded {} AIS names from config file", aisNameConfigs.size());

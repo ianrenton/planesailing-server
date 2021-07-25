@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.ianrenton.planesailing.app.TrackTable;
-import com.ianrenton.planesailing.data.Ship;
+import com.ianrenton.planesailing.data.AISTrack;
 import com.ianrenton.planesailing.data.TrackType;
 
 import dk.tbsalling.aismessages.AISInputStreamReader;
@@ -93,16 +93,16 @@ public class AISUDPReceiver {
 		
 		// If this is a new track, add it to the track table
 		if (!trackTable.containsKey(mmsiString)) {
-			trackTable.put(mmsiString, new Ship(mmsi));
+			trackTable.put(mmsiString, new AISTrack(mmsi));
 			trackTable.get(mmsiString).setTrackType(TrackType.SHIP); // Assume ship by default
 			// If we have a cached name for this ship, use it
 			if (trackTable.getAISNameCache().containsKey(mmsi)) {
-				((Ship) trackTable.get(mmsiString)).setName(trackTable.getAISNameCache().get(mmsi));
+				((AISTrack) trackTable.get(mmsiString)).setName(trackTable.getAISNameCache().get(mmsi));
 			}
 		}
 		
 		// Extract the data and update the track
-		Ship s = (Ship) trackTable.get(mmsiString);
+		AISTrack s = (AISTrack) trackTable.get(mmsiString);
 		switch (m.getMessageType()) {
 		case AidToNavigationReport:
 			AidToNavigationReport m2 = (AidToNavigationReport) m;
@@ -141,12 +141,12 @@ public class AISUDPReceiver {
 			
 			s.addPosition(m5.getLatitude(), m5.getLongitude());
 			if (m5.getCourseOverGround() != 511) {
-				s.setCourse(m5.getCourseOverGround());
+				s.setCourse(m5.getCourseOverGround().doubleValue());
 			}
 			if (m5.getTrueHeading() != 0 && m5.getTrueHeading() != 511) {
-				s.setHeading(m5.getTrueHeading());
+				s.setHeading(m5.getTrueHeading().doubleValue());
 			}
-			s.setSpeed(m5.getSpeedOverGround());
+			s.setSpeed(m5.getSpeedOverGround().doubleValue());
 			s.setTrackType(TrackType.SHIP);
 			break;
 			
@@ -154,9 +154,9 @@ public class AISUDPReceiver {
 			LongRangeBroadcastMessage m6 = (LongRangeBroadcastMessage) m;
 			s.addPosition(m6.getLatitude(), m6.getLongitude());
 			if (m6.getCourseOverGround() != 511) {
-				s.setCourse(m6.getCourseOverGround());
+				s.setCourse(m6.getCourseOverGround().doubleValue());
 			}
-			s.setSpeed(m6.getSpeedOverGround());
+			s.setSpeed(m6.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m6.getNavigationalStatus());
 			s.setTrackType(TrackType.SHIP);
 			break;
@@ -165,12 +165,12 @@ public class AISUDPReceiver {
 			PositionReportClassAAssignedSchedule m7 = (PositionReportClassAAssignedSchedule) m;
 			s.addPosition(m7.getLatitude(), m7.getLongitude());
 			if (m7.getCourseOverGround() != 511) {
-				s.setCourse(m7.getCourseOverGround());
+				s.setCourse(m7.getCourseOverGround().doubleValue());
 			}
 			if (m7.getTrueHeading() != 0 && m7.getTrueHeading() != 511) {
-				s.setHeading(m7.getTrueHeading());
+				s.setHeading(m7.getTrueHeading().doubleValue());
 			}
-			s.setSpeed(m7.getSpeedOverGround());
+			s.setSpeed(m7.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m7.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
 			break;
@@ -179,12 +179,12 @@ public class AISUDPReceiver {
 			PositionReportClassAResponseToInterrogation m8 = (PositionReportClassAResponseToInterrogation) m;
 			s.addPosition(m8.getLatitude(), m8.getLongitude());
 			if (m8.getCourseOverGround() != 511) {
-				s.setCourse(m8.getCourseOverGround());
+				s.setCourse(m8.getCourseOverGround().doubleValue());
 			}
 			if (m8.getTrueHeading() != 0 && m8.getTrueHeading() != 511) {
-				s.setHeading(m8.getTrueHeading());
+				s.setHeading(m8.getTrueHeading().doubleValue());
 			}
-			s.setSpeed(m8.getSpeedOverGround());
+			s.setSpeed(m8.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m8.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
 			break;
@@ -193,12 +193,12 @@ public class AISUDPReceiver {
 			PositionReportClassAScheduled m9 = (PositionReportClassAScheduled) m;
 			s.addPosition(m9.getLatitude(), m9.getLongitude());
 			if (m9.getCourseOverGround() != 511) {
-				s.setCourse(m9.getCourseOverGround());
+				s.setCourse(m9.getCourseOverGround().doubleValue());
 			}
 			if (m9.getTrueHeading() != 0 && m9.getTrueHeading() != 511) {
-				s.setHeading(m9.getTrueHeading());
+				s.setHeading(m9.getTrueHeading().doubleValue());
 			}
-			s.setSpeed(m9.getSpeedOverGround());
+			s.setSpeed(m9.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m9.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
 			break;
@@ -219,12 +219,12 @@ public class AISUDPReceiver {
 			StandardClassBCSPositionReport m11 = (StandardClassBCSPositionReport) m;
 			s.addPosition(m11.getLatitude(), m11.getLongitude());
 			if (m11.getCourseOverGround() != 511) {
-				s.setCourse(m11.getCourseOverGround());
+				s.setCourse(m11.getCourseOverGround().doubleValue());
 			}
 			if (m11.getTrueHeading() != 0 && m11.getTrueHeading() != 511) {
-				s.setHeading(m11.getTrueHeading());
+				s.setHeading(m11.getTrueHeading().doubleValue());
 			}
-			s.setSpeed(m11.getSpeedOverGround());
+			s.setSpeed(m11.getSpeedOverGround().doubleValue());
 			s.setTrackType(TrackType.SHIP);
 			break;
 			
