@@ -158,7 +158,7 @@ public class AISTrack extends Track {
 
 	@Override
 	public String getDisplayInfo1() {
-		if (navStatusDescription != null && !navStatusDescription.equals("Undefined")) {
+		if (navStatusDescription != null && !navStatusDescription.isEmpty() && !navStatusDescription.equals("Undefined")) {
 			return "NAV STATUS: " + navStatusDescription.toUpperCase();
 		} else {
 			return "";
@@ -167,7 +167,7 @@ public class AISTrack extends Track {
 
 	@Override
 	public String getDisplayInfo2() {
-		if (destination != null) {
+		if (destination != null && !destination.isEmpty()) {
 			return "DESTINATION: " + destination.toUpperCase();
 		} else {
 			return "";
