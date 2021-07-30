@@ -170,7 +170,7 @@ public class Dump1090JSONReader extends Client {
 						}
 					}
 				}
-			} catch (IOException e) {
+			} catch (Throwable e) {
 				LOGGER.error("Exception reading {}", DATA_TYPE, e);
 			}
 		}
