@@ -189,6 +189,9 @@ public class Application {
 	public ConnectionStatus getMLATReceiverStatus() {
 		if (mlatReceiver != null) {
 			return mlatReceiver.getStatus();
+		} else if (adsbReceiver instanceof Dump1090JSONReader) {
+			// If using the JSON reader we don't need separate MLAT status
+			return adsbReceiver.getStatus();
 		} else {
 			return ConnectionStatus.DISABLED;
 		}
