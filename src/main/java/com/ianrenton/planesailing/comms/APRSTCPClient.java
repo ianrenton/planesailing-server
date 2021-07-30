@@ -203,10 +203,11 @@ public class APRSTCPClient extends TCPClient {
 		if (speed != null) {
 			a.setSpeed(speed);
 		}
+		a.updateMetadataTime();
 	}
 
 	@Override
-	protected int getSocketTimeoutMillis() {
+	protected int getTimeoutMillis() {
 		return 3600000;
 	}
 

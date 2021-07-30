@@ -5,24 +5,18 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Logger;
-
 import com.ianrenton.planesailing.app.TrackTable;
 
 /**
  * Generic line-reading TCP client implementation, to abstract out commonality
  * between SBS and APRS clients.
  */
-public abstract class TCPClient {
+public abstract class TCPClient extends Client {
 
 	protected final String remoteHost;
 	protected final int remotePort;
-	protected final TrackTable trackTable;
-	private final Receiver receiver = new Receiver();
+	final Receiver receiver = new Receiver();
 	protected boolean run = true;
-	private boolean online;
-	private long lastReceivedTime;
-
 	/**
 	 * Create the client
 	 * 
@@ -31,22 +25,18 @@ public abstract class TCPClient {
 	 * @param trackTable The track table to use.
 	 */
 	public TCPClient(String remoteHost, int remotePort, TrackTable trackTable) {
+		super(trackTable);
 		this.remoteHost = remoteHost;
 		this.remotePort = remotePort;
-		this.trackTable = trackTable;
 	}
 
-	/**
-	 * Run the client.
-	 */
+	@Override
 	public void run() {
 		run = true;
 		new Thread(receiver, getDataType() + " receiver thread").start();
 	}
 
-	/**
-	 * Stop the client.
-	 */
+	@Override
 	public void stop() {
 		run = false;
 	}
@@ -67,31 +57,6 @@ public abstract class TCPClient {
 	protected abstract boolean read(InputStream in);
 	
 	/**
-	 * Get the data type this connection handles, used only for logging.
-	 */
-	protected abstract String getDataType();
-	
-	/**
-	 * Get the subclass logger implementation
-	 */
-	protected abstract Logger getLogger();
-
-	/**
-	 * Means for implementations to provide their preferred socket timeout.
-	 * We typically get many SBS messages a second, but APRS only rarely,
-	 * so they have different timeouts.
-	 */
-	protected abstract int getSocketTimeoutMillis();
-	
-	/**
-	 * Means for implementations to update the "last received time" so
-	 * we know packets are arriving.
-	 */
-	protected void updatePacketReceivedTime() {
-		lastReceivedTime = System.currentTimeMillis();
-	}
-
-	/**
 	 * Inner receiver thread. Reads lines from the TCP socket, and provides them
 	 * to the handle() method.
 	 */
@@ -107,7 +72,7 @@ public abstract class TCPClient {
 					try {
 						getLogger().info("Trying to make TCP connection to {}:{} to receive {}...", remoteHost, remotePort, getDataType());
 						clientSocket = new Socket(remoteHost, remotePort);
-						clientSocket.setSoTimeout(getSocketTimeoutMillis());
+						clientSocket.setSoTimeout(getTimeoutMillis());
 						clientSocket.setSoLinger(false, 0);
 						clientSocket.setKeepAlive(true);
 						clientSocket.setReuseAddress(true);
@@ -139,18 +104,6 @@ public abstract class TCPClient {
 					}
 				}
 			}
-		}
-	}
-
-	public ConnectionStatus getStatus() {
-		if (online) {
-			if (System.currentTimeMillis() - lastReceivedTime <= getSocketTimeoutMillis()) {
-				return ConnectionStatus.ACTIVE;
-			} else {
-				return ConnectionStatus.ONLINE;
-			}
-		} else {
-			return ConnectionStatus.OFFLINE;
 		}
 	}
 }

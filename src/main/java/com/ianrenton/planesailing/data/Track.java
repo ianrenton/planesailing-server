@@ -41,7 +41,6 @@ public abstract class Track implements Serializable {
 
 	public void setCallsign(String callsign) {
 		this.callsign = callsign;
-		updateMetadataTime();
 	}
 
 	public TrackType getTrackType() {
@@ -134,7 +133,6 @@ public abstract class Track implements Serializable {
 
 	public void setAltitude(Double altitude) {
 		this.altitude = altitude;
-		updateMetadataTime();
 	}
 
 	/**
@@ -146,7 +144,6 @@ public abstract class Track implements Serializable {
 
 	public void setVerticalRate(Double verticalRate) {
 		this.verticalRate = verticalRate;
-		updateMetadataTime();
 	}
 
 	/**
@@ -158,7 +155,6 @@ public abstract class Track implements Serializable {
 
 	public void setCourse(Double course) {
 		this.course = course;
-		updateMetadataTime();
 	}
 
 	/**
@@ -170,7 +166,6 @@ public abstract class Track implements Serializable {
 
 	public void setHeading(Double heading) {
 		this.heading = heading;
-		updateMetadataTime();
 	}
 
 	/**
@@ -182,7 +177,6 @@ public abstract class Track implements Serializable {
 
 	public void setSpeed(Double speed) {
 		this.speed = speed;
-		updateMetadataTime();
 	}
 
 	public PositionHistory getPositionHistory() {
@@ -190,8 +184,12 @@ public abstract class Track implements Serializable {
 	}
 
 	public void addPosition(double latitude, double longitude) {
-		positionHistory.add(new TimestampedPosition(latitude, longitude, System.currentTimeMillis()));
-		updateMetadataTime();
+		addPosition(latitude, longitude, System.currentTimeMillis());
+	}
+
+	public void addPosition(double latitude, double longitude, long time) {
+		positionHistory.add(new TimestampedPosition(latitude, longitude, time));
+		updateMetadataTime(time);
 	}
 
 	/**
@@ -206,8 +204,12 @@ public abstract class Track implements Serializable {
 		}
 	}
 
-	protected void updateMetadataTime() {
+	public void updateMetadataTime() {
 		metaDataTime = System.currentTimeMillis();
+	}
+
+	public void updateMetadataTime(long newTime) {
+		metaDataTime = newTime;
 	}
 
 	public Long getMetaDataTime() {

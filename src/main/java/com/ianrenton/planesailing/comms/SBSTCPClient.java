@@ -134,6 +134,8 @@ public class SBSTCPClient extends TCPClient {
 						a.setOnGround(isOnGround != "0");
 					}
 				}
+				
+				a.updateMetadataTime();
 			}
 		} catch (Exception ex) {
 			getLogger().warn("TCP Socket for {} encountered an exception handling line {}", getDataType(), m, ex);
@@ -141,7 +143,7 @@ public class SBSTCPClient extends TCPClient {
 	}
 
 	@Override
-	protected int getSocketTimeoutMillis() {
+	protected int getTimeoutMillis() {
 		return socketTimeoutMillis;
 	}
 

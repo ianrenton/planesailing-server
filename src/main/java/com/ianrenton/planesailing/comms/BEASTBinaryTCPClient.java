@@ -381,6 +381,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 			default:
 				// Type not applicable for this downlink format
 			}
+			a.updateMetadataTime();
 
 		} catch (Exception ex) {
 			LOGGER.warn("TCP Socket for {} encountered an exception handling a Mode S packet", dataType, ex);
@@ -402,7 +403,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 	}
 
 	@Override
-	protected int getSocketTimeoutMillis() {
+	protected int getTimeoutMillis() {
 		return socketTimeoutMillis;
 	}
 

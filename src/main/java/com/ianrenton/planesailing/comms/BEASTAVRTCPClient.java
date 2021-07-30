@@ -68,7 +68,7 @@ public class BEASTAVRTCPClient extends TCPClient {
 	}
 
 	@Override
-	protected int getSocketTimeoutMillis() {
+	protected int getTimeoutMillis() {
 		return 60000;
 	}
 

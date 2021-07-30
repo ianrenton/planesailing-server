@@ -80,12 +80,10 @@ public class Aircraft extends Track {
 
 	public void setOnGround(boolean onGround) {
 		this.onGround = onGround;
-		updateMetadataTime();
 	}
 
 	public void setSquawk(int squawk) {
 		this.squawk = squawk;
-		updateMetadataTime();
 	}
 
 	/**
@@ -122,8 +120,6 @@ public class Aircraft extends Track {
 				}
 			}
 		}
-
-		updateMetadataTime();
 	}
 
 	/**
@@ -156,8 +152,6 @@ public class Aircraft extends Track {
 
 	public void setOperator(String operator) {
 		this.operator = operator;
-
-		updateMetadataTime();
 	}
 
 	public boolean shouldDrop() {

@@ -32,20 +32,18 @@ import dk.tbsalling.aismessages.ais.messages.UTCAndDateResponse;
 /**
  * Receiver for AIS NMEA-0183 messages from a UDP socket.
  */
-public class AISUDPReceiver {
+public class AISUDPReceiver extends Client {
 	private static final Logger LOGGER = LogManager.getLogger(AISUDPReceiver.class);
 	// Expected milliseconds between receiving packets
-	private static final long PACKET_RX_RATE_MILLIS = 120000;
+	private static final int PACKET_RX_RATE_MILLIS = 120000;
+	private static final String DATA_TYPE = "AIS data";
 	private final int localPort;
-	private final TrackTable trackTable;
 	private final UDPReceiver udpReceiverThread = new UDPReceiver();
 	private final AISReceiver aisReceiverThread = new AISReceiver();
 	private AISInputStreamReader aisReader;
 	private final PipedOutputStream pipeOS = new PipedOutputStream();
 	private InputStream pipeIS;
 	private boolean run = true;
-	private boolean online;
-	private long lastReceivedTime;
 
 	/**
 	 * Create the receiver
@@ -53,8 +51,8 @@ public class AISUDPReceiver {
 	 * @param trackTable The track table to use.
 	 */
 	public AISUDPReceiver(int localPort, TrackTable trackTable) {
+		super(trackTable);
 		this.localPort = localPort;
-		this.trackTable = trackTable;
 		
 		try {
 			 pipeIS = new PipedInputStream(pipeOS);
@@ -111,6 +109,7 @@ public class AISUDPReceiver {
 			s.addPosition(m2.getLatitude(), m2.getLongitude());
 			s.setTrackType(TrackType.AIS_ATON);
 			s.setFixed(true);
+			s.updateMetadataTime();
 			break;
 			
 		case BaseStationReport:
@@ -119,6 +118,7 @@ public class AISUDPReceiver {
 			s.addPosition(m3.getLatitude(), m3.getLongitude());
 			s.setTrackType(TrackType.AIS_SHORE_STATION);
 			s.setFixed(true);
+			s.updateMetadataTime();
 			break;
 			
 		case ClassBCSStaticDataReport:
@@ -131,6 +131,7 @@ public class AISUDPReceiver {
 			s.setCallsign(m4.getCallsign().trim());
 			s.setShipType(m4.getShipType());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case ExtendedClassBEquipmentPositionReport:
@@ -148,6 +149,7 @@ public class AISUDPReceiver {
 			}
 			s.setSpeed(m5.getSpeedOverGround().doubleValue());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case LongRangeBroadcastMessage:
@@ -159,6 +161,7 @@ public class AISUDPReceiver {
 			s.setSpeed(m6.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m6.getNavigationalStatus());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case PositionReportClassAAssignedSchedule:
@@ -173,6 +176,7 @@ public class AISUDPReceiver {
 			s.setSpeed(m7.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m7.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case PositionReportClassAResponseToInterrogation:
@@ -187,6 +191,7 @@ public class AISUDPReceiver {
 			s.setSpeed(m8.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m8.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case PositionReportClassAScheduled:
@@ -201,6 +206,7 @@ public class AISUDPReceiver {
 			s.setSpeed(m9.getSpeedOverGround().doubleValue());
 			s.setNavStatus(m9.getNavigationStatus());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case ShipAndVoyageRelatedData:
@@ -213,6 +219,7 @@ public class AISUDPReceiver {
 			s.setShipType(m10.getShipType());
 			s.setDestination(m10.getDestination());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case StandardClassBCSPositionReport:
@@ -226,6 +233,7 @@ public class AISUDPReceiver {
 			}
 			s.setSpeed(m11.getSpeedOverGround().doubleValue());
 			s.setTrackType(TrackType.SHIP);
+			s.updateMetadataTime();
 			break;
 			
 		case UTCAndDateResponse:
@@ -240,18 +248,6 @@ public class AISUDPReceiver {
 		default:
 			// Nothing useful we can do with this type
 			break;
-		}
-	}
-
-	public ConnectionStatus getStatus() {
-		if (online) {
-			if (System.currentTimeMillis() - lastReceivedTime <= PACKET_RX_RATE_MILLIS * 2) {
-				return ConnectionStatus.ACTIVE;
-			} else {
-				return ConnectionStatus.ONLINE;
-			}
-		} else {
-			return ConnectionStatus.OFFLINE;
 		}
 	}
 
@@ -294,5 +290,20 @@ public class AISUDPReceiver {
 		public void run() {
 			aisReader.run();
 		}
+	}
+
+	@Override
+	protected String getDataType() {
+		return DATA_TYPE;
+	}
+
+	@Override
+	protected Logger getLogger() {
+		return LOGGER;
+	}
+
+	@Override
+	protected int getTimeoutMillis() {
+		return PACKET_RX_RATE_MILLIS * 2;
 	}
 }

@@ -11,9 +11,10 @@ import com.ianrenton.planesailing.comms.AISUDPReceiver;
 import com.ianrenton.planesailing.comms.APRSTCPClient;
 import com.ianrenton.planesailing.comms.BEASTAVRTCPClient;
 import com.ianrenton.planesailing.comms.BEASTBinaryTCPClient;
+import com.ianrenton.planesailing.comms.Client;
 import com.ianrenton.planesailing.comms.ConnectionStatus;
+import com.ianrenton.planesailing.comms.Dump1090JSONReader;
 import com.ianrenton.planesailing.comms.SBSTCPClient;
-import com.ianrenton.planesailing.comms.TCPClient;
 import com.ianrenton.planesailing.comms.WebServer;
 import com.ianrenton.planesailing.utils.DataMaps;
 import com.typesafe.config.Config;
@@ -32,10 +33,10 @@ public class Application {
 	private final TrackTable trackTable = new TrackTable();
 
 	private WebServer webServer;
-	private AISUDPReceiver aisReceiver;
-	private TCPClient adsbReceiver;
-	private TCPClient mlatReceiver;
-	private TCPClient aprsReceiver;
+	private Client aisReceiver;
+	private Client adsbReceiver;
+	private Client mlatReceiver;
+	private Client aprsReceiver;
 
 	/**
 	 * Start the application
@@ -81,6 +82,9 @@ public class Application {
 		
 		if (CONFIG.getBoolean("comms.adsb-receiver.enabled")) {
 			switch (CONFIG.getString("comms.adsb-receiver.protocol")) {
+			case "dump1090json":
+				adsbReceiver = new Dump1090JSONReader(CONFIG.getString("comms.adsb-receiver.file"), trackTable);
+				break;
 			case "beastbinary":
 				adsbReceiver = new BEASTBinaryTCPClient(CONFIG.getString("comms.adsb-receiver.host"), CONFIG.getInt("comms.adsb-receiver.port"), trackTable, false);
 				break;

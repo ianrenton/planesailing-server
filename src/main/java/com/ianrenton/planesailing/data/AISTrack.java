@@ -42,7 +42,6 @@ public class AISTrack extends Track {
 
 	public void setName(String name) {
 		this.name = name;
-		updateMetadataTime();
 	}
 
 	public ShipType getShipType() {
@@ -72,8 +71,6 @@ public class AISTrack extends Track {
 					break;
 				}
 			}
-			
-			updateMetadataTime();
 		}
 	}
 
@@ -86,7 +83,6 @@ public class AISTrack extends Track {
 		if (shoreStation) {
 			setSymbolCode(SHORE_STATION_SYMBOL);
 		}
-		updateMetadataTime();
 	}
 
 	public boolean isAtoN() {
@@ -95,7 +91,6 @@ public class AISTrack extends Track {
 
 	public void setAtoN(boolean aton) {
 		this.aton = aton;
-		updateMetadataTime();
 	}
 
 	public NavigationStatus getNavStatus() {
@@ -112,8 +107,6 @@ public class AISTrack extends Track {
 				break;
 			}
 		}
-				
-		updateMetadataTime();
 	}
 
 	public String getDestination() {
@@ -122,7 +115,6 @@ public class AISTrack extends Track {
 
 	public void setDestination(String destination) {
 		this.destination = destination;
-		updateMetadataTime();
 	}
 	
 	public boolean shouldDrop() {
