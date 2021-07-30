@@ -88,85 +88,107 @@ public class Dump1090JSONReader extends Client {
 				JSONArray acList = o.getJSONArray("aircraft");
 				if (acList != null) {
 					for (int i=0; i < acList.length(); i++) {
-						JSONObject ac = acList.getJSONObject(i);
-
-						// Get the ICAO 24-bit hex code
-						String icao24 = ac.getString("hex");
-
-						// If this is a new track, add it to the track table
-						if (!trackTable.containsKey(icao24)) {
-							trackTable.put(icao24, new Aircraft(icao24));
-						}
-
-						// Extract the data and update the track
-						Aircraft a = (Aircraft) trackTable.get(icao24);
-						if (ac.has("flight") && !ac.getString("flight").isEmpty()) {
-							a.setCallsign(ac.getString("flight").trim());
-						}
-						if (ac.has("squawk") && !ac.getString("squawk").isEmpty()) {
-							a.setSquawk(Integer.valueOf(ac.getString("squawk")));
-						}
-						if (ac.has("category") && !ac.getString("category").isEmpty()) {
-							a.setCategory(ac.getString("category").trim());
-						}
-						if (ac.has("lat") && ac.has("lon")) {
+						try {
+							JSONObject ac = acList.getJSONObject(i);
+	
+							// Get the ICAO 24-bit hex code
+							String icao24 = ac.getString("hex");
+	
+							// If this is a new track, add it to the track table
+							if (!trackTable.containsKey(icao24)) {
+								trackTable.put(icao24, new Aircraft(icao24));
+							}
+	
+							// Extract the data and update the track
+							Aircraft a = (Aircraft) trackTable.get(icao24);
+							if (ac.has("flight") && !ac.getString("flight").isEmpty()) {
+								a.setCallsign(ac.getString("flight").trim());
+							}
+							if (ac.has("squawk") && !ac.getString("squawk").isEmpty()) {
+								a.setSquawk(Integer.valueOf(ac.getString("squawk")));
+							}
+							if (ac.has("category") && !ac.getString("category").isEmpty()) {
+								a.setCategory(ac.getString("category").trim());
+							}
+							if (ac.has("lat") && ac.has("lon")) {
+								if (ac.has("pos_seen")) {
+									long time = System.currentTimeMillis() - Math.round(ac.getDouble("pos_seen") * 1000);
+									a.addPosition(ac.getDouble("lat"), ac.getDouble("lon"), time);
+								} else if (ac.has("seen")) {
+									long time = System.currentTimeMillis() - Math.round(ac.getDouble("seen") * 1000);
+									a.addPosition(ac.getDouble("lat"), ac.getDouble("lon"), time);
+								} else {
+									a.addPosition(ac.getDouble("lat"), ac.getDouble("lon"));
+								}
+							}
+							if (ac.has("alt_baro")) {
+								if (ac.get("alt_baro") instanceof String && ac.getString("alt_baro").equals("ground")) {
+									a.setAltitude(0.0);
+									a.setOnGround(true);
+								} else {
+									a.setAltitude(ac.getDouble("alt_baro"));
+									a.setOnGround(false);
+								}
+							} else if (ac.has("alt_geom")) {
+								if (ac.get("alt_geom") instanceof String && ac.getString("alt_geom").equals("ground")) {
+									a.setAltitude(0.0);
+									a.setOnGround(true);
+								} else {
+									a.setAltitude(ac.getDouble("alt_geom"));
+									a.setOnGround(false);
+								}
+							} else if (ac.has("nav_altitude_mcp")) {
+								if (ac.get("nav_altitude_mcp") instanceof String && ac.getString("nav_altitude_mcp").equals("ground")) {
+									a.setAltitude(0.0);
+									a.setOnGround(true);
+								} else {
+									a.setAltitude(ac.getDouble("nav_altitude_mcp"));
+									a.setOnGround(false);
+								}
+							}
+							if (ac.has("baro_rate")) {
+								a.setVerticalRate(ac.getDouble("baro_rate") / 60.0);
+							} else if (ac.has("geom_rate")) {
+								a.setVerticalRate(ac.getDouble("geom_rate") / 60.0);
+							}
+							if (ac.has("track")) {
+								a.setCourse(ac.getDouble("track"));
+							} else if (ac.has("true_heading")) {
+								a.setCourse(ac.getDouble("true_heading"));
+							} else if (ac.has("mag_heading")) {
+								a.setCourse(ac.getDouble("mag_heading"));
+							} else if (ac.has("nav_heading")) {
+								a.setCourse(ac.getDouble("nav_heading"));
+							}
+							if (ac.has("true_heading")) {
+								a.setHeading(ac.getDouble("true_heading"));
+							} else if (ac.has("mag_heading")) {
+								a.setHeading(ac.getDouble("mag_heading"));
+							} else if (ac.has("nav_heading")) {
+								a.setHeading(ac.getDouble("nav_heading"));
+							} else if (ac.has("track")) {
+								a.setHeading(ac.getDouble("track"));
+							}
+							if (ac.has("gs")) {
+								a.setSpeed(ac.getDouble("gs"));
+							} else if (ac.has("tas")) {
+								a.setSpeed(ac.getDouble("tas"));
+							} else if (ac.has("ias")) {
+								a.setSpeed(ac.getDouble("ias"));
+							} else if (ac.has("mach")) {
+								a.setSpeed(ac.getDouble("mach") * 666.739);
+							}
 							if (ac.has("pos_seen")) {
 								long time = System.currentTimeMillis() - Math.round(ac.getDouble("pos_seen") * 1000);
-								a.addPosition(ac.getDouble("lat"), ac.getDouble("lon"), time);
+								a.updateMetadataTime(time);
 							} else if (ac.has("seen")) {
 								long time = System.currentTimeMillis() - Math.round(ac.getDouble("seen") * 1000);
-								a.addPosition(ac.getDouble("lat"), ac.getDouble("lon"), time);
+								a.updateMetadataTime(time);
 							} else {
-								a.addPosition(ac.getDouble("lat"), ac.getDouble("lon"));
+								a.updateMetadataTime();
 							}
-						}
-						if (ac.has("alt_baro")) {
-							a.setAltitude(ac.getDouble("alt_baro"));
-						} else if (ac.has("alt_geom")) {
-							a.setAltitude(ac.getDouble("alt_geom"));
-						} else if (ac.has("nav_altitude_mcp")) {
-							a.setAltitude(ac.getDouble("nav_altitude_mcp"));
-						}
-						if (ac.has("baro_rate")) {
-							a.setVerticalRate(ac.getDouble("baro_rate") / 60.0);
-						} else if (ac.has("geom_rate")) {
-							a.setVerticalRate(ac.getDouble("geom_rate") / 60.0);
-						}
-						if (ac.has("track")) {
-							a.setCourse(ac.getDouble("track"));
-						} else if (ac.has("true_heading")) {
-							a.setCourse(ac.getDouble("true_heading"));
-						} else if (ac.has("mag_heading")) {
-							a.setCourse(ac.getDouble("mag_heading"));
-						} else if (ac.has("nav_heading")) {
-							a.setCourse(ac.getDouble("nav_heading"));
-						}
-						if (ac.has("true_heading")) {
-							a.setHeading(ac.getDouble("true_heading"));
-						} else if (ac.has("mag_heading")) {
-							a.setHeading(ac.getDouble("mag_heading"));
-						} else if (ac.has("nav_heading")) {
-							a.setHeading(ac.getDouble("nav_heading"));
-						} else if (ac.has("track")) {
-							a.setHeading(ac.getDouble("track"));
-						}
-						if (ac.has("gs")) {
-							a.setSpeed(ac.getDouble("gs"));
-						} else if (ac.has("tas")) {
-							a.setSpeed(ac.getDouble("tas"));
-						} else if (ac.has("ias")) {
-							a.setSpeed(ac.getDouble("ias"));
-						} else if (ac.has("mach")) {
-							a.setSpeed(ac.getDouble("mach") * 666.739);
-						}
-						if (ac.has("pos_seen")) {
-							long time = System.currentTimeMillis() - Math.round(ac.getDouble("pos_seen") * 1000);
-							a.updateMetadataTime(time);
-						} else if (ac.has("seen")) {
-							long time = System.currentTimeMillis() - Math.round(ac.getDouble("seen") * 1000);
-							a.updateMetadataTime(time);
-						} else {
-							a.updateMetadataTime();
+						} catch (Exception e) {
+							LOGGER.error("Exception reading data for an aircraft", e);
 						}
 					}
 				}
