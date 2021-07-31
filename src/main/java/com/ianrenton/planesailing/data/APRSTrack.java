@@ -52,6 +52,10 @@ public class APRSTrack extends Track {
 	}
 
 	public void setSSID(String ssid) {
+		if (ssid != null && !ssid.isEmpty()) {
+			ssid = "0";
+		}
+		
 		this.ssid = ssid;
 		
 		// Set the right symbol for the SSID if known

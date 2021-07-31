@@ -132,7 +132,7 @@ public class APRSTCPClient extends TCPClient {
 	private void addDataToTrack(APRSPacket packet) {
 		// Extract core data
 		String callsign = packet.getSourceCall();
-		String ssid = packet.getSsid(callsign);
+		String ssid = APRSPacket.getSsid(callsign);
 		String destCall = packet.getDestinationCall();
 		String route = packet.getDigiString();
 
@@ -178,16 +178,14 @@ public class APRSTCPClient extends TCPClient {
 		}
 
 		// Update the track.
-		if (ssid != null) {
-			a.setSSID(ssid);
-		}
-		if (destCall != null) {
+		a.setSSID(ssid);
+		if (destCall != null && !destCall.isEmpty()) {
 			a.setPacketDestCall(destCall);
 		}
-		if (route != null) {
+		if (route != null && !route.isEmpty()) {
 			a.setPacketRoute(route);
 		}
-		if (comment != null) {
+		if (comment != null && !comment.isEmpty()) {
 			a.setComment(comment);
 		}
 		if (p != null) {
