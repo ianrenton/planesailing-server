@@ -2,6 +2,7 @@ package com.ianrenton.planesailing.comms;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.BitSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +40,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
 	private static final String DATA_TYPE_ADSB = "BEAST Binary (ADS-B) data";
 	private static final String DATA_TYPE_MLAT = "BEAST Binary (MLAT) data";
 	private static final byte ESC = (byte) 0x1a;
+	private static final String COMMB_CALLSIGN_BASE64 = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_ !\"#$%&'()*+,-./0123456789:;<=>?";
 	private static final ModeSDecoder DECODER = new ModeSDecoder();
 
 	private final String dataType;
@@ -343,11 +345,19 @@ public class BEASTBinaryTCPClient extends TCPClient {
 					a.setAltitude(commBaltitude.getAltitude().doubleValue());
 					a.setOnGround(commBaltitude.isOnGround());
 				}
+				// libadsb doesn't handle the Comm-B message contents yet apart from
+				// the header value covered above, so we must implement our own
+				// handling for this.
+				handleCommBMessage(msg, a);
 				break;
 
 			case COMM_B_IDENTIFY_REPLY:
 				CommBIdentifyReply commBidentify = (CommBIdentifyReply) msg;
 				a.setSquawk(Integer.valueOf(commBidentify.getIdentity()));
+				// libadsb doesn't handle the Comm-B message contents yet apart from
+				// the header value covered above, so we must implement our own
+				// handling for this.
+				handleCommBMessage(msg, a);
 				break;
 
 			case MODES_REPLY:
@@ -385,6 +395,87 @@ public class BEASTBinaryTCPClient extends TCPClient {
 
 		} catch (Exception ex) {
 			LOGGER.warn("TCP Socket for {} encountered an exception handling a Mode S packet", dataType, ex);
+		}
+	}
+
+	/**
+	 * 
+	 * libadsb doesn't handle the Comm-B message contents yet apart from the header
+	 * value covered above, so we must implement our own handling for this.
+	 * Currently only very basic decoding is supported, e.g. aircraft callsign.
+	 * 
+	 * @param msg The message
+	 * @param a   The aircraft to update
+	 */
+	private static void handleCommBMessage(ModeSReply msg, Aircraft a) {
+		byte[] commBMessage = new byte[0];
+		if (msg instanceof CommBIdentifyReply) {
+			commBMessage = ((CommBIdentifyReply) msg).getMessage();
+		} else if (msg instanceof CommBAltitudeReply) {
+			commBMessage = ((CommBAltitudeReply) msg).getMessage();
+		}
+
+		if (commBMessage.length > 0) {
+			// Based on the contents of the message, determine the type
+			// and extract the encoded data
+			// ref: https://mode-s.org/decode/content/mode-s/9-inference.html
+			if (commBMessage[0] == 0x20) {
+				// BDS 2,0 - Aircraft identification
+				// Payload contains callsign
+				StringBuilder cs = new StringBuilder();
+				for (int i = 0; i < 8; i++) {
+					int val = getbits(commBMessage, (6 * i) + 9, (6 * i) + 14);
+					val += (val < 0) ? 64 : 0;
+					cs.append(COMMB_CALLSIGN_BASE64.charAt(val));
+				}
+				String callsign = cs.toString().trim();
+				// Callsign can be corrupt because there's no error checking here,
+				// only handle it if it looks valid, and only use it if the
+				// track doesn't already have a callsign set by ADS-B which is
+				// more reliable.
+				if (!callsign.isEmpty() && callsign.matches("[a-zA-z0-9]*") && a.getCallsign() == null) {
+					a.setCallsign(callsign);
+				}
+			} else {
+				// Another type of Comm-B message, not handled currently
+			}
+		}
+	}
+
+	/**
+	 * Extract bits from a byte array. Borrowed from dump1090
+	 * https://github.com/adsbxchange/dump1090-fa/blob/cdba7566fde1ab45186f2dc4ea53e0594de484b1/mode_s.h#L51
+	 */
+	private static int getbits(byte[] data, int firstbit, int lastbit) {
+		int fbi = firstbit - 1;
+		int lbi = lastbit - 1;
+		int nbi = (lastbit - firstbit + 1);
+
+		int fby = fbi >> 3;
+		int lby = lbi >> 3;
+		int nby = (lby - fby) + 1;
+
+		int shift = 7 - (lbi & 7);
+		int topmask = 0xFF >> (fbi & 7);
+
+		assert (fbi <= lbi);
+		assert (nbi <= 32);
+		assert (nby <= 5);
+
+		if (nby == 5) {
+			return ((data[fby] & topmask) << (32 - shift)) | (data[fby + 1] << (24 - shift))
+					| (data[fby + 2] << (16 - shift)) | (data[fby + 3] << (8 - shift)) | (data[fby + 4] >> shift);
+		} else if (nby == 4) {
+			return ((data[fby] & topmask) << (24 - shift)) | (data[fby + 1] << (16 - shift))
+					| (data[fby + 2] << (8 - shift)) | (data[fby + 3] >> shift);
+		} else if (nby == 3) {
+			return ((data[fby] & topmask) << (16 - shift)) | (data[fby + 1] << (8 - shift)) | (data[fby + 2] >> shift);
+		} else if (nby == 2) {
+			return ((data[fby] & topmask) << (8 - shift)) | (data[fby + 1] >> shift);
+		} else if (nby == 1) {
+			return (data[fby] & topmask) >> shift;
+		} else {
+			return 0;
 		}
 	}
 

@@ -13,7 +13,7 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 ## Features
 
 * Receives AIS messages in NMEA-0183 format via UDP (e.g. from rtl_ais)
-* Receives Mode-S/A/C & ADS-B messages in BEAST Binary, BEAST AVR and SBS/BaseStation format (e.g. from Dump1090)
+* Receives Mode-S/A/C, ADS-B and some Comm-B messages in BEAST Binary, BEAST AVR and SBS/BaseStation format (e.g. from Dump1090)
 * Receives MLAT messages in BEAST Binary and SBS/BaseStation format (e.g. from PiAware)
 * Receives complete aircraft data sets direct from Dump1090 in its own JSON format, if preferred
 * Receives APRS messages via KISS TCP (e.g. from Direwolf)
@@ -22,6 +22,14 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 * Includes look-up tables to determine aircraft operators, types, and the correct MIL-STD2525C symbols to use for a variety of tracks
 * Persists data to disk so the content of the track table is not lost on restart
 * Customisable times to drop tracks etc.
+
+## Choosing Aircraft Data Protocols
+
+A number of aircraft data formats are supported&mdash;for the gory details see the [Tracking Packet Format FAQ](https://ianrenton.com/hardware/planesailing/tracking-packet-format-faq/#what-are-the-common-formats-of-mode-s-data). The preferred format is BEAST Binary format, which Dump1090 produces as an output. This contains the raw Mode-A, Mode-C, Mode-S, ADS-B and Comm-B bytes with some encapsulation. Plane/Sailing can use the same format for receiving live data from the radio via Dump1090 as it can receiving MLAT data from PiAware.
+
+BEAST AVR format is also supported, which is ASCII-encoded and therefore a little easier to parse, but PiAware does not support this for MLAT data. SBS/BaseStation format is supported too, which is both ASCII-encoded *and* supported by PiAware for MLAT, but it doesn't contain all information fields e.g. aircraft category.
+
+Finally, Plane/Sailing v1 loaded its aircraft data from a JSON file written by Dump1090, and Plane/Sailing v2 preserves this capability. This data contains every data point including merged-in MLAT data, however the data is not "live" so requires some adjustments in the code for the time at which data was recorded. It's no longer the preferred option but it is available. 
 
 ## Setup
 
