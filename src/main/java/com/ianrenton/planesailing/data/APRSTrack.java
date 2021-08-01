@@ -10,6 +10,7 @@ public class APRSTrack extends Track {
 	private static final String DEFAULT_APRS_SYMBOL = "SUGPEVC-----";
 	private static final Long DROP_STATIC_APRS_TRACK_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-static-after");
 	private static final Long DROP_MOVING_APRS_TRACK_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-moving-after");
+	private static final Long DROP_APRS_TRACK_WITH_NO_POS_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-no-position-after");
 
 	private String packetDestCall = null;
 	private String packetRoute = null; 
@@ -94,6 +95,8 @@ public class APRSTrack extends Track {
 	public boolean shouldDrop() {
 		if (fixed) {
 			return false;
+		} else if (positionHistory.isEmpty()) {
+			return getTimeSinceLastUpdate() > DROP_APRS_TRACK_WITH_NO_POS_TIME;
 		} else if (getSpeed() == null || getSpeed() < 1.0) {
 			return getTimeSinceLastUpdate() > DROP_STATIC_APRS_TRACK_TIME;
 		} else {

@@ -10,6 +10,7 @@ public class Aircraft extends Track {
 	private static final String DEFAULT_AIRCRAFT_SYMBOL = "SUAPCF----";
 	private static final Long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = Application.CONFIG.getLong("timing.drop-air-track-at-zero-alt-after");
 	private static final Long DROP_AIR_TRACK_TIME = Application.CONFIG.getLong("timing.drop-air-track-after");
+	private static final Long DROP_AIR_TRACK_WITH_NO_POS_TIME = Application.CONFIG.getLong("timing.drop-air-track-no-position-after");
 	
 	private boolean onGround;
 	private Integer squawk;
@@ -157,6 +158,8 @@ public class Aircraft extends Track {
 	public boolean shouldDrop() {
 		if (isOnGround()) {
 			return getTimeSinceLastUpdate() > DROP_AIR_TRACK_AT_ZERO_ALT_TIME;
+		} else if (positionHistory.isEmpty()) {
+			return getTimeSinceLastUpdate() > DROP_AIR_TRACK_WITH_NO_POS_TIME;
 		} else {
 			return getTimeSinceLastUpdate() > DROP_AIR_TRACK_TIME;
 		}

@@ -14,6 +14,7 @@ public class AISTrack extends Track {
 	private static final String SHORE_STATION_SYMBOL = "SUGPUUS-----";
 	private static final Long DROP_STATIC_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-static-after");
 	private static final Long DROP_MOVING_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-moving-after");
+	private static final Long DROP_SHIP_TRACK_WITH_NO_POS_TIME = Application.CONFIG.getLong("timing.drop-ship-track-no-position-after");
 	
 	private final int mmsi;
 	private String name;
@@ -120,6 +121,8 @@ public class AISTrack extends Track {
 	public boolean shouldDrop() {
 		if (fixed) {
 			return false;
+		} else if (positionHistory.isEmpty()) {
+			return getTimeSinceLastUpdate() > DROP_SHIP_TRACK_WITH_NO_POS_TIME;
 		} else if (getSpeed() == null || getSpeed() < 1.0) {
 			return getTimeSinceLastUpdate() > DROP_STATIC_SHIP_TRACK_TIME;
 		} else {
