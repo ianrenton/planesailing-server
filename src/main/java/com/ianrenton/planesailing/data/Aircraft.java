@@ -215,6 +215,6 @@ public class Aircraft extends Track {
 
 	@Override
 	public String getDisplayInfo2() {
-		return (squawk != null) ? ("SQUAWK: " + squawk.toString()) : "";
+		return (squawk != null) ? String.format("SQUAWK: %04d", squawk.toString()) : "";
 	}
 }
