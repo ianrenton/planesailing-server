@@ -103,6 +103,7 @@ BA11,British Aerospace (BAC) One Eleven
 BCS1,Airbus A220-100
 BCS3,Airbus A220-300
 BE20,Beechcraft Super King 200
+BE40,Hawker Beechcraft 400XP
 BE55,Beechcraft Baron 55
 BE58,Beechcraft Baron 58
 BE76,Beech 76 Duchess
@@ -255,6 +256,7 @@ L188,Lockheed L-188 Electra
 L410,LET 410
 LJ35,Learjet 35 / 36 / C-21A
 LJ60,Learjet 60
+LYNX,Lynx/Wildcat
 MCR1,Dyn'Aero MCR-01 ULC
 MD11,McDonnell Douglas MD-11
 MD81,McDonnell Douglas MD-81
@@ -277,6 +279,7 @@ P208,Tecnam P2008
 P210,Cessna P210
 PA18,Piper PA-18-150 Super Cub
 PA31,Piper PA-31
+PA32,Piper PA-32
 PA44,Piper PA-44
 PA46,Piper PA-46
 PC12,Pilatus PC-12

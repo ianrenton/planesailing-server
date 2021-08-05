@@ -20,13 +20,13 @@ public class Aircraft extends Track {
 	private String aircraftTypeShort; // e.g. "A320"
 	private String aircraftTypeLong; // e.g. "Airbus A320"
 	private String operator; // e.g. "Ryanair"
-	
+
 	// We prefer to use a symbol created from the airline code, because that
 	// lets us show symbols for military flights, but we can also set a
-	// symbol based on aircraft category. If we have set it based on airline
-	// code at least once, this flag is set true to prevent it being overridden
-	// when category information arrives. 
-	private boolean setSymbolBasedOnAirlineCode;
+	// symbol based on airframe, or on aircraft category, or of course the
+	// default symbol for an aircraft. This field tracks what it was set by
+	// to make sure only higher-priority things can override the symbol.
+	private SymbolSetBy symbolSetBy = SymbolSetBy.DEFAULT;
 
 	public Aircraft(String id) {
 		super(id);
@@ -37,6 +37,11 @@ public class Aircraft extends Track {
 		aircraftTypeShort = DataMaps.AIRCRAFT_ICAO_HEX_TO_TYPE.getOrDefault(id.toUpperCase(), null);
 		if (aircraftTypeShort != null) {
 			aircraftTypeLong = DataMaps.AIRCRAFT_TYPE_SHORT_TO_LONG.getOrDefault(aircraftTypeShort, null);
+			String symbolCodeFromAirframe = DataMaps.AIRCRAFT_TYPE_SHORT_TO_SYMBOL.getOrDefault(aircraftTypeShort, null);
+			if (symbolCodeFromAirframe != null) {
+				setSymbolCode(symbolCodeFromAirframe);
+				symbolSetBy = SymbolSetBy.AIRFRAME;
+			}
 		}
 	}
 
@@ -65,7 +70,7 @@ public class Aircraft extends Track {
 		for (Entry<String, String> e : DataMaps.AIRCRAFT_AIRLINE_CODE_TO_SYMBOL.entrySet()) {
 			if (callsign.startsWith(e.getKey())) {
 				setSymbolCode(e.getValue());
-				setSymbolBasedOnAirlineCode = true;
+				symbolSetBy = SymbolSetBy.CALLSIGN;
 				break;
 			}
 		}
@@ -113,7 +118,7 @@ public class Aircraft extends Track {
 		}
 
 		// Set the right symbol for the category if known
-		if (!setSymbolBasedOnAirlineCode) {
+		if (symbolSetBy == SymbolSetBy.DEFAULT) {
 			for (Entry<String, String> e : DataMaps.AIRCRAFT_CATEGORY_TO_SYMBOL.entrySet()) {
 				if (category.equals(e.getKey())) {
 					setSymbolCode(e.getValue());
@@ -219,5 +224,9 @@ public class Aircraft extends Track {
 	@Override
 	public String getDisplayInfo2() {
 		return (squawk != null) ? String.format("SQUAWK: %04d", squawk) : "";
+	}
+	
+	private enum SymbolSetBy {
+		CALLSIGN, AIRFRAME, CATEGORY, DEFAULT;
 	}
 }

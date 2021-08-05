@@ -9,11 +9,15 @@ aprs_ssid_to_symbol.csv:
 
 Created by Ian Renton.
 
-aircraft_type_short_to_long.csv:
+aircraft_type_short_to_long.csv
+aircraft_type_short_to_symbol.csv:
 
-Created by Ian Renton based on http://www.icao.int/publications/DOC8643/
+Created by Ian Renton based on http://www.icao.int/publications/DOC8643/ via OpenSky's CSV
+https://opensky-network.org/datasets/metadata/doc8643AircraftTypes.csv
 
 aircraft_icao_hex_to_registration.csv
 aircraft_icao_hex_to_type.csv:
 
-Generated from Dump1090's JSON database (https://github.com/flightaware/dump1090/tree/master/public_html/db) using the ConvertDump1090DB utility included in this package.
+Generated from Dump1090's JSON database (https://github.com/flightaware/dump1090/tree/master/public_html/db)
+and OpenSky's database (https://opensky-network.org/datasets/metadata/aircraftDatabase.csv) using the 
+ImportAircraftDatabases utility included in this package.

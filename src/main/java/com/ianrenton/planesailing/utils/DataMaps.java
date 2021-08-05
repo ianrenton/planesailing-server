@@ -25,6 +25,7 @@ public class DataMaps {
 	public static final Map<String, String> AIRCRAFT_ICAO_HEX_TO_REGISTRATION = new HashMap<>();
 	public static final Map<String, String> AIRCRAFT_ICAO_HEX_TO_TYPE = new HashMap<>();
 	public static final Map<String, String> AIRCRAFT_TYPE_SHORT_TO_LONG = new HashMap<>();
+	public static final Map<String, String> AIRCRAFT_TYPE_SHORT_TO_SYMBOL = new HashMap<>();
 	public static final Map<String, String> SHIP_NAV_STATUS_TO_DESCRIPTION = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_SYMBOL = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_DESCRIPTION = new HashMap<>();
@@ -40,6 +41,7 @@ public class DataMaps {
 		load("aircraft_icao_hex_to_registration.csv", AIRCRAFT_ICAO_HEX_TO_REGISTRATION);
 		load("aircraft_icao_hex_to_type.csv", AIRCRAFT_ICAO_HEX_TO_TYPE);
 		load("aircraft_type_short_to_long.csv", AIRCRAFT_TYPE_SHORT_TO_LONG);
+		load("aircraft_type_short_to_symbol.csv", AIRCRAFT_TYPE_SHORT_TO_SYMBOL);
 		load("ship_nav_status_to_description.csv", SHIP_NAV_STATUS_TO_DESCRIPTION);
 		load("ship_type_to_symbol.csv", SHIP_TYPE_TO_SYMBOL);
 		load("ship_type_to_description.csv", SHIP_TYPE_TO_DESCRIPTION);
