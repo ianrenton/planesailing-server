@@ -129,7 +129,7 @@ public class APRSTCPClient extends TCPClient {
 		}
 	}
 
-	private void addDataToTrack(APRSPacket packet) {
+	public void addDataToTrack(APRSPacket packet) {
 		// Extract core data
 		String callsign = packet.getSourceCall();
 		String ssid = APRSPacket.getSsid(callsign);
@@ -172,7 +172,7 @@ public class APRSTCPClient extends TCPClient {
 			speed = Double.valueOf(((CourseAndSpeedExtension) data.getExtension()).getSpeed());
 		}
 		// Don't trust course = 0 and speed = 0 as valid data
-		if (course == 0.0 && speed == 0.0) {
+		if (course != null && course == 0.0 && speed != null && speed == 0.0) {
 			course = null;
 			speed = null;
 		}
