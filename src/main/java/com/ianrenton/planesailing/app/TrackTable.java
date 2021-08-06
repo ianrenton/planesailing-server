@@ -21,11 +21,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opensky.libadsb.Position;
 
-import com.ianrenton.planesailing.data.APRSTrack;
+import com.ianrenton.planesailing.data.AISTrack;
 import com.ianrenton.planesailing.data.Airport;
 import com.ianrenton.planesailing.data.BaseStation;
 import com.ianrenton.planesailing.data.Seaport;
-import com.ianrenton.planesailing.data.AISTrack;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
 import com.typesafe.config.ConfigList;
@@ -116,21 +115,28 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 	 * Load data from serialisation file on disk.
 	 */
 	public void loadFromFile() {
-		if (serializationFile.exists()) {
+		loadFromFile(serializationFile);
+	}
+
+	/**
+	 * Load data from serialisation file on disk.
+	 */
+	public void loadFromFile(File file) {
+		if (file.exists()) {
 			try {
 				clear();
-				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(serializationFile));
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
 				TrackTable newTT = (TrackTable) ois.readObject();
 				ois.close();
 				copy(newTT);
-				LOGGER.info("Loaded {} tracks from track data store at {}", size(), serializationFile.getAbsolutePath());
+				LOGGER.info("Loaded {} tracks from track data store at {}", size(), file.getAbsolutePath());
 				LOGGER.info("Loaded {} AIS names from track data store", aisNameCache.size());
 			} catch (SerializationException | IOException | ClassNotFoundException | ClassCastException ex) {
 				LOGGER.error("Exception loading track data store. Deleting the file so this doesn't reoccur.", ex);
-				serializationFile.delete();
+				file.delete();
 			}
 		} else {
-			LOGGER.info("Track table file did not exist in {}, probably first startup.", serializationFile.getAbsolutePath());
+			LOGGER.info("Track table file did not exist in {}, probably first startup.", file.getAbsolutePath());
 		}
 	}
 
@@ -138,10 +144,17 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 	 * Save data to serialisation file on disk.
 	 */
 	public void saveToFile() {
+		saveToFile(serializationFile);
+	}
+
+	/**
+	 * Save data to serialisation file on disk.
+	 */
+	public void saveToFile(File file) {
 		try {
 			LOGGER.info("Saving to track data store...");
-			serializationFile.delete();
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serializationFile));
+			file.delete();
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
 			// Deep copy to avoid concurrent modification problems when the track table
 			// contents are modified during save. While the top level object uses
 			// ConcurrentHashMap to avoid this problem, we should not be forcing that
@@ -150,17 +163,17 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 			oos.writeObject(copy);
 			oos.flush();
 			oos.close();
-			LOGGER.info("Saved {} tracks to track data store at {}", size(), serializationFile.getAbsolutePath());
+			LOGGER.info("Saved {} tracks to track data store at {}", size(), file.getAbsolutePath());
 			LOGGER.info("Saved {} AIS names to track data store", aisNameCache.size());
 		} catch (IOException e) {
-			LOGGER.error("Could not save track table to {}", serializationFile.getAbsolutePath(), e);
+			LOGGER.error("Could not save track table to {}", file.getAbsolutePath(), e);
 		}
 	}
 	
 	/**
 	 * Copy another track table into this one
 	 */
-	private void copy(TrackTable tt) {
+	public void copy(TrackTable tt) {
 		this.putAll(tt);
 		this.aisNameCache.putAll(tt.getAISNameCache());
 	}
@@ -233,6 +246,35 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 	}
 
 	/**
+	 * Print some debug data
+	 */
+	public void printStatusData() {
+		StringBuilder summary = new StringBuilder();
+		for (TrackType t : TrackType.values()) {
+			long count = countTracksOfType(t);
+			if (count > 0) {
+				summary.append(count).append(" ").append(t).append("   ");
+			}
+		}
+		LOGGER.info("Track table contains: {}", summary);
+
+		if (printTrackTableToStdOut && !isEmpty()) {
+			LOGGER.info("----------------------------------------------------------------------------------");
+			LOGGER.info("Name                 Type       Description                               Age (ms)");
+			LOGGER.info("----------------------------------------------------------------------------------");
+			for (Track e : values()) {
+				LOGGER.info("{} {} {} {} {}",
+						String.format("%-20.20s", e.getDisplayName()),
+						String.format("%-10.10s", e.getTrackType()),
+						String.format("%-20.20s", e.getDisplayInfo1()),
+						String.format("%-20.20s", e.getDisplayInfo2()),
+						e.getTimeSinceLastUpdate() != null ? String.format("%-6.6s", e.getTimeSinceLastUpdate()) : "------");
+			}
+			LOGGER.info("----------------------------------------------------------------------------------");
+		}
+	}
+
+	/**
 	 * Stop internal threads and prepare for shutdown.
 	 */
 	public void shutdown() {
@@ -254,35 +296,6 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 				dropExpiredTracks();
 			} catch (Throwable t) {
 				LOGGER.error("Caught exception in maintenance task, continuing...", t);
-			}
-		}
-
-		/**
-		 * Print some debug data
-		 */
-		private void printStatusData() {
-			StringBuilder summary = new StringBuilder();
-			for (TrackType t : TrackType.values()) {
-				long count = countTracksOfType(t);
-				if (count > 0) {
-					summary.append(count).append(" ").append(t).append("   ");
-				}
-			}
-			LOGGER.info("Track table contains: {}", summary);
-
-			if (printTrackTableToStdOut && !isEmpty()) {
-				LOGGER.info("----------------------------------------------------------------------------------");
-				LOGGER.info("Name                 Type       Description                               Age (ms)");
-				LOGGER.info("----------------------------------------------------------------------------------");
-				for (Track e : values()) {
-					LOGGER.info("{} {} {} {} {}",
-							String.format("%-20.20s", e.getDisplayName()),
-							String.format("%-10.10s", e.getTrackType()),
-							String.format("%-20.20s", e.getDisplayInfo1()),
-							String.format("%-20.20s", e.getDisplayInfo2()),
-							e.getTimeSinceLastUpdate() != null ? String.format("%-6.6s", e.getTimeSinceLastUpdate()) : "------");
-				}
-				LOGGER.info("----------------------------------------------------------------------------------");
 			}
 		}
 	}
