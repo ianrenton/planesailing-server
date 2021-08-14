@@ -1,7 +1,9 @@
 package com.ianrenton.planesailing.comms;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -202,6 +204,10 @@ public class WebServer {
 		map.put("diskUsed", String.format("%.0f",
 				(1.0 - (new File(".").getFreeSpace() / (double) new File(".").getTotalSpace())) * 100.0));
 		map.put("uptime", String.format("%d", System.currentTimeMillis() - Application.START_TIME));
+		Double temp = getTemp();
+		if (temp != null) {
+			map.put("temp", String.format("%.1f", temp));
+		}
 		map.put("webServerStatus", app.getWebServerStatus().toString());
 		map.put("adsbReceiverStatus", app.getADSBReceiverStatus().toString());
 		map.put("mlatReceiverStatus", app.getMLATReceiverStatus().toString());
@@ -227,4 +233,25 @@ public class WebServer {
 			return ConnectionStatus.OFFLINE;
 		}
 	};
+	
+	private Double getTemp() {
+		Process proc;
+		try {
+			proc = Runtime.getRuntime().exec("cat /sys/class/thermal/thermal_zone0/temp");
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			String s = stdInput.readLine();
+			if (s != null) {
+				// Value returned is in "millidegrees", we want degrees
+				return Double.parseDouble(s) / 1000.0;
+			} else {
+				// Could not read temperature, maybe this value isn't available?
+				return null;
+			}
+		} catch (Exception e) {
+			// Could not read temperature, maybe this isn't running on Linux?
+			return null;
+		}
+		
+		
+	}
 }
