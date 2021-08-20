@@ -23,14 +23,6 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 * Persists data to disk so the content of the track table is not lost on restart
 * Customisable times to drop tracks etc.
 
-## Choosing Aircraft Data Protocols
-
-A number of aircraft data formats are supported&mdash;for the gory details see the [Tracking Packet Format FAQ](https://ianrenton.com/hardware/planesailing/tracking-packet-format-faq/#what-are-the-common-formats-of-mode-s-data). The preferred format is BEAST Binary format, which Dump1090 produces as an output. This contains the raw Mode-A, Mode-C, Mode-S, ADS-B and Comm-B bytes with some encapsulation. Plane/Sailing can use the same format for receiving live data from the radio via Dump1090 as it can receiving MLAT data from PiAware.
-
-BEAST AVR format is also supported, which is ASCII-encoded and therefore a little easier to parse, but PiAware does not support this for MLAT data. SBS/BaseStation format is supported too, which is both ASCII-encoded *and* supported by PiAware for MLAT, but it doesn't contain all information fields e.g. aircraft category.
-
-Finally, Plane/Sailing v1 loaded its aircraft data from a JSON file written by Dump1090, and Plane/Sailing v2 preserves this capability. This data contains every data point including merged-in MLAT data, however the data is not "live" so requires some adjustments in the code for the time at which data was recorded. It's no longer the preferred option but it is available. 
-
 ## Getting a Copy
 
 If you just want to use Plane/Sailing Server without making any changes to the source code, go to the [latest release](https://github.com/ianrenton/planesailing-server/releases/latest) page and download the ZIP file named like "`plane-sailing-server-x.y.z.zip`" (*not* "Source Code (zip)"). Unpack this to wherever you would like to run it from, then jump ahead to the next section.
@@ -49,6 +41,24 @@ To run Plane/Sailing Server:
 4. Set the base station position, and any airports and seaports you'd like to appear in your data.
 5. Save `application.conf` and run the application, e.g. `chmod +x run.sh`, `./run.sh`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
+
+### A Note on Choosing Aircraft Data Protocols
+
+A number of aircraft data formats are supported&mdash;for the gory details see the [Tracking Packet Format FAQ](https://ianrenton.com/hardware/planesailing/tracking-packet-format-faq/#what-are-the-common-formats-of-mode-s-data). The preferred format is BEAST Binary format, which Dump1090 produces as an output. This contains the raw Mode-A, Mode-C, Mode-S, ADS-B and Comm-B bytes with some encapsulation. Plane/Sailing can use the same format for receiving live data from the radio via Dump1090 as it can receiving MLAT data from PiAware.
+
+BEAST AVR format is also supported, which is ASCII-encoded and therefore a little easier to parse, but PiAware does not support this for MLAT data. SBS/BaseStation format is supported too, which is both ASCII-encoded *and* supported by PiAware for MLAT, but it doesn't contain all information fields e.g. aircraft category.
+
+Finally, Plane/Sailing v1 loaded its aircraft data from a JSON file written by Dump1090, and Plane/Sailing v2 preserves this capability. This data contains every data point including merged-in MLAT data, however the data is not "live" so requires some adjustments in the code for the time at which data was recorded. It's no longer the preferred option but it is available.
+
+If you're not sure, the default will work fine.
+
+## Checking the Web Interface
+
+By default, Plane/Sailing Server runs on port 8090. Leave the software running, then access `http://[IP address]:8090/` in a web browser. You should see something that looks like this:
+
+![Plane Sailing Server Web Interface](./serverui.png)
+
+*(Expecting to see the Plane/Sailing interface, with a map background etc.? That's part of the [Plane/Sailing client](https://github.com/ianrenton/planesailing), not the server. The two are provided separately in case you want to run them in different places&mdash;e.g. I run the server on a Raspberry Pi, but host the client using GitHub Pages. If you want to run the client and server on the same machine, read on as this is covered in the "Reverse Proxy Setup" section.)*
 
 ### Automatic Run on Startup
 
@@ -110,7 +120,7 @@ server {
 
 If you don't plan on enabling HTTPS, you can skip "listen 443 ssl" and the "server_name" line. If you *do* intend to enable HTTPS, you'll be generating a certificate for a certain domain or subdomain that points at your server, and that (sub)domain must be in the "server_name" line.
 
-Once you're finished creating that filte, delete the default site, enable the new one, and restart nginx:
+Once you're finished creating that file, delete the default site, enable the new one, and restart nginx:
 
 ```bash
 sudo rm /etc/nginx/sites-enabled/default
@@ -164,6 +174,26 @@ server {
 
 ```
 
+If you want to host both the Plane/Sailing client ([available separately](https://github.com/ianrenton/planesailing)) and the server on the same machine, you can use the same reverse proxy approach. Here it would make sense to have the client in the root of the server, and the server in a subdirectory. For example you could put the client in `/home/pi/plane-sailing-client` and set up your nginx config file like this:
+
+```
+server {   
+    listen 80;
+    listen 443 ssl;
+    server_name planesailing.yourdomain.com;
+
+    # Plane/Sailing Server
+    location /server/ {
+        proxy_pass http://127.0.0.1:8090;
+    }
+
+    # Plane/Sailing Client
+    location / {
+        alias /home/pi/plane-sailing-client;
+    }
+}
+```
+
 ### HTTPS Setup
 
 You can use Let's Encrypt to enable HTTPS on your Nginx server, so the client can request data securely. The easiest way is using Certbot, so following the [instructions here](https://certbot.eff.org/lets-encrypt/debianbuster-nginx):
@@ -213,3 +243,5 @@ The Plane/Sailing client, or any other client you write, should do the following
 4. Optionally, clients can make a call to `/telemetry` for server telemetry such as connection status, CPU utilisation, uptime etc.
 
 Clients are of course free to set their own policies about what tracks to show and hide, how to present the data, etc. If you are writing your own client or fork of Plane/Sailing, I am happy to receive pull requests to add new data into the API.
+
+If you're just looking for the default web-based client that I wrote, [that's here](https://github.com/ianrenton/planesailing) and it's also Public Domain, so you can just use it or modify it however you like.
