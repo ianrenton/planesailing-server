@@ -54,7 +54,7 @@ If you're not sure, the default will work fine.
 
 ## Checking the Web Interface
 
-By default, Plane/Sailing Server runs on port 8090. Leave the software running, then access `http://[IP address]:8090/` in a web browser. You should see something that looks like this:
+By default, Plane/Sailing Server runs on port 8090. Leave the software running, then access `http://[ipaddress]:8090/` in a web browser. You should see something that looks like this:
 
 ![Plane Sailing Server Web Interface](./serverui.png)
 
