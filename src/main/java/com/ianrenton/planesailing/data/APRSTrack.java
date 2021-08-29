@@ -93,10 +93,10 @@ public class APRSTrack extends Track {
 
 	@Override
 	public boolean shouldDrop() {
-		if (fixed) {
-			return false;
-		} else if (positionHistory.isEmpty()) {
+		if (positionHistory.isEmpty()) {
 			return getTimeSinceLastUpdate() > DROP_APRS_TRACK_WITH_NO_POS_TIME;
+		} else if (fixed) {
+			return false;
 		} else if (getSpeed() == null || getSpeed() < 1.0) {
 			return getTimeSinceLastUpdate() > DROP_STATIC_APRS_TRACK_TIME;
 		} else {
