@@ -34,7 +34,7 @@ Unpack this to wherever you would like to run it from, then jump ahead to the Se
 
 If you want to modify and build the software yourself, it's best to clone it using git, e.g. `git clone git@github.com:ianrenton/planesailing-server.git`. If you're a GitHub user you could also create your own fork before doing this.
 
-Plane/Sailing Server is a Maven project, so with Maven and a JDK installed, you can build it by running `mvn package`, and you'll find the output in `target/plane-sailing-server-2.5.3-assemble/`.
+Plane/Sailing Server is a Maven project, so with Maven and a JDK installed, you can build it by running `mvn package`, and you'll find the output in `target/output/`.
 
 However there is one complication, in that this project depends on [javAPRSlib](https://github.com/ab0oo/javAPRSlib) which is a Maven project, but isn't published anywhere. So before you try to build Plane/Sailing Server, you'll need to clone that project and install it locally with `mvn install`. You should _then_ be able to build this project without issues.
 
@@ -45,7 +45,7 @@ In order to use this software, you should be running some combination of softwar
 To run Plane/Sailing Server:
 
 1. Ensure your machine has Java 11 or later installed, e.g. `sudo apt install openjdk-11-jre-headless`
-2. Find your copy of Plane/Sailing Server, either from the ZIP download or one you built yourself (see the previous section). You should have three files: a JAR file, an `application.conf` file, and a `run.sh`.
+2. Find your copy of Plane/Sailing Server, either from the ZIP download or one you built yourself (see the previous section). You should have three files: a JAR file, an `application.conf` file, a `run.sh`, and a `data` subdirectory.
 3. Edit `application.conf` and set the IP addresses and ports as required. If you don't have a particular data type, e.g. you don't do APRS, set `enabled: false` for that section.
 4. Set the base station position, and any airports and seaports you'd like to appear in your data.
 5. Save `application.conf` and run the application, e.g. `chmod +x run.sh`, `./run.sh`

@@ -1,8 +1,8 @@
 package com.ianrenton.planesailing.utils;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +56,8 @@ public class DataMaps {
 	 * @param map
 	 */
 	private static void load(String filename, Map<String, String> map) {
-		URL url = DataMaps.class.getResource("/data/" + filename);
 		try {
-			InputStreamReader in = new InputStreamReader(url.openStream());
+			FileReader in = new FileReader(new File("data/" + filename));
 			try {
 				CSVReader reader = new CSVReader(in);
 				List<String[]> allRows = reader.readAll();

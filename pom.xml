@@ -35,12 +35,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}</outputDirectory>
+							<outputDirectory>${project.build.directory}/output</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${project.basedir}/src/main/resources</directory>
-									<include>application.conf</include>
-									<include>run.sh</include>
+									<directory>${project.basedir}/src/includes</directory>
 									<filtering>true</filtering>
 								</resource>
 							</resources>
@@ -60,6 +58,7 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
+					<outputDirectory>${project.build.directory}/output</outputDirectory>
 				</configuration>
 				<executions>
 					<execution>
