@@ -33,14 +33,14 @@ import com.typesafe.config.ConfigValue;
  * Track table
  */
 public class TrackTable extends ConcurrentHashMap<String, Track> {
-
-	public static final Map<Integer, String> AIS_NAME_CACHE = new ConcurrentHashMap<>();
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
 	
 	private transient final File serializationFile = new File("track_data_store.dat");
-	
+
+	public final Map<Integer, String> aisNameCache = new ConcurrentHashMap<>();
+
 	private Position baseStationPositionForADSB = null;
 	
 	private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, new BasicThreadFactory.Builder().namingPattern("Track Table Processing Thread %d").build());
@@ -129,7 +129,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 				ois.close();
 				copy(newTT);
 				LOGGER.info("Loaded {} tracks from track data store at {}", size(), file.getAbsolutePath());
-				LOGGER.info("Loaded {} AIS names from track data store", AIS_NAME_CACHE.size());
+				LOGGER.info("Loaded {} AIS names from track data store", aisNameCache.size());
 			} catch (SerializationException | IOException | ClassNotFoundException | ClassCastException ex) {
 				LOGGER.error("Exception loading track data store. Deleting the file so this doesn't reoccur.", ex);
 				file.delete();
@@ -163,7 +163,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 			oos.flush();
 			oos.close();
 			LOGGER.info("Saved {} tracks to track data store at {}", size(), file.getAbsolutePath());
-			LOGGER.info("Saved {} AIS names to track data store", AIS_NAME_CACHE.size());
+			LOGGER.info("Saved {} AIS names to track data store", aisNameCache.size());
 		} catch (IOException e) {
 			LOGGER.error("Could not save track table to {}", file.getAbsolutePath(), e);
 		}
@@ -215,6 +215,10 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 			put(sp.getID(), sp);
 		}
 		LOGGER.info("Loaded {} seaports from config file", seaportConfigs.size());
+	}
+	
+	public Map<Integer, String> getAISNameCache() {
+		return aisNameCache;
 	}
 
 	public Position getBaseStationPositionForADSB() {

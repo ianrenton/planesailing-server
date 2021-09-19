@@ -122,7 +122,7 @@ public class AISUDPReceiver extends Client {
 			if (m4.getShipName() != null) {
 				String name = m4.getShipName().replaceAll("_", " ").replaceAll("@", " ").trim(); 
 				s.setName(name);
-				TrackTable.AIS_NAME_CACHE.put(mmsi, name);
+				trackTable.getAISNameCache().put(mmsi, name);
 			}
 			s.setCallsign(m4.getCallsign().trim());
 			s.setShipType(m4.getShipType());
@@ -134,7 +134,7 @@ public class AISUDPReceiver extends Client {
 			ExtendedClassBEquipmentPositionReport m5 = (ExtendedClassBEquipmentPositionReport) m;
 			String name = m5.getShipName().replaceAll("_", " ").replaceAll("@", " ").trim(); 
 			s.setName(name);
-			TrackTable.AIS_NAME_CACHE.put(mmsi, name);
+			trackTable.getAISNameCache().put(mmsi, name);
 			
 			s.addPosition(m5.getLatitude(), m5.getLongitude());
 			if (m5.getCourseOverGround() != 511) {
@@ -209,7 +209,7 @@ public class AISUDPReceiver extends Client {
 			ShipAndVoyageData m10 = (ShipAndVoyageData) m;
 			String name10 = m10.getShipName().replaceAll("_", " ").replaceAll("@", " ").trim(); 
 			s.setName(name10);
-			TrackTable.AIS_NAME_CACHE.put(mmsi, name10);
+			trackTable.getAISNameCache().put(mmsi, name10);
 			
 			s.setCallsign(m10.getCallsign().trim());
 			s.setShipType(m10.getShipType());
@@ -250,8 +250,8 @@ public class AISUDPReceiver extends Client {
 		// either from our own cache of past data or from the CSV data map,
 		// set the name immediately.
 		if (s.getName() == null) {
-			if (TrackTable.AIS_NAME_CACHE.containsKey(mmsi)) {
-				s.setName(TrackTable.AIS_NAME_CACHE.get(mmsi));
+			if (trackTable.getAISNameCache().containsKey(mmsi)) {
+				s.setName(trackTable.getAISNameCache().get(mmsi));
 			} else if (DataMaps.SHIP_MMSI_TO_NAME.containsKey(Integer.toString(mmsi))) {
 				s.setName(DataMaps.SHIP_MMSI_TO_NAME.get(Integer.toString(mmsi)));
 			}
