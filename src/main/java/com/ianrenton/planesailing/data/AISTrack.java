@@ -3,6 +3,7 @@ package com.ianrenton.planesailing.data;
 import java.util.Map.Entry;
 
 import com.ianrenton.planesailing.app.Application;
+import com.ianrenton.planesailing.app.TrackTable;
 import com.ianrenton.planesailing.utils.DataMaps;
 
 import dk.tbsalling.aismessages.ais.messages.types.NavigationStatus;
@@ -33,6 +34,14 @@ public class AISTrack extends Track {
 		setTrackType(TrackType.SHIP);
 		setSymbolCode(DEFAULT_SHIP_SYMBOL);
 		positionHistory.setHistoryLength(24 * 60 * 60 * 1000); // 24 hours
+
+		// If our cache or the CSV data map has a name for this AIS track,
+		// set it immediately.
+		if (TrackTable.AIS_NAME_CACHE.containsKey(mmsi)) {
+			name = TrackTable.AIS_NAME_CACHE.get(mmsi);
+		} else if (DataMaps.SHIP_MMSI_TO_NAME.containsKey(Integer.toString(mmsi))) {
+			name = DataMaps.SHIP_MMSI_TO_NAME.get(Integer.toString(mmsi));
+		}
 	}
 
 	public int getMmsi() {

@@ -245,17 +245,6 @@ public class AISUDPReceiver extends Client {
 			// Nothing useful we can do with this type
 			break;
 		}
-
-		// If the ship has no name set, but we have a name for this ship,
-		// either from our own cache of past data or from the CSV data map,
-		// set the name immediately.
-		if (s.getName() == null) {
-			if (TrackTable.AIS_NAME_CACHE.containsKey(mmsi)) {
-				s.setName(TrackTable.AIS_NAME_CACHE.get(mmsi));
-			} else if (DataMaps.SHIP_MMSI_TO_NAME.containsKey(Integer.toString(mmsi))) {
-				s.setName(DataMaps.SHIP_MMSI_TO_NAME.get(Integer.toString(mmsi)));
-			}
-		}
 	}
 
 	/**
