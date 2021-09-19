@@ -21,3 +21,9 @@ aircraft_icao_hex_to_type.csv:
 Generated from Dump1090's JSON database (https://github.com/flightaware/dump1090/tree/master/public_html/db)
 and OpenSky's database (https://opensky-network.org/datasets/metadata/aircraftDatabase.csv) using the 
 ImportAircraftDatabases utility included in this package.
+
+ship_mmsi_to_name:
+
+Created by Ian Renton based on https://www.itu.int/en/ITU-R/terrestrial/mars/Documents/2nd_ListV_compilation%202021.pdf
+Converted to plain text using https://pdftotext.com/ then converted to CSV using the ImportMMSIDatabase utility
+included in this package. Additional data for local vessels not on the ITU list appended to the end of the file.

@@ -67,9 +67,8 @@ public class Application {
 		// Set up track table
 		trackTable.initialise();
 		
-		// Load custom tracks and AIS names from config
+		// Load custom tracks from config
 		trackTable.loadCustomTracksFromConfig();
-		trackTable.loadCustomAISNamesFromConfig();
 		
 		// Set up connections
 		if (CONFIG.getBoolean("comms.web-server.enabled")) {

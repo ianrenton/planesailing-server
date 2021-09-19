@@ -21,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.opensky.libadsb.Position;
 
-import com.ianrenton.planesailing.data.AISTrack;
 import com.ianrenton.planesailing.data.Airport;
 import com.ianrenton.planesailing.data.BaseStation;
 import com.ianrenton.planesailing.data.Seaport;
@@ -34,13 +33,13 @@ import com.typesafe.config.ConfigValue;
  * Track table
  */
 public class TrackTable extends ConcurrentHashMap<String, Track> {
+
+	public static final Map<Integer, String> AIS_NAME_CACHE = new ConcurrentHashMap<>();
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
 	
 	private transient final File serializationFile = new File("track_data_store.dat");
-
-	private final Map<Integer, String> aisNameCache = new ConcurrentHashMap<>();
 	
 	private Position baseStationPositionForADSB = null;
 	
@@ -130,7 +129,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 				ois.close();
 				copy(newTT);
 				LOGGER.info("Loaded {} tracks from track data store at {}", size(), file.getAbsolutePath());
-				LOGGER.info("Loaded {} AIS names from track data store", aisNameCache.size());
+				LOGGER.info("Loaded {} AIS names from track data store", AIS_NAME_CACHE.size());
 			} catch (SerializationException | IOException | ClassNotFoundException | ClassCastException ex) {
 				LOGGER.error("Exception loading track data store. Deleting the file so this doesn't reoccur.", ex);
 				file.delete();
@@ -164,7 +163,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 			oos.flush();
 			oos.close();
 			LOGGER.info("Saved {} tracks to track data store at {}", size(), file.getAbsolutePath());
-			LOGGER.info("Saved {} AIS names to track data store", aisNameCache.size());
+			LOGGER.info("Saved {} AIS names to track data store", AIS_NAME_CACHE.size());
 		} catch (IOException e) {
 			LOGGER.error("Could not save track table to {}", file.getAbsolutePath(), e);
 		}
@@ -175,7 +174,6 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 	 */
 	public void copy(TrackTable tt) {
 		this.putAll(tt);
-		this.aisNameCache.putAll(tt.getAISNameCache());
 	}
 
 	/**
@@ -217,28 +215,6 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 			put(sp.getID(), sp);
 		}
 		LOGGER.info("Loaded {} seaports from config file", seaportConfigs.size());
-	}
-
-	/**
-	 * Read the "custom AIS names" from the config file and populate the track table.
-	 */
-	@SuppressWarnings("unchecked")
-	public void loadCustomAISNamesFromConfig() {
-		ConfigList aisNameConfigs = Application.CONFIG.getList("custom-ais-names");
-		for (ConfigValue c : aisNameConfigs) {
-			Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-			int mmsi = (Integer) data.get("mmsi");
-			String name = (String) data.get("name");
-			aisNameCache.put(mmsi, name);
-			if (containsKey(Integer.toString(mmsi))) {
-				((AISTrack) get(Integer.toString(mmsi))).setName(name);
-			}
-		}
-		LOGGER.info("Loaded {} AIS names from config file", aisNameConfigs.size());
-	}
-
-	public Map<Integer, String> getAISNameCache() {
-		return aisNameCache;
 	}
 
 	public Position getBaseStationPositionForADSB() {

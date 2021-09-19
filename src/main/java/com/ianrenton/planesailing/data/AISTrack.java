@@ -29,6 +29,8 @@ public class AISTrack extends Track {
 	public AISTrack(int mmsi) {
 		super(String.valueOf(mmsi));
 		this.mmsi = mmsi;
+		// Assume ship by default
+		setTrackType(TrackType.SHIP);
 		setSymbolCode(DEFAULT_SHIP_SYMBOL);
 		positionHistory.setHistoryLength(24 * 60 * 60 * 1000); // 24 hours
 	}
