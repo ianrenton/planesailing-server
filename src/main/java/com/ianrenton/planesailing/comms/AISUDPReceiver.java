@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 import com.ianrenton.planesailing.app.TrackTable;
 import com.ianrenton.planesailing.data.AISTrack;
 import com.ianrenton.planesailing.data.TrackType;
-import com.ianrenton.planesailing.utils.DataMaps;
 
 import dk.tbsalling.aismessages.AISInputStreamReader;
 import dk.tbsalling.aismessages.ais.messages.AISMessage;
@@ -92,7 +91,15 @@ public class AISUDPReceiver extends Client {
 		
 		// If this is a new track, add it to the track table
 		if (!trackTable.containsKey(mmsiString)) {
-			trackTable.put(mmsiString, new AISTrack(mmsi));
+			AISTrack newS = new AISTrack(mmsi);
+
+			// If we have a name for this ship in our cache cache of past data,
+			// set the name immediately.
+			if (newS.getName() == null && trackTable.getAISNameCache().containsKey(mmsi)) {
+				newS.setName(trackTable.getAISNameCache().get(mmsi));
+			}
+
+			trackTable.put(mmsiString, newS);
 		}
 		
 		// Extract the data and update the track
@@ -244,12 +251,6 @@ public class AISUDPReceiver extends Client {
 		default:
 			// Nothing useful we can do with this type
 			break;
-		}
-
-		// If the ship has no name set, but we have a name for this ship,
-		// in our cache cache of past data, set the name immediately.
-		if (s.getName() == null && trackTable.getAISNameCache().containsKey(mmsi)) {
-			s.setName(trackTable.getAISNameCache().get(mmsi));
 		}
 	}
 
