@@ -26,8 +26,9 @@ public class DataMaps {
 	public static final Map<String, String> AIRCRAFT_ICAO_HEX_TO_TYPE = new HashMap<>();
 	public static final Map<String, String> AIRCRAFT_TYPE_SHORT_TO_LONG = new HashMap<>();
 	public static final Map<String, String> AIRCRAFT_TYPE_SHORT_TO_SYMBOL = new HashMap<>();
-	public static final Map<String, String> SHIP_MMSI_TO_NAME = new HashMap<>();
 	public static final Map<String, String> SHIP_NAV_STATUS_TO_DESCRIPTION = new HashMap<>();
+	public static final Map<String, String> SHIP_MMSI_TO_NAME = new HashMap<>();
+	public static final Map<String, String> SHIP_MMSI_TO_SYMBOL = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_SYMBOL = new HashMap<>();
 	public static final Map<String, String> SHIP_TYPE_TO_DESCRIPTION = new HashMap<>();
 	public static final Map<String, String> APRS_SSID_TO_SYMBOL = new HashMap<>();
@@ -45,6 +46,7 @@ public class DataMaps {
 		load("aircraft_type_short_to_symbol.csv", AIRCRAFT_TYPE_SHORT_TO_SYMBOL);
 		load("ship_nav_status_to_description.csv", SHIP_NAV_STATUS_TO_DESCRIPTION);
 		load("ship_mmsi_to_name.csv", SHIP_MMSI_TO_NAME);
+		load("ship_mmsi_to_symbol.csv", SHIP_MMSI_TO_SYMBOL);
 		load("ship_type_to_symbol.csv", SHIP_TYPE_TO_SYMBOL);
 		load("ship_type_to_description.csv", SHIP_TYPE_TO_DESCRIPTION);
 		load("aprs_ssid_to_symbol.csv", APRS_SSID_TO_SYMBOL);

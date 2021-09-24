@@ -33,6 +33,13 @@ public class AISTrack extends Track {
 		setTrackType(TrackType.SHIP);
 		setSymbolCode(DEFAULT_SHIP_SYMBOL);
 		positionHistory.setHistoryLength(24 * 60 * 60 * 1000); // 24 hours
+		// If we have known names and symbols for this MMSI, set them now
+		if (DataMaps.SHIP_MMSI_TO_NAME.containsKey(Integer.toString(mmsi))) {
+			setName(DataMaps.SHIP_MMSI_TO_NAME.get(Integer.toString(mmsi)));
+		}
+		if (DataMaps.SHIP_MMSI_TO_SYMBOL.containsKey(Integer.toString(mmsi))) {
+			setSymbolCode(DataMaps.SHIP_MMSI_TO_SYMBOL.get(Integer.toString(mmsi)));
+		}
 	}
 
 	public int getMmsi() {
