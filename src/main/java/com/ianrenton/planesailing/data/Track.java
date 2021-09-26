@@ -306,6 +306,18 @@ public abstract class Track implements Serializable {
 			return "";
 		}
 	}
+	
+	/**
+	 * Method called on the track when it is loaded from the track data store,
+	 * i.e. the software has been restarted and this track added back into the
+	 * track table. This can be used for tasks like re-checking the data maps
+	 * for any new user-entered information, so for example adding a ship name
+	 * to the CSV file and restarting the software can apply that ship name
+	 * immediately, rather than having to wait for the track to drop and be
+	 * re-acquired.
+	 */
+	public void performPostLoadTasks() {
+	}
 
 	/**
 	 * Get the type description for display.

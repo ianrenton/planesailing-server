@@ -130,6 +130,11 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 				copy(newTT);
 				LOGGER.info("Loaded {} tracks from track data store at {}", size(), file.getAbsolutePath());
 				LOGGER.info("Loaded {} AIS names from track data store", aisNameCache.size());
+				
+				// Perform post-load tasks on each loaded track
+				for (Track t : values()) {
+					t.performPostLoadTasks();
+				}
 			} catch (SerializationException | IOException | ClassNotFoundException | ClassCastException ex) {
 				LOGGER.error("Exception loading track data store. Deleting the file so this doesn't reoccur.", ex);
 				file.delete();
