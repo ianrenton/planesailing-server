@@ -56,6 +56,18 @@ public class Aircraft extends Track {
 				symbolSetBy = SymbolSetBy.AIRFRAME;
 			}
 		}
+
+		// Set the right symbol code for the ICAO hex if known
+		String tmpSymbolCode = DataMaps.AIRCRAFT_ICAO_HEX_TO_SYMBOL.getOrDefault(id.toUpperCase(), null);
+		if (tmpSymbolCode != null) {
+			setSymbolCode(tmpSymbolCode);
+			symbolSetBy = SymbolSetBy.CALLSIGN;
+		}
+		// Set the right operator for the ICAO hex if known
+		String tmpOperator = DataMaps.AIRCRAFT_ICAO_HEX_TO_OPERATOR.getOrDefault(id.toUpperCase(), null);
+		if (tmpOperator != null) {
+			setOperator(tmpOperator);
+		}
 	}
 
 	public Integer getSquawk() {
@@ -240,6 +252,6 @@ public class Aircraft extends Track {
 	}
 	
 	private enum SymbolSetBy {
-		CALLSIGN, AIRFRAME, CATEGORY, DEFAULT;
+		CALLSIGN, ICAO_HEX, AIRFRAME, CATEGORY, DEFAULT;
 	}
 }
