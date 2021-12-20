@@ -11,6 +11,7 @@ public class APRSTrack extends Track {
 	private static final Long DROP_STATIC_APRS_TRACK_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-static-after");
 	private static final Long DROP_MOVING_APRS_TRACK_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-moving-after");
 	private static final Long DROP_APRS_TRACK_WITH_NO_POS_TIME = Application.CONFIG.getLong("timing.drop-aprs-track-no-position-after");
+	private static final Long DROP_APRS_BASE_STATION_TIME = Application.CONFIG.getLong("timing.drop-aprs-base-station-after");
 
 	private String packetDestCall = null;
 	private String packetRoute = null; 
@@ -96,7 +97,7 @@ public class APRSTrack extends Track {
 		if (positionHistory.isEmpty()) {
 			return getTimeSinceLastUpdate() > DROP_APRS_TRACK_WITH_NO_POS_TIME;
 		} else if (fixed) {
-			return false;
+			return getTimeSinceLastUpdate() > DROP_APRS_BASE_STATION_TIME;
 		} else if (getSpeed() == null || getSpeed() < 1.0) {
 			return getTimeSinceLastUpdate() > DROP_STATIC_APRS_TRACK_TIME;
 		} else {

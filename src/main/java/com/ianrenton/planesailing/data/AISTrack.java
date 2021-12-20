@@ -15,6 +15,7 @@ public class AISTrack extends Track {
 	private static final Long DROP_STATIC_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-static-after");
 	private static final Long DROP_MOVING_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-moving-after");
 	private static final Long DROP_SHIP_TRACK_WITH_NO_POS_TIME = Application.CONFIG.getLong("timing.drop-ship-track-no-position-after");
+	private static final Long DROP_AIS_BASE_STATION_TIME = Application.CONFIG.getLong("timing.drop-ais-base-station-after");
 	
 	private final int mmsi;
 	private String name;
@@ -144,7 +145,7 @@ public class AISTrack extends Track {
 		if (positionHistory.isEmpty()) {
 			return getTimeSinceLastUpdate() > DROP_SHIP_TRACK_WITH_NO_POS_TIME;
 		} else if (fixed) {
-			return false;
+			return getTimeSinceLastUpdate() > DROP_AIS_BASE_STATION_TIME;
 		} else if (getSpeed() == null || getSpeed() < 1.0) {
 			return getTimeSinceLastUpdate() > DROP_STATIC_SHIP_TRACK_TIME;
 		} else {
