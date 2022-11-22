@@ -118,7 +118,6 @@ Start off by installing Nginx, e.g. `sudo apt install nginx`. You should then be
 ```
 server {
     listen 80;
-    listen 443 ssl;
     server_name planesailingserver.ianrenton.com;
 
     location / {
@@ -146,7 +145,6 @@ You may wish to add extra features to this configuration. For example if you wan
 ```
 server {   
     listen 80;
-    listen 443 ssl;
     server_name planesailingserver.ianrenton.com;
 
     # Dump1090/Skyaware web interface
@@ -188,7 +186,6 @@ If you want to host both the Plane/Sailing client ([available separately](https:
 ```
 server {   
     listen 80;
-    listen 443 ssl;
     server_name planesailing.yourdomain.com;
 
     # Plane/Sailing Server
@@ -218,7 +215,16 @@ sudo certbot --nginx
 
 At this stage you will be prompted to enter your contact details and domain information, but Certbot will take it from there&mdash;it will automatically validate the server as being reachable from the (sub)domain you specified, issue a certificate, install it, and reconfigure nginx to use it.
 
-What you'll probably find is that Certbot has helpfully reconfigured your server to use *only* HTTPS, and HTTP now returns a 404 error. In my opinion it would be best for both versions to provide the same response. To re-enable both HTTP and HTTPS, you need to delete the extra "server" block in `/etc/nginx/sites-enabled/plane-sailing-server.conf` and add `listen 80` back into the main block. You should end up with something like this (with your own domain names in there):
+If it fails with an error involving `/.well-known/acme-challenge`, it's trying to verify that your server can be retrieved at the URL you have set up, but it can't create a file and and check that it exists because your nginx config is pointing to Plane/Sailing Server via the remote proxy setup rather than a standard directory of HTML files. If this is the case, you will want to add the following to your nginx config:
+
+```
+    # Wellknown area for Lets Encrypt
+    location /.well-known/ {
+        alias /var/www/html/.well-known/;
+    }
+```
+
+Once Certbot finishes its job, what you'll probably find is that it has helpfully reconfigured your server to use *only* HTTPS, and HTTP now returns a 404 error. In my opinion it would be best for both versions to provide the same response. To re-enable both HTTP and HTTPS, you need to delete the extra "server" block in `/etc/nginx/sites-enabled/plane-sailing-server.conf` and add `listen 80` back into the main block. You should end up with something like this (with your own domain names in there):
 
 ```
 server {
