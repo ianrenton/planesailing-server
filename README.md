@@ -126,7 +126,7 @@ server {
 }
 ```
 
-If you don't plan on enabling HTTPS, you can skip "listen 443 ssl" and the "server_name" line. If you *do* intend to enable HTTPS, you'll be generating a certificate for a certain domain or subdomain that points at your server, and that (sub)domain must be in the "server_name" line.
+This sets up your server for HTTP only at the moment, which is OK - we will let Certbot set up the HTTPS configuration later.
 
 Once you're finished creating that file, delete the default site, enable the new one, and restart nginx:
 
@@ -136,7 +136,7 @@ sudo ln -s /etc/nginx/sites-available/plane-sailing-server.conf /etc/nginx/sites
 sudo systemctl restart nginx
 ```
 
-When you now visit the IP address of your server using a web browser, you should instead see "Plane/Sailing Server is up and running!". Your reverse proxy setup is now complete, and a client pointed at the default HTTP port (80) on that PC will now be able to communicate with Plane/Sailing Server.
+When you now visit the IP address of your server using a web browser, you should instead see "Plane/Sailing Server is up and running!". Your reverse proxy setup is now working, and a client pointed at the default HTTP port (80) on that PC will now be able to communicate with Plane/Sailing Server.
 
 If nginx didn't restart properly, you may have mistyped your configuration. Try `sudo nginx -t` to find out what the problem is.
 
