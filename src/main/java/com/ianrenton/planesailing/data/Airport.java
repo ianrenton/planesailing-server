@@ -1,48 +1,51 @@
 package com.ianrenton.planesailing.data;
 
+import java.io.Serial;
+
 public class Airport extends Track {
-	private static final long serialVersionUID = 1L;
-	private static final String AIRPORT_SYMBOL = "SFGPIBA---H";	
-	private static int airportCount;
-	
-	private final String name;
-	private final String icaoCode;
-	
-	public Airport(String name, double lat, double lon, String icaoCode) {
-		super("AIRPORT-" + airportCount++);
-		this.name = name;
-		this.icaoCode = icaoCode;
-		addPosition(lat, lon);
-		setCreatedByConfig(true);
-		setTrackType(TrackType.AIRPORT);
-		setSymbolCode(AIRPORT_SYMBOL);
-	}
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private static final String AIRPORT_SYMBOL = "SFGPIBA---H";
+    private static int airportCount;
 
-	public String getName() {
-		return name;
-	}
+    private final String name;
+    private final String icaoCode;
 
-	public String getIcaoCode() {
-		return icaoCode;
-	}
+    public Airport(String name, double lat, double lon, String icaoCode) {
+        super("AIRPORT-" + airportCount++);
+        this.name = name;
+        this.icaoCode = icaoCode;
+        addPosition(lat, lon);
+        setCreatedByConfig(true);
+        setTrackType(TrackType.AIRPORT);
+        setSymbolCode(AIRPORT_SYMBOL);
+    }
 
-	@Override
-	public String getTypeDescription() {
-		return "AIRPORT";
-	}
-	
-	@Override
-	public String getDisplayName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String getDisplayInfo1() {
-		return "";
-	}
+    public String getIcaoCode() {
+        return icaoCode;
+    }
 
-	@Override
-	public String getDisplayInfo2() {
-		return "";
-	}
+    @Override
+    public String getTypeDescription() {
+        return "AIRPORT";
+    }
+
+    @Override
+    public String getDisplayName() {
+        return name;
+    }
+
+    @Override
+    public String getDisplayInfo1() {
+        return "";
+    }
+
+    @Override
+    public String getDisplayInfo2() {
+        return "";
+    }
 }

@@ -1,42 +1,45 @@
 package com.ianrenton.planesailing.data;
 
+import java.io.Serial;
+
 public class Seaport extends Track {
-	private static final long serialVersionUID = 1L;
-	private static final String SEAPORT_SYMBOL = "SFGPIBN---H-";
-	private static int seaportCount;
-	
-	private final String name;
-	
-	public Seaport(String name, double lat, double lon) {
-		super("SEAPORT-" + seaportCount++);
-		this.name = name;
-		addPosition(lat, lon);
-		setCreatedByConfig(true);
-		setTrackType(TrackType.SEAPORT);
-		setSymbolCode(SEAPORT_SYMBOL);
-	}
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private static final String SEAPORT_SYMBOL = "SFGPIBN---H-";
+    private static int seaportCount;
 
-	public String getName() {
-		return name;
-	}
-	
-	@Override
-	public String getDisplayName() {
-		return name;
-	}
+    private final String name;
 
-	@Override
-	public String getTypeDescription() {
-		return "SEAPORT";
-	}
+    public Seaport(String name, double lat, double lon) {
+        super("SEAPORT-" + seaportCount++);
+        this.name = name;
+        addPosition(lat, lon);
+        setCreatedByConfig(true);
+        setTrackType(TrackType.SEAPORT);
+        setSymbolCode(SEAPORT_SYMBOL);
+    }
 
-	@Override
-	public String getDisplayInfo1() {
-		return "";
-	}
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String getDisplayInfo2() {
-		return "";
-	}
+    @Override
+    public String getDisplayName() {
+        return name;
+    }
+
+    @Override
+    public String getTypeDescription() {
+        return "SEAPORT";
+    }
+
+    @Override
+    public String getDisplayInfo1() {
+        return "";
+    }
+
+    @Override
+    public String getDisplayInfo2() {
+        return "";
+    }
 }
