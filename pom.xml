@@ -4,13 +4,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ianrenton</groupId>
 	<artifactId>plane-sailing-server</artifactId>
-	<version>2.5.6-SNAPSHOT</version>
+	<version>2.6-SNAPSHOT</version>
 	<name>Plane/Sailing Server</name>
 
 	<properties>
-		<maven.compiler.release>11</maven.compiler.release>
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.release>17</maven.compiler.release>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<build>
@@ -90,7 +90,7 @@
 				This can be sourced from https://github.com/ab0oo/javAPRSlib -->
 			<groupId>net.ab0oo.aprs</groupId>
 			<artifactId>javAPRSlib</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>

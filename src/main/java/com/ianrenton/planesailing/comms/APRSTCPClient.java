@@ -1,21 +1,13 @@
 package com.ianrenton.planesailing.comms;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.ianrenton.planesailing.app.TrackTable;
+import com.ianrenton.planesailing.data.APRSTrack;
+import net.ab0oo.aprs.parser.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.ianrenton.planesailing.app.TrackTable;
-import com.ianrenton.planesailing.data.APRSTrack;
-
-import net.ab0oo.aprs.parser.APRSPacket;
-import net.ab0oo.aprs.parser.CourseAndSpeedExtension;
-import net.ab0oo.aprs.parser.InformationField;
-import net.ab0oo.aprs.parser.ObjectPacket;
-import net.ab0oo.aprs.parser.Parser;
-import net.ab0oo.aprs.parser.Position;
-import net.ab0oo.aprs.parser.PositionPacket;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Receiver for messages from an APRS KISS server, e.g. Direwolf.
@@ -158,10 +150,8 @@ public class APRSTCPClient extends TCPClient {
 
 		// Extract position data if available
 		Position p = null;
-		if (data instanceof PositionPacket) {
-			p = ((PositionPacket) data).getPosition();
-		} else if (data instanceof ObjectPacket) {
-			p = ((ObjectPacket) data).getPosition();
+		if (data.containsType(APRSTypes.T_POSITION)) {
+			p = ((PositionField) data.getAprsData(APRSTypes.T_POSITION)).getPosition();
 		}
 
 		// Extract course/speed data if available
