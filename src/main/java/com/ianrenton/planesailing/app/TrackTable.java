@@ -237,6 +237,15 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
     }
 
     /**
+     * Returns the distance from the base station to the given track. If either the base station
+     * position or the track position is unknown, return zero.
+     */
+    public double getDistanceFromBaseStationOrZero(Track t) {
+        Double d = getDistanceFromBaseStation(t);
+        return d != null ? d : 0.0;
+    }
+
+    /**
      * Print some debug data
      */
     public void printStatusData() {

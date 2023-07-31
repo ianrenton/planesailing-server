@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * The HTTP server that will provide data to the Plane/Sailing client over the
@@ -243,33 +242,33 @@ public class WebServer {
                 "plane_sailing_aprs_mobile_count " +
                 tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE).count() +
                 "\n" +
-                "# HELP plane_sailing_aircraft_furthest_distance Distance in metres from the base station to the furthest tracked aircraft\n" +
+                "# HELP plane_sailing_aircraft_furthest_distance Distance in nautical miles from the base station to the furthest tracked aircraft\n" +
                 "# TYPE plane_sailing_aircraft_furthest_distance gauge\n" +
                 "plane_sailing_aircraft_furthest_distance " +
                 tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT)
-                        .mapToDouble(tt::getDistanceFromBaseStation)
-                        .filter(Objects::nonNull).max().orElse(0.0) +
+                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
+                        .map(d -> d * 0.000539957).max().orElse(0.0) +
                 "\n" +
-                "# HELP plane_sailing_ship_furthest_distance Distance in metres from the base station to the furthest tracked ship\n" +
+                "# HELP plane_sailing_ship_furthest_distance Distance in nautical miles from the base station to the furthest tracked ship\n" +
                 "# TYPE plane_sailing_ship_furthest_distance gauge\n" +
                 "plane_sailing_ship_furthest_distance " +
                 tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP)
-                        .mapToDouble(tt::getDistanceFromBaseStation)
-                        .filter(Objects::nonNull).max().orElse(0.0) +
+                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
+                        .map(d -> d * 0.000539957).max().orElse(0.0) +
                 "\n" +
-                "# HELP plane_sailing_ais_furthest_distance Distance in metres from the base station to the furthest tracked AIS contact\n" +
+                "# HELP plane_sailing_ais_furthest_distance Distance in nautical miles from the base station to the furthest tracked AIS contact\n" +
                 "# TYPE plane_sailing_ais_furthest_distance gauge\n" +
                 "plane_sailing_ais_furthest_distance " +
                 tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP || t.getTrackType() == TrackType.AIS_SHORE_STATION || t.getTrackType() == TrackType.AIS_ATON)
-                        .mapToDouble(tt::getDistanceFromBaseStation)
-                        .filter(Objects::nonNull).max().orElse(0.0) +
+                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
+                        .map(d -> d * 0.000539957).max().orElse(0.0) +
                 "\n" +
-                "# HELP plane_sailing_aprs_furthest_distance Distance in metres from the base station to the furthest tracked APRS contact\n" +
+                "# HELP plane_sailing_aprs_furthest_distance Distance in nautical miles from the base station to the furthest tracked APRS contact\n" +
                 "# TYPE plane_sailing_aprs_furthest_distance gauge\n" +
                 "plane_sailing_aprs_furthest_distance " +
                 tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION)
-                        .mapToDouble(tt::getDistanceFromBaseStation)
-                        .filter(Objects::nonNull).max().orElse(0.0) +
+                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
+                        .map(d -> d * 0.000539957).max().orElse(0.0) +
                 "\n";
     }
 
