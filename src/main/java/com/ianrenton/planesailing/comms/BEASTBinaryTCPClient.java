@@ -198,8 +198,8 @@ public class BEASTBinaryTCPClient extends TCPClient {
                     // but should be good enough to get us some kind of position rather than having
                     // it blank in the track table and no icon shown.
                     Position airPos = DECODER.decodePosition(System.currentTimeMillis(), ap0,
-                            trackTable.getBaseStationPositionForADSB());
-                    Position localPos = ap0.getLocalPosition(trackTable.getBaseStationPositionForADSB());
+                            trackTable.getBaseStationPosition());
+                    Position localPos = ap0.getLocalPosition(trackTable.getBaseStationPosition());
                     if (airPos != null) {
                         a.addPosition(airPos.getLatitude(), airPos.getLongitude());
                     } else if (localPos != null) {
@@ -228,8 +228,8 @@ public class BEASTBinaryTCPClient extends TCPClient {
                     // but should be good enough to get us some kind of position rather than having
                     // it blank in the track table and no icon shown.
                     Position surPos = DECODER.decodePosition(System.currentTimeMillis(), sp0,
-                            trackTable.getBaseStationPositionForADSB());
-                    Position localPos2 = sp0.getLocalPosition(trackTable.getBaseStationPositionForADSB());
+                            trackTable.getBaseStationPosition());
+                    Position localPos2 = sp0.getLocalPosition(trackTable.getBaseStationPosition());
                     if (surPos != null) {
                         a.addPosition(surPos.getLatitude(), surPos.getLongitude());
                     } else if (localPos2 != null) {

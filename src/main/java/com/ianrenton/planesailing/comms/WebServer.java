@@ -1,7 +1,9 @@
 package com.ianrenton.planesailing.comms;
 
 import com.ianrenton.planesailing.app.Application;
+import com.ianrenton.planesailing.app.TrackTable;
 import com.ianrenton.planesailing.data.Track;
+import com.ianrenton.planesailing.data.TrackType;
 import com.sun.management.OperatingSystemMXBean;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -20,6 +22,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The HTTP server that will provide data to the Plane/Sailing client over the
@@ -61,14 +64,16 @@ public class WebServer {
                 + "<p>Available API endpoints:</p>"
                 + "<ul><li><a href='/first'>/first</a> - First call (includes position history)</li>"
                 + "<li><a href='/update'>/update</a> - Update call (no position history)</li>"
-                + "<li><a href='/telemetry'>/telemetry</a> - Server telemetry information</li></ul>"
-                + "</body></html>";
+                + "<li><a href='/telemetry'>/telemetry</a> - Server telemetry information</li>"
+                + "<li><a href='/metrics'>/metrics</a> - Performance data formatted for use with Prometheus (e.g. for Grafana)</li>"
+                + "</ul></body></html>";
 
         try {
             server = HttpServer.create(new InetSocketAddress(localPort), 0);
             server.createContext("/first", new CallHandler(Call.FIRST));
             server.createContext("/update", new CallHandler(Call.UPDATE));
             server.createContext("/telemetry", new CallHandler(Call.TELEMETRY));
+            server.createContext("/metrics", new CallHandler(Call.METRICS));
             server.createContext("/", new CallHandler(Call.HOME));
             server.setExecutor(null);
         } catch (IOException ex) {
@@ -105,6 +110,10 @@ public class WebServer {
                     case FIRST -> response = getFirstCallJSON();
                     case UPDATE -> response = getUpdateCallJSON();
                     case TELEMETRY -> response = getTelemetryCallJSON();
+                    case METRICS -> {
+                        response = getMetricsForPrometheus();
+                        contentType = "text/plain";
+                    }
                     case HOME -> {
                         response = homeCallResponseHTML;
                         contentType = "text/html";
@@ -209,8 +218,63 @@ public class WebServer {
         return o.toString(readableJSON ? 2 : 0);
     }
 
+    /**
+     * Get some server statistics formatted for use with Prometheus.
+     */
+    private String getMetricsForPrometheus() {
+        TrackTable tt = app.getTrackTable();
+        return "# HELP plane_sailing_track_count Number of tracks of all kinds in the system\n" +
+                "# TYPE plane_sailing_track_count gauge\n" +
+                "plane_sailing_track_count " +
+                tt.size() +
+                "\n" +
+                "# HELP plane_sailing_aircraft_count Number of aircraft tracks in the system\n" +
+                "# TYPE plane_sailing_aircraft_count gauge\n" +
+                "plane_sailing_aircraft_count " +
+                tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).count() +
+                "\n" +
+                "# HELP plane_sailing_ship_count Number of ship tracks in the system\n" +
+                "# TYPE plane_sailing_ship_count gauge\n" +
+                "plane_sailing_ship_count " +
+                tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP).count() +
+                "\n" +
+                "# HELP plane_sailing_aprs_mobile_count Number of mobile APRS tracks in the system\n" +
+                "# TYPE plane_sailing_aprs_mobile_count gauge\n" +
+                "plane_sailing_aprs_mobile_count " +
+                tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE).count() +
+                "\n" +
+                "# HELP plane_sailing_aircraft_furthest_distance Distance in metres from the base station to the furthest tracked aircraft\n" +
+                "# TYPE plane_sailing_aircraft_furthest_distance gauge\n" +
+                "plane_sailing_aircraft_furthest_distance " +
+                tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT)
+                        .mapToDouble(tt::getDistanceFromBaseStation)
+                        .filter(Objects::nonNull).max().orElse(0.0) +
+                "\n" +
+                "# HELP plane_sailing_ship_furthest_distance Distance in metres from the base station to the furthest tracked ship\n" +
+                "# TYPE plane_sailing_ship_furthest_distance gauge\n" +
+                "plane_sailing_ship_furthest_distance " +
+                tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP)
+                        .mapToDouble(tt::getDistanceFromBaseStation)
+                        .filter(Objects::nonNull).max().orElse(0.0) +
+                "\n" +
+                "# HELP plane_sailing_ais_furthest_distance Distance in metres from the base station to the furthest tracked AIS contact\n" +
+                "# TYPE plane_sailing_ais_furthest_distance gauge\n" +
+                "plane_sailing_ais_furthest_distance " +
+                tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP || t.getTrackType() == TrackType.AIS_SHORE_STATION || t.getTrackType() == TrackType.AIS_ATON)
+                        .mapToDouble(tt::getDistanceFromBaseStation)
+                        .filter(Objects::nonNull).max().orElse(0.0) +
+                "\n" +
+                "# HELP plane_sailing_aprs_furthest_distance Distance in metres from the base station to the furthest tracked APRS contact\n" +
+                "# TYPE plane_sailing_aprs_furthest_distance gauge\n" +
+                "plane_sailing_aprs_furthest_distance " +
+                tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION)
+                        .mapToDouble(tt::getDistanceFromBaseStation)
+                        .filter(Objects::nonNull).max().orElse(0.0) +
+                "\n";
+    }
+
     private enum Call {
-        FIRST, UPDATE, TELEMETRY, HOME
+        FIRST, UPDATE, TELEMETRY, METRICS, HOME
     }
 
     public ConnectionStatus getStatus() {

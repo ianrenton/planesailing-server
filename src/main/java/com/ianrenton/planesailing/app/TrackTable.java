@@ -28,7 +28,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
 
     public final Map<Integer, String> aisNameCache = new ConcurrentHashMap<>();
 
-    private Position baseStationPositionForADSB = null;
+    private Position baseStationPosition = null;
 
     private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, new BasicThreadFactory.Builder().namingPattern("Track Table Processing Thread %d").build());
     @SuppressWarnings("rawtypes")
@@ -195,7 +195,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
             put(bs.getID(), bs);
             // Special case - store the first base station's position as the ADS-B decoder
             // will want that. Note Position takes longitude first!
-            baseStationPositionForADSB = new Position((Double) data.get("lon"), (Double) data.get("lat"), ((Number) data.get("alt")).doubleValue());
+            baseStationPosition = new Position((Double) data.get("lon"), (Double) data.get("lat"), ((Number) data.get("alt")).doubleValue());
         }
         LOGGER.info("Loaded {} base stations from config file", baseStationConfigs.size());
 
@@ -220,8 +220,20 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
         return aisNameCache;
     }
 
-    public Position getBaseStationPositionForADSB() {
-        return baseStationPositionForADSB;
+    public Position getBaseStationPosition() {
+        return baseStationPosition;
+    }
+
+    /**
+     * Returns the distance from the base station to the given track. If either the base station
+     * position or the track position is unknown, return null.
+     */
+    public Double getDistanceFromBaseStation(Track t) {
+        if (baseStationPosition != null && t != null && t.getPosition() != null) {
+            return baseStationPosition.haversine(new Position(t.getPosition().longitude(), t.getPosition().latitude(), 0.0));
+        } else {
+            return null;
+        }
     }
 
     /**
