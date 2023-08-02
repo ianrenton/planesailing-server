@@ -29,6 +29,7 @@ import java.util.Map;
  * web.
  */
 public class WebServer {
+    private static final Application APP = Application.getInstance();
     private static final Logger LOGGER = LogManager.getLogger(WebServer.class);
     private static final OperatingSystemMXBean OS_BEAN = ManagementFactory
             .getPlatformMXBean(OperatingSystemMXBean.class);
@@ -42,7 +43,6 @@ public class WebServer {
 
     private HttpServer server;
     private final int localPort;
-    private final Application app;
     private final boolean readableJSON = Application.CONFIG.getBoolean("comms.web-server.readable-json");
     private boolean online;
     private long lastReceivedTime;
@@ -53,11 +53,9 @@ public class WebServer {
      * Create the web server
      *
      * @param localPort Port to listen on.
-     * @param app       Reference to the application to look up data.
      */
-    public WebServer(int localPort, Application app) {
+    public WebServer(int localPort) {
         this.localPort = localPort;
-        this.app = app;
 
         homeCallResponseHTML = "<html><head><title>Plane/Sailing Server</title></head><body>"
                 + "<h1>Plane/Sailing Server</h1>" + "<p>Plane/Sailing Server version "
@@ -163,7 +161,7 @@ public class WebServer {
         map.put("version", Application.getSoftwareVersion());
 
         Map<String, Map<String, Object>> tracks = new HashMap<>();
-        for (Track t : app.getTrackTable().values()) {
+        for (Track t : APP.getTrackTable().values()) {
             tracks.put(t.getID(), t.getFirstCallData());
         }
         map.put("tracks", tracks);
@@ -186,7 +184,7 @@ public class WebServer {
         map.put("time", System.currentTimeMillis());
 
         Map<String, Map<String, Object>> tracks = new HashMap<>();
-        for (Track t : app.getTrackTable().values()) {
+        for (Track t : APP.getTrackTable().values()) {
             tracks.put(t.getID(), t.getUpdateCallData());
         }
         map.put("tracks", tracks);
@@ -210,11 +208,11 @@ public class WebServer {
         if (temp != null) {
             map.put("temp", String.format("%.1f", temp));
         }
-        map.put("webServerStatus", app.getWebServerStatus().toString());
-        map.put("adsbReceiverStatus", app.getADSBReceiverStatus().toString());
-        map.put("mlatReceiverStatus", app.getMLATReceiverStatus().toString());
-        map.put("aisReceiverStatus", app.getAISReceiverStatus().toString());
-        map.put("aprsReceiverStatus", app.getAPRSReceiverStatus().toString());
+        map.put("webServerStatus", APP.getWebServerStatus().toString());
+        map.put("adsbReceiverStatus", APP.getADSBReceiverStatus().toString());
+        map.put("mlatReceiverStatus", APP.getMLATReceiverStatus().toString());
+        map.put("aisReceiverStatus", APP.getAISReceiverStatus().toString());
+        map.put("aprsReceiverStatus", APP.getAPRSReceiverStatus().toString());
 
         JSONObject o = new JSONObject(map);
         return o.toString(readableJSON ? 2 : 0);
@@ -224,27 +222,27 @@ public class WebServer {
      * Get some server statistics formatted for use with Prometheus.
      */
     private String getMetricsForPrometheus() {
-        TrackTable tt = app.getTrackTable();
+        TrackTable tt = APP.getTrackTable();
         return PrometheusMetricGenerator.generate("plane_sailing_uptime", "Uptime of the server in seconds",
                 "counter", (System.currentTimeMillis() - Application.START_TIME) / 1000.0)
                 + PrometheusMetricGenerator.generate("plane_sailing_requests_served", "Number of HTTP requests served by the Plane/Sailing server since start",
                 "counter", requestsServed)
                 + PrometheusMetricGenerator.generate("plane_sailing_adsb_available", "Is ADSB input configured and connected?",
-                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ONLINE || app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ONLINE || APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_mlat_available", "Is MLAT input configured and connected?",
-                "gauge", app.getMLATReceiverStatus() == ConnectionStatus.ONLINE || app.getMLATReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getMLATReceiverStatus() == ConnectionStatus.ONLINE || APP.getMLATReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_ais_available", "Is AIS input configured and connected?",
-                "gauge", app.getAISReceiverStatus() == ConnectionStatus.ONLINE || app.getAISReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getAISReceiverStatus() == ConnectionStatus.ONLINE || APP.getAISReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_available", "Is APRS input configured and connected?",
-                "gauge", app.getAPRSReceiverStatus() == ConnectionStatus.ONLINE || app.getAPRSReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getAPRSReceiverStatus() == ConnectionStatus.ONLINE || APP.getAPRSReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_adsb_receiving", "Is ADSB input receiving data?",
-                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_mlat_receiving", "Is MLAT input receiving data?",
-                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_ais_receiving", "Is AIS input receiving data?",
-                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_receiving", "Is APRS input receiving data?",
-                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
                 + PrometheusMetricGenerator.generate("plane_sailing_track_count", "Number of tracks of all kinds in the system",
                 "gauge", tt.size())
                 + PrometheusMetricGenerator.generate("plane_sailing_aircraft_count", "Number of aircraft tracks in the system",
@@ -258,7 +256,7 @@ public class WebServer {
                 + PrometheusMetricGenerator.generate("plane_sailing_aircraft_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked aircraft",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
                 + PrometheusMetricGenerator.generate("plane_sailing_ship_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked ship",
-                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * TrackTable.METRES_TO_NMI).max().orElse(0.0))
                 + PrometheusMetricGenerator.generate("plane_sailing_ais_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked AIS contact",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP || t.getTrackType() == TrackType.AIS_SHORE_STATION || t.getTrackType() == TrackType.AIS_ATON).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked APRS contact",

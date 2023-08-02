@@ -20,6 +20,8 @@ import java.util.concurrent.*;
  */
 public class TrackTable extends ConcurrentHashMap<String, Track> {
 
+    public static final double METRES_TO_NMI = 0.000539957;
+
     @Serial
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(TrackTable.class);
@@ -243,6 +245,53 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
     public double getDistanceFromBaseStationOrZero(Track t) {
         Double d = getDistanceFromBaseStation(t);
         return d != null ? d : 0.0;
+    }
+
+    /**
+     * <p>Return true if the position provided is considered "reasonable" for a track of the given type. For aircraft and
+     * AIS tracks, the position is compared against the base station position and expected ranges set in the config file
+     * to determine whether this is reasonable or likely to be dodgy data. Checks performed are as follows:</p>
+     * <ul>
+     *     <li>If latitude or longitude are outside their numeric bounds, return false (corrupt or test data)</li>
+     *     <li>If latitude and longitude are exactly zero, return false (bad transponder reporting 0,0 for no data)</li>
+     *     <li>If no base station position is provided, return true (can't tell if positions are reasonable, assume they
+     *     are</li>
+     *     <li>If the type is null, return false (we don't want to accidentally add a position that will then become
+     *     "unreasonable" once we know the type)</li>
+     *     <li>If the type is base station, airport or seaport, return true (these are pre-programmed)</li>
+     *     <li>If the type is APRS, return true (APRS is repeated so there is no reasonableness check for range)</li>
+     *     <li>For the remaining types (aircraft & AIS) compare the range from the base station against the configued
+     *     limits. Return true if their range looks reasonable, false otherwise.</li>
+     * </ul>
+     *
+     * @param latitude  Latitude, decimal degrees
+     * @param longitude Longitude, decimal degrees
+     * @param type      The type of track
+     */
+    public boolean isReasonablePosition(double latitude, double longitude, TrackType type) {
+        if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+            return false;
+        }
+        if (latitude == 0.0 && longitude == 0.0) {
+            return false;
+        }
+        if (baseStationPosition == null) {
+            return true;
+        }
+        if (type == null) {
+            return false;
+        }
+        switch (type) {
+            case AIRCRAFT -> {
+                return baseStationPosition.haversine(new Position(longitude, latitude, 0.0)) * METRES_TO_NMI <= Aircraft.MAX_AIRCRAFT_RANGE;
+            }
+            case SHIP, AIS_ATON, AIS_SHORE_STATION -> {
+                return baseStationPosition.haversine(new Position(longitude, latitude, 0.0)) * METRES_TO_NMI <= AISTrack.MAX_AIS_RANGE;
+            }
+            default -> {
+                return true;
+            }
+        }
     }
 
     /**

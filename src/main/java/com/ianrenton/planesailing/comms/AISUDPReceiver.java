@@ -100,8 +100,8 @@ public class AISUDPReceiver extends Client {
                         s.setName(name);
                         trackTable.getAISNameCache().put(mmsi, name);
                     }
-                    s.addPosition(m2.getLatitude(), m2.getLongitude());
                     s.setTrackType(TrackType.AIS_ATON);
+                    s.addPosition(m2.getLatitude(), m2.getLongitude());
                     s.setFixed(true);
                     s.updateMetadataTime();
                     break;
@@ -109,8 +109,8 @@ public class AISUDPReceiver extends Client {
                 case BaseStationReport:
                     BaseStationReport m3 = (BaseStationReport) m;
                     s.setShoreStation(true);
-                    s.addPosition(m3.getLatitude(), m3.getLongitude());
                     s.setTrackType(TrackType.AIS_SHORE_STATION);
+                    s.addPosition(m3.getLatitude(), m3.getLongitude());
                     s.setFixed(true);
                     s.updateMetadataTime();
                     break;
@@ -152,18 +152,19 @@ public class AISUDPReceiver extends Client {
 
                 case LongRangeBroadcastMessage:
                     LongRangeBroadcastMessage m6 = (LongRangeBroadcastMessage) m;
+                    s.setTrackType(TrackType.SHIP);
                     s.addPosition(m6.getLatitude(), m6.getLongitude());
                     if (m6.getCourseOverGround() != 511) {
                         s.setCourse(m6.getCourseOverGround().doubleValue());
                     }
                     s.setSpeed(m6.getSpeedOverGround().doubleValue());
                     s.setNavStatus(m6.getNavigationalStatus());
-                    s.setTrackType(TrackType.SHIP);
                     s.updateMetadataTime();
                     break;
 
                 case PositionReportClassAAssignedSchedule:
                     PositionReportClassAAssignedSchedule m7 = (PositionReportClassAAssignedSchedule) m;
+                    s.setTrackType(TrackType.SHIP);
                     s.addPosition(m7.getLatitude(), m7.getLongitude());
                     if (m7.getCourseOverGround() != 511) {
                         s.setCourse(m7.getCourseOverGround().doubleValue());
@@ -173,12 +174,12 @@ public class AISUDPReceiver extends Client {
                     }
                     s.setSpeed(m7.getSpeedOverGround().doubleValue());
                     s.setNavStatus(m7.getNavigationStatus());
-                    s.setTrackType(TrackType.SHIP);
                     s.updateMetadataTime();
                     break;
 
                 case PositionReportClassAResponseToInterrogation:
                     PositionReportClassAResponseToInterrogation m8 = (PositionReportClassAResponseToInterrogation) m;
+                    s.setTrackType(TrackType.SHIP);
                     s.addPosition(m8.getLatitude(), m8.getLongitude());
                     if (m8.getCourseOverGround() != 511) {
                         s.setCourse(m8.getCourseOverGround().doubleValue());
@@ -188,12 +189,12 @@ public class AISUDPReceiver extends Client {
                     }
                     s.setSpeed(m8.getSpeedOverGround().doubleValue());
                     s.setNavStatus(m8.getNavigationStatus());
-                    s.setTrackType(TrackType.SHIP);
                     s.updateMetadataTime();
                     break;
 
                 case PositionReportClassAScheduled:
                     PositionReportClassAScheduled m9 = (PositionReportClassAScheduled) m;
+                    s.setTrackType(TrackType.SHIP);
                     s.addPosition(m9.getLatitude(), m9.getLongitude());
                     if (m9.getCourseOverGround() != 511) {
                         s.setCourse(m9.getCourseOverGround().doubleValue());
@@ -203,7 +204,6 @@ public class AISUDPReceiver extends Client {
                     }
                     s.setSpeed(m9.getSpeedOverGround().doubleValue());
                     s.setNavStatus(m9.getNavigationStatus());
-                    s.setTrackType(TrackType.SHIP);
                     s.updateMetadataTime();
                     break;
 
@@ -225,6 +225,7 @@ public class AISUDPReceiver extends Client {
 
                 case StandardClassBCSPositionReport:
                     StandardClassBCSPositionReport m11 = (StandardClassBCSPositionReport) m;
+                    s.setTrackType(TrackType.SHIP);
                     s.addPosition(m11.getLatitude(), m11.getLongitude());
                     if (m11.getCourseOverGround() != 511) {
                         s.setCourse(m11.getCourseOverGround().doubleValue());
@@ -233,7 +234,6 @@ public class AISUDPReceiver extends Client {
                         s.setHeading(m11.getTrueHeading().doubleValue());
                     }
                     s.setSpeed(m11.getSpeedOverGround().doubleValue());
-                    s.setTrackType(TrackType.SHIP);
                     s.updateMetadataTime();
                     break;
 

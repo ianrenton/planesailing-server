@@ -17,6 +17,7 @@ public class AISTrack extends Track {
     private static final Long DROP_MOVING_SHIP_TRACK_TIME = Application.CONFIG.getLong("timing.drop-ship-track-moving-after");
     private static final Long DROP_SHIP_TRACK_WITH_NO_POS_TIME = Application.CONFIG.getLong("timing.drop-ship-track-no-position-after");
     private static final Long DROP_AIS_BASE_STATION_TIME = Application.CONFIG.getLong("timing.drop-ais-base-station-after");
+    public static final Long MAX_AIS_RANGE = Application.CONFIG.getLong("ranges.expected-ais-range");
 
     private final int mmsi;
     private String name;

@@ -1,5 +1,9 @@
 package com.ianrenton.planesailing.data;
 
+import com.ianrenton.planesailing.app.Application;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
@@ -7,6 +11,8 @@ import java.util.*;
 public abstract class Track implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    private static final Application APP = Application.getInstance();
+    private static final Logger LOGGER = LogManager.getLogger(Track.class);
 
     protected final String id; // unique ID. ICAO Hex is used for aircraft, MMSI for ships, callsign for APRS
     // tracks. These are all sufficiently different that each track should be
@@ -180,13 +186,32 @@ public abstract class Track implements Serializable {
         return positionHistory;
     }
 
+    /**
+     * Add a position for this track. This may be rejected if it is deemed unreasonable - the reasonableness check is
+     * based on track type, so for preference the type should always be set *before* calling this method.
+     *
+     * @param latitude  Latitude, decimal degrees
+     * @param longitude Longitude, decimal degrees
+     */
     public void addPosition(double latitude, double longitude) {
         addPosition(latitude, longitude, System.currentTimeMillis());
     }
 
+    /**
+     * Add a timestamped position for this track. This may be rejected if it is deemed unreasonable - the reasonableness
+     * check is based on track type, so for preference the type should always be set *before* calling this method.
+     *
+     * @param latitude  Latitude, decimal degrees
+     * @param longitude Longitude, decimal degrees
+     * @param time      Timestamp of position report, UTC UNIX millis
+     */
     public void addPosition(double latitude, double longitude, long time) {
-        positionHistory.add(new TimestampedPosition(latitude, longitude, time));
-        updateMetadataTime(time);
+        if (APP.getTrackTable().isReasonablePosition(latitude, longitude, trackType)) {
+            positionHistory.add(new TimestampedPosition(latitude, longitude, time));
+            updateMetadataTime(time);
+        } else if (trackType != null) {
+            LOGGER.warn("Position {},{} is unreasonable for track {} and has been rejected.", latitude, longitude, getDisplayName());
+        }
     }
 
     /**
@@ -282,7 +307,7 @@ public abstract class Track implements Serializable {
      */
     public String getDisplayName() {
         if (callsign != null) {
-            return callsign;
+            return callsign.trim();
         }
         return id;
     }

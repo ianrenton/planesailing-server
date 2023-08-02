@@ -2,7 +2,6 @@ package com.ianrenton.planesailing.utils;
 
 import com.ianrenton.planesailing.app.TrackTable;
 import com.ianrenton.planesailing.comms.APRSTCPClient;
-import com.ianrenton.planesailing.data.AISTrack;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
 import net.ab0oo.aprs.parser.APRSPacket;
@@ -54,22 +53,6 @@ public class APRSASCIIDumpParser {
                 // This is fine, carry on
             }
         }
-
-        // Add a couple of AIS tracks I've struggled to get back via radio
-        AISTrack jobourg = new AISTrack(2275200);
-        jobourg.setTrackType(TrackType.AIS_SHORE_STATION);
-        jobourg.setFixed(true);
-        jobourg.setShoreStation(true);
-        jobourg.setName("VTS JOBOURG");
-        jobourg.addPosition(49.684, -1.9075);
-        tt.put("2275200", jobourg);
-        AISTrack ch1 = new AISTrack(992271202);
-        ch1.setTrackType(TrackType.AIS_ATON);
-        ch1.setFixed(true);
-        ch1.setAtoN(true);
-        ch1.setName("CH1");
-        ch1.addPosition(49.72, -1.701667);
-        tt.put("992271202", ch1);
 
         tt.printStatusData();
 

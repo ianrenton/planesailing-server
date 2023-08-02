@@ -13,6 +13,7 @@ public class Aircraft extends Track {
     private static final Long DROP_AIR_TRACK_AT_ZERO_ALT_TIME = Application.CONFIG.getLong("timing.drop-air-track-at-zero-alt-after");
     private static final Long DROP_AIR_TRACK_TIME = Application.CONFIG.getLong("timing.drop-air-track-after");
     private static final Long DROP_AIR_TRACK_WITH_NO_POS_TIME = Application.CONFIG.getLong("timing.drop-air-track-no-position-after");
+    public static final Long MAX_AIRCRAFT_RANGE = Application.CONFIG.getLong("ranges.expected-aircraft-range");
 
     private boolean onGround;
     private Integer squawk;

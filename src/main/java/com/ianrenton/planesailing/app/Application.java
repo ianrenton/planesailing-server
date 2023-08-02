@@ -18,6 +18,7 @@ public class Application {
     public static final Config CONFIG = ConfigFactory.load().getConfig("plane-sailing-server");
     public static final long START_TIME = System.currentTimeMillis();
 
+    private static Application instance;
     private static final Logger LOGGER = LogManager.getLogger(Application.class);
     private static String softwareVersion = "Unknown";
 
@@ -35,11 +36,19 @@ public class Application {
      * @param args None used
      */
     public static void main(String[] args) {
-        Application app = new Application();
-        app.run();
+        instance = new Application();
+        instance.setup();
+        instance.run();
     }
 
-    public Application() {
+    /**
+     * Get the application instance singleton
+     */
+    public static Application getInstance() {
+        return instance;
+    }
+
+    public void setup() {
         // Fetch software version
         Properties p = new Properties();
         InputStream is = DataMaps.class.getClassLoader().getResourceAsStream("version.properties");
@@ -64,7 +73,7 @@ public class Application {
 
         // Set up connections
         if (CONFIG.getBoolean("comms.web-server.enabled")) {
-            webServer = new WebServer(CONFIG.getInt("comms.web-server.port"), this);
+            webServer = new WebServer(CONFIG.getInt("comms.web-server.port"));
         }
 
         if (CONFIG.getBoolean("comms.ais-receiver.enabled")) {
