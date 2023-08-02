@@ -40,7 +40,7 @@ However there is one complication, in that this project depends on [javAPRSlib](
 
 ## Setup
 
-In order to use this software, you should be running some combination of software to provide the data to it, e.g. rtl_ais, Dump1090, PiAware, Direwolf etc. You can find more information on how to install and set those up on the [Plane/Sailing build guide](https://ianrenton.com/hardware/planesailing). 
+In order to use this software, you should be running some combination of software to provide the data to it, e.g. AIS-Catcher or rtl_ais, Dump1090/PiAware, Direwolf etc. You can find more information on how to install and set those up on the [Plane/Sailing build guide](https://ianrenton.com/hardware/planesailing). 
 
 To run Plane/Sailing Server:
 
