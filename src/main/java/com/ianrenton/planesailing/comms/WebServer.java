@@ -249,9 +249,13 @@ public class WebServer {
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).count())
                 + PrometheusMetricGenerator.generate("plane_sailing_ship_count", "Number of ship tracks in the system",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP).count())
+                + PrometheusMetricGenerator.generate("plane_sailing_ais_shore_station_count", "Number of AIS shore station tracks in the system",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIS_SHORE_STATION).count())
+                + PrometheusMetricGenerator.generate("plane_sailing_aton_count", "Number of AtoN tracks in the system",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIS_ATON).count())
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_mobile_count", "Number of mobile APRS tracks in the system",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE).count())
-                + PrometheusMetricGenerator.generate("plane_sailing_aprs_mobile_count", "Number of APRS base station tracks in the system",
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_base_count", "Number of APRS base station tracks in the system",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_BASE_STATION).count())
                 + PrometheusMetricGenerator.generate("plane_sailing_aircraft_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked aircraft",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
