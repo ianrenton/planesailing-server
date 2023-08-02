@@ -4,6 +4,7 @@ import com.ianrenton.planesailing.app.Application;
 import com.ianrenton.planesailing.app.TrackTable;
 import com.ianrenton.planesailing.data.Track;
 import com.ianrenton.planesailing.data.TrackType;
+import com.ianrenton.planesailing.utils.PrometheusMetricGenerator;
 import com.sun.management.OperatingSystemMXBean;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -46,6 +47,7 @@ public class WebServer {
     private boolean online;
     private long lastReceivedTime;
     private final String homeCallResponseHTML;
+    private int requestsServed = 0;
 
     /**
      * Create the web server
@@ -140,6 +142,7 @@ public class WebServer {
                         t.sendResponseHeaders(405, -1);
                     }
                 }
+                requestsServed++;
             } catch (Exception ex) {
                 LOGGER.error("Exception responding to web request", ex);
             }
@@ -222,54 +225,44 @@ public class WebServer {
      */
     private String getMetricsForPrometheus() {
         TrackTable tt = app.getTrackTable();
-        return "# HELP plane_sailing_track_count Number of tracks of all kinds in the system\n" +
-                "# TYPE plane_sailing_track_count gauge\n" +
-                "plane_sailing_track_count " +
-                tt.size() +
-                "\n" +
-                "# HELP plane_sailing_aircraft_count Number of aircraft tracks in the system\n" +
-                "# TYPE plane_sailing_aircraft_count gauge\n" +
-                "plane_sailing_aircraft_count " +
-                tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).count() +
-                "\n" +
-                "# HELP plane_sailing_ship_count Number of ship tracks in the system\n" +
-                "# TYPE plane_sailing_ship_count gauge\n" +
-                "plane_sailing_ship_count " +
-                tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP).count() +
-                "\n" +
-                "# HELP plane_sailing_aprs_mobile_count Number of mobile APRS tracks in the system\n" +
-                "# TYPE plane_sailing_aprs_mobile_count gauge\n" +
-                "plane_sailing_aprs_mobile_count " +
-                tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE).count() +
-                "\n" +
-                "# HELP plane_sailing_aircraft_furthest_distance Distance in nautical miles from the base station to the furthest tracked aircraft\n" +
-                "# TYPE plane_sailing_aircraft_furthest_distance gauge\n" +
-                "plane_sailing_aircraft_furthest_distance " +
-                tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT)
-                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
-                        .map(d -> d * 0.000539957).max().orElse(0.0) +
-                "\n" +
-                "# HELP plane_sailing_ship_furthest_distance Distance in nautical miles from the base station to the furthest tracked ship\n" +
-                "# TYPE plane_sailing_ship_furthest_distance gauge\n" +
-                "plane_sailing_ship_furthest_distance " +
-                tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP)
-                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
-                        .map(d -> d * 0.000539957).max().orElse(0.0) +
-                "\n" +
-                "# HELP plane_sailing_ais_furthest_distance Distance in nautical miles from the base station to the furthest tracked AIS contact\n" +
-                "# TYPE plane_sailing_ais_furthest_distance gauge\n" +
-                "plane_sailing_ais_furthest_distance " +
-                tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP || t.getTrackType() == TrackType.AIS_SHORE_STATION || t.getTrackType() == TrackType.AIS_ATON)
-                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
-                        .map(d -> d * 0.000539957).max().orElse(0.0) +
-                "\n" +
-                "# HELP plane_sailing_aprs_furthest_distance Distance in nautical miles from the base station to the furthest tracked APRS contact\n" +
-                "# TYPE plane_sailing_aprs_furthest_distance gauge\n" +
-                "plane_sailing_aprs_furthest_distance " +
-                tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION)
-                        .mapToDouble(tt::getDistanceFromBaseStationOrZero)
-                        .map(d -> d * 0.000539957).max().orElse(0.0) +
-                "\n";
+        return PrometheusMetricGenerator.generate("plane_sailing_uptime", "Uptime of the server in seconds",
+                "counter", (System.currentTimeMillis() - Application.START_TIME) / 1000.0)
+                + PrometheusMetricGenerator.generate("plane_sailing_requests_served", "Number of HTTP requests served by the Plane/Sailing server since start",
+                "counter", requestsServed)
+                + PrometheusMetricGenerator.generate("plane_sailing_adsb_available", "Is ADSB input configured and connected?",
+                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ONLINE || app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_mlat_available", "Is MLAT input configured and connected?",
+                "gauge", app.getMLATReceiverStatus() == ConnectionStatus.ONLINE || app.getMLATReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_ais_available", "Is AIS input configured and connected?",
+                "gauge", app.getAISReceiverStatus() == ConnectionStatus.ONLINE || app.getAISReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_available", "Is APRS input configured and connected?",
+                "gauge", app.getAPRSReceiverStatus() == ConnectionStatus.ONLINE || app.getAPRSReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_adsb_receiving", "Is ADSB input receiving data?",
+                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_mlat_receiving", "Is MLAT input receiving data?",
+                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_ais_receiving", "Is AIS input receiving data?",
+                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_receiving", "Is APRS input receiving data?",
+                "gauge", app.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_track_count", "Number of tracks of all kinds in the system",
+                "gauge", tt.size())
+                + PrometheusMetricGenerator.generate("plane_sailing_aircraft_count", "Number of aircraft tracks in the system",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).count())
+                + PrometheusMetricGenerator.generate("plane_sailing_ship_count", "Number of ship tracks in the system",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP).count())
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_mobile_count", "Number of mobile APRS tracks in the system",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE).count())
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_mobile_count", "Number of APRS base station tracks in the system",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_BASE_STATION).count())
+                + PrometheusMetricGenerator.generate("plane_sailing_aircraft_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked aircraft",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
+                + PrometheusMetricGenerator.generate("plane_sailing_ship_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked ship",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
+                + PrometheusMetricGenerator.generate("plane_sailing_ais_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked AIS contact",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP || t.getTrackType() == TrackType.AIS_SHORE_STATION || t.getTrackType() == TrackType.AIS_ATON).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked APRS contact",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0));
     }
 
     private enum Call {

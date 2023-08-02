@@ -253,3 +253,9 @@ The Plane/Sailing client, or any other client you write, should do the following
 Clients are of course free to set their own policies about what tracks to show and hide, how to present the data, etc. If you are writing your own client or fork of Plane/Sailing, I am happy to receive pull requests to add new data into the API.
 
 If you're just looking for the default web-based client that I wrote, [that's here](https://github.com/ianrenton/planesailing) and it's also Public Domain, so you can just use it or modify it however you like.
+
+## Prometheus Metrics
+
+Plane/Sailing Server exposes a Prometheus metrics endpoint from its web server, at the standard URL of `/metrics`. Metrics available include the number of tracks of various types in the system, and maximum detection ranges. This can be used to aggregate & analyse data on performance, provide alerting on the loss of a feed, and to add pretty graphs to Grafana.
+
+![Aircraft, Ship and APRS track charts in Grafana](./grafana-screenshot.png)
