@@ -13,10 +13,10 @@ public class BaseStation extends Track {
     public BaseStation(String name, double lat, double lon) {
         super("BASESTATION-" + baseStationCount++);
         this.name = name;
-        addPosition(lat, lon);
         setCreatedByConfig(true);
         setTrackType(TrackType.BASE_STATION);
         setSymbolCode(BASE_STATION_SYMBOL);
+        addPosition(lat, lon);
     }
 
     public String getName() {

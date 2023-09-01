@@ -13,10 +13,10 @@ public class Seaport extends Track {
     public Seaport(String name, double lat, double lon) {
         super("SEAPORT-" + seaportCount++);
         this.name = name;
-        addPosition(lat, lon);
         setCreatedByConfig(true);
         setTrackType(TrackType.SEAPORT);
         setSymbolCode(SEAPORT_SYMBOL);
+        addPosition(lat, lon);
     }
 
     public String getName() {

@@ -211,6 +211,8 @@ public abstract class Track implements Serializable {
             updateMetadataTime(time);
         } else if (trackType != null) {
             LOGGER.warn("Position {},{} is unreasonable for track {} and has been rejected.", latitude, longitude, getDisplayName());
+        } else {
+            LOGGER.warn("Tried to check position reasonableness for a track of null type. Always set the type before adding a position!");
         }
     }
 

@@ -15,10 +15,10 @@ public class Airport extends Track {
         super("AIRPORT-" + airportCount++);
         this.name = name;
         this.icaoCode = icaoCode;
-        addPosition(lat, lon);
         setCreatedByConfig(true);
         setTrackType(TrackType.AIRPORT);
         setSymbolCode(AIRPORT_SYMBOL);
+        addPosition(lat, lon);
     }
 
     public String getName() {
