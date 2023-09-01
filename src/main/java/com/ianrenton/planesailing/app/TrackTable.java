@@ -175,6 +175,7 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
      */
     public void copy(TrackTable tt) {
         this.putAll(tt);
+        this.aisNameCache.putAll(tt.getAISNameCache());
     }
 
     /**
