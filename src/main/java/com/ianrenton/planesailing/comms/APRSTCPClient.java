@@ -136,7 +136,19 @@ public class APRSTCPClient extends TCPClient {
 
         // Extract APRS data
         InformationField data = packet.getAprsInformation();
+
+        // Find comment by one of two methods. javAPRSlib has some weirdness here in that InformationField.comment does
+        // not always get populated, although a comment may exist in the embedded APRSData block. However, the latter
+        // comment isn't exposed anywhere, so the best we can do is toString() it and parse that, e.g. see
+        // PositionField.toString().
         String comment = data.getComment();
+        for (APRSData d : data.getAprsData().values()) {
+            for (String line : d.toString().split("\\r?\\n")) {
+                if (line.startsWith("Comment:  ")) {
+                    comment = line.substring(10);
+                }
+            }
+        }
 
         // Tweak formatting of route, and only keep the comment
         // if it contains human-entered data, approximated here
