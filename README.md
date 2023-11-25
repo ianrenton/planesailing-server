@@ -46,7 +46,7 @@ To run Plane/Sailing Server:
 
 1. Ensure your machine has Java 17 or later installed, e.g. `sudo apt install openjdk-17-jre-headless`
 2. Find your copy of Plane/Sailing Server, either from the ZIP download or one you built yourself (see the previous section). You should have three files: a JAR file, an `application.conf` file, a `run.sh`, and a `data` subdirectory.
-3. Edit `application.conf` and set the IP addresses and ports as required. If you don't have a particular data type, e.g. you don't do APRS, set `enabled: false` for that section.
+3. Edit `application.conf` and set the IP addresses and ports as required. Each section (AIS, ADS-B, MLAT, APRS) contains a *list* (within square brackets) of connections (blocks surrounded by curly brackets) to make. If you don't have a particular data type, e.g. you don't do APRS, remove the entry for that section leaving an empty list like `aprs-receivers: []`. If you have more than one connection to make in a category, add multiple blocks.
 4. Set the base station position, and any airports and seaports you'd like to appear in your data.
 5. Save `application.conf` and run the application, e.g. `chmod +x run.sh`, `./run.sh`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
