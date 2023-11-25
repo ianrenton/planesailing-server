@@ -41,7 +41,7 @@ public class WebServer {
     // Expected milliseconds between receiving requests when a client is online
     private static final long CLIENT_REQUEST_RATE_MILLIS = 10000;
 
-    private HttpServer server;
+    private final HttpServer server;
     private final int localPort;
     private final boolean readableJSON = Application.CONFIG.getBoolean("comms.web-server.readable-json");
     private boolean online;
@@ -53,8 +53,9 @@ public class WebServer {
      * Create the web server
      *
      * @param localPort Port to listen on.
+     * @exception IOException if the server could not be set up.
      */
-    public WebServer(int localPort) {
+    public WebServer(int localPort) throws IOException {
         this.localPort = localPort;
 
         homeCallResponseHTML = "<html><head><title>Plane/Sailing Server</title></head><body>"
@@ -67,17 +68,13 @@ public class WebServer {
                 + "<li><a href='/metrics'>/metrics</a> - Performance data formatted for use with Prometheus (e.g. for Grafana)</li>"
                 + "</ul></body></html>";
 
-        try {
-            server = HttpServer.create(new InetSocketAddress(localPort), 0);
-            server.createContext("/first", new CallHandler(Call.FIRST));
-            server.createContext("/update", new CallHandler(Call.UPDATE));
-            server.createContext("/telemetry", new CallHandler(Call.TELEMETRY));
-            server.createContext("/metrics", new CallHandler(Call.METRICS));
-            server.createContext("/", new CallHandler(Call.HOME));
-            server.setExecutor(null);
-        } catch (IOException ex) {
-            LOGGER.error("Could not set up web server", ex);
-        }
+        server = HttpServer.create(new InetSocketAddress(localPort), 10);
+        server.createContext("/first", new CallHandler(Call.FIRST));
+        server.createContext("/update", new CallHandler(Call.UPDATE));
+        server.createContext("/telemetry", new CallHandler(Call.TELEMETRY));
+        server.createContext("/metrics", new CallHandler(Call.METRICS));
+        server.createContext("/", new CallHandler(Call.HOME));
+        server.setExecutor(null);
     }
 
     public void run() {

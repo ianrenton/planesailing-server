@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -27,10 +28,10 @@ public class Application {
     private final TrackTable trackTable = new TrackTable();
 
     private WebServer webServer;
-    private List<Client> aisReceivers;
-    private List<Client> adsbReceivers;
-    private List<Client> mlatReceivers;
-    private List<Client> aprsReceivers;
+    private final List<Client> aisReceivers = new ArrayList<>();
+    private final List<Client> adsbReceivers = new ArrayList<>();
+    private final List<Client> mlatReceivers = new ArrayList<>();
+    private final List<Client> aprsReceivers = new ArrayList<>();
 
     /**
      * Start the application
@@ -64,95 +65,105 @@ public class Application {
         }
         LOGGER.info("This is Plane/Sailing Server v{}", softwareVersion);
 
-        // Load data
-        DataMaps.initialise();
+        try {
+            // Load data
+            DataMaps.initialise();
 
-        // Set up track table
-        trackTable.initialise();
+            // Set up track table
+            trackTable.initialise();
 
-        // Load custom tracks from config
-        trackTable.loadCustomTracksFromConfig();
+            // Load custom tracks from config
+            trackTable.loadCustomTracksFromConfig();
 
-        // Set up connections
-        webServer = new WebServer(CONFIG.getInt("comms.web-server.port"));
+            // Set up connections
+            webServer = new WebServer(CONFIG.getInt("comms.web-server.port"));
 
-        List<? extends Config> aisReceiversConfig = CONFIG.getConfigList("comms.ais-receivers");
-        for (Config c : aisReceiversConfig) {
-            aisReceivers.add(new AISUDPReceiver(c.getInt("port"), trackTable));
-        }
-
-
-        List<? extends Config> adsbReceiversConfig = CONFIG.getConfigList("comms.adsb-receivers");
-        for (Config c : adsbReceiversConfig) {
-            switch (c.getString("protocol")) {
-                case "dump1090json" ->
-                        adsbReceivers.add(new Dump1090JSONReader(c.getString("file"), trackTable));
-                case "beastbinary" ->
-                        adsbReceivers.add(new BEASTBinaryTCPClient(c.getString("host"), c.getInt("port"), trackTable, false));
-                case "beastavr" ->
-                        adsbReceivers.add(new BEASTAVRTCPClient(c.getString("host"), c.getInt("port"), trackTable));
-                case "sbs" ->
-                        adsbReceivers.add(new SBSTCPClient(c.getString("host"), c.getInt("port"), trackTable, false));
-                default ->
-                        LOGGER.error("Unknown air data protocol '{}'. Options are 'beastbinary', 'beastavr' and 'sbs'.", c.getString("protocol"));
+            List<? extends Config> aisReceiversConfig = CONFIG.getConfigList("comms.ais-receivers");
+            for (Config c : aisReceiversConfig) {
+                aisReceivers.add(new AISUDPReceiver(c.getInt("port"), trackTable));
             }
-        }
 
-        List<? extends Config> mlatReceiversConfig = CONFIG.getConfigList("comms.mlat-receivers");
-        for (Config c : mlatReceiversConfig) {
-            switch (c.getString("protocol")) {
-                case "beastbinary" ->
-                        mlatReceivers.add(new BEASTBinaryTCPClient(c.getString("host"), c.getInt("port"), trackTable, true));
-                case "sbs" ->
-                        mlatReceivers.add(new SBSTCPClient(c.getString("host"), c.getInt("port"), trackTable, true));
-                default ->
-                        LOGGER.error("Unknown air data protocol '{}'. Options are 'beastbinary' and 'sbs'.", c.getString("comms.mlat-receiver.protocol"));
+            List<? extends Config> adsbReceiversConfig = CONFIG.getConfigList("comms.adsb-receivers");
+            for (Config c : adsbReceiversConfig) {
+                switch (c.getString("protocol")) {
+                    case "dump1090json" ->
+                            adsbReceivers.add(new Dump1090JSONReader(c.getString("file"), trackTable));
+                    case "beastbinary" ->
+                            adsbReceivers.add(new BEASTBinaryTCPClient(c.getString("host"), c.getInt("port"), trackTable, false));
+                    case "beastavr" ->
+                            adsbReceivers.add(new BEASTAVRTCPClient(c.getString("host"), c.getInt("port"), trackTable));
+                    case "sbs" ->
+                            adsbReceivers.add(new SBSTCPClient(c.getString("host"), c.getInt("port"), trackTable, false));
+                    default ->
+                            LOGGER.error("Unknown air data protocol '{}'. Options are 'beastbinary', 'beastavr' and 'sbs'.", c.getString("protocol"));
+                }
             }
-        }
-        
-        List<? extends Config> aprsReceiversConfig = CONFIG.getConfigList("comms.aprs-receivers");
-        for (Config c : aprsReceiversConfig) {
-            aprsReceivers.add(new APRSTCPClient(c.getString("host"), c.getInt("port"), trackTable));
+
+            List<? extends Config> mlatReceiversConfig = CONFIG.getConfigList("comms.mlat-receivers");
+            for (Config c : mlatReceiversConfig) {
+                switch (c.getString("protocol")) {
+                    case "beastbinary" ->
+                            mlatReceivers.add(new BEASTBinaryTCPClient(c.getString("host"), c.getInt("port"), trackTable, true));
+                    case "sbs" ->
+                            mlatReceivers.add(new SBSTCPClient(c.getString("host"), c.getInt("port"), trackTable, true));
+                    default ->
+                            LOGGER.error("Unknown air data protocol '{}'. Options are 'beastbinary' and 'sbs'.", c.getString("comms.mlat-receiver.protocol"));
+                }
+            }
+
+            List<? extends Config> aprsReceiversConfig = CONFIG.getConfigList("comms.aprs-receivers");
+            for (Config c : aprsReceiversConfig) {
+                aprsReceivers.add(new APRSTCPClient(c.getString("host"), c.getInt("port"), trackTable));
+            }
+
+        } catch (Exception ex) {
+            LOGGER.error("Exception when setting up Plane/Sailing Server", ex);
+            System.exit(1);
         }
     }
 
     private void run() {
-        // Run web server thread
-        webServer.run();
+        try {
+            // Run web server thread
+            webServer.run();
 
-        // Run data receiver threads
-        for (Client c : aisReceivers) {
-            c.run();
-        }
-        for (Client c : adsbReceivers) {
-            c.run();
-        }
-        for (Client c : mlatReceivers) {
-            c.run();
-        }
-        for (Client c : aprsReceivers) {
-            c.run();
-        }
-
-        // Add a JVM shutdown hook to stop threads nicely
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            webServer.stop();
+            // Run data receiver threads
             for (Client c : aisReceivers) {
-                c.stop();
+                c.run();
             }
             for (Client c : adsbReceivers) {
-                c.stop();
+                c.run();
             }
             for (Client c : mlatReceivers) {
-                c.stop();
+                c.run();
             }
             for (Client c : aprsReceivers) {
-                c.stop();
+                c.run();
             }
-            trackTable.shutdown();
-        }));
 
-        LOGGER.info("Plane/Sailing Server is up and running!");
+            // Add a JVM shutdown hook to stop threads nicely
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                webServer.stop();
+                for (Client c : aisReceivers) {
+                    c.stop();
+                }
+                for (Client c : adsbReceivers) {
+                    c.stop();
+                }
+                for (Client c : mlatReceivers) {
+                    c.stop();
+                }
+                for (Client c : aprsReceivers) {
+                    c.stop();
+                }
+                trackTable.shutdown();
+            }));
+
+            LOGGER.info("Plane/Sailing Server is up and running!");
+        } catch (Exception ex) {
+            LOGGER.error("Exception when starting Plane/Sailing Server", ex);
+            System.exit(1);
+        }
     }
 
     public static String getSoftwareVersion() {

@@ -51,6 +51,10 @@ To run Plane/Sailing Server:
 5. Save `application.conf` and run the application, e.g. `chmod +x run.sh`, `./run.sh`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
 
+### Troubleshooting: "Address already in use" on Windows
+
+If you're running Plane/Sailing Server on Windows, you may see an "Address already in use" error, and the software will fail to start. This is due to the choice of default port for the webserver, 8090, and its [interaction with a Windows 10/11 feature called WinNAT](https://blog.deanosim.net/windows-10-winnat-and-why-your-programs-cant-listen-on-certain-ports/). While there is a workaround for this involving stopping/starting WinNAT, it's probably easier just to pick a different port for Plane/Sailing Server's web interface to run on. You can change it in `application.conf`.
+
 ### A Note on Choosing Aircraft Data Protocols
 
 A number of aircraft data formats are supported&mdash;for the gory details see the [Tracking Packet Format FAQ](https://ianrenton.com/hardware/planesailing/tracking-packet-format-faq/#what-are-the-common-formats-of-mode-s-data). The preferred format is BEAST Binary format, which Dump1090 produces as an output. This contains the raw Mode-A, Mode-C, Mode-S, ADS-B and Comm-B bytes with some encapsulation. Plane/Sailing can use the same format for receiving live data from the radio via Dump1090 as it can receiving MLAT data from PiAware.
