@@ -73,7 +73,7 @@ public class AISUDPReceiver extends Client {
      */
     private void handle(AISMessage m) {
         try {
-            int mmsi = m.getSourceMmsi().getMMSI();
+            int mmsi = m.getSourceMmsi().intValue();
             String mmsiString = String.valueOf(mmsi);
 
             // If this is a new track, add it to the track table

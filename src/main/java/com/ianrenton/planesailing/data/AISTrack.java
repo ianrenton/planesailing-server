@@ -84,7 +84,7 @@ public class AISTrack extends Track {
 
             // Set the right symbol for the ship type if known
             for (Entry<String, String> e : DataMaps.SHIP_TYPE_TO_SYMBOL.entrySet()) {
-                if (shipType.getCode().equals(Integer.valueOf(e.getKey()))) {
+                if (shipType.getCode() == Integer.parseInt(e.getKey())) {
                     setSymbolCode(e.getValue());
                     break;
                 }
@@ -92,7 +92,7 @@ public class AISTrack extends Track {
 
             // Set the right description for the ship type if known
             for (Entry<String, String> e : DataMaps.SHIP_TYPE_TO_DESCRIPTION.entrySet()) {
-                if (shipType.getCode().equals(Integer.valueOf(e.getKey()))) {
+                if (shipType.getCode() == Integer.parseInt(e.getKey())) {
                     shipTypeDescription = e.getValue();
                     break;
                 }
@@ -128,7 +128,7 @@ public class AISTrack extends Track {
 
         // Set the right description for the nav status if known
         for (Entry<String, String> e : DataMaps.SHIP_NAV_STATUS_TO_DESCRIPTION.entrySet()) {
-            if (navStatus.getCode().equals(Integer.valueOf(e.getKey()))) {
+            if (navStatus.getCode() == Integer.parseInt(e.getKey())) {
                 navStatusDescription = e.getValue();
                 break;
             }
