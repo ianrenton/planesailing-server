@@ -21,12 +21,13 @@ public abstract class TCPClient extends Client {
     /**
      * Create the client
      *
+     * @param name       The name of the connection.
      * @param remoteHost Host to connect to.
      * @param remotePort Port to connect to.
      * @param trackTable The track table to use.
      */
-    public TCPClient(String remoteHost, int remotePort, TrackTable trackTable) {
-        super(trackTable);
+    public TCPClient(String name, String remoteHost, int remotePort, TrackTable trackTable) {
+        super(name, trackTable);
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
     }
@@ -34,7 +35,7 @@ public abstract class TCPClient extends Client {
     @Override
     public void run() {
         run = true;
-        new Thread(receiver, getDataType() + " receiver thread").start();
+        new Thread(receiver, getType() + " receiver thread").start();
     }
 
     @Override
@@ -71,7 +72,7 @@ public abstract class TCPClient extends Client {
                 while (run) {
                     // Try to connect
                     try {
-                        getLogger().info("Trying to make TCP connection to {}:{} to receive {}...", remoteHost, remotePort, getDataType());
+                        getLogger().info("Trying to make TCP connection to {}:{} to receive {}...", remoteHost, remotePort, getType());
                         clientSocket = new Socket(remoteHost, remotePort);
                         clientSocket.setSoTimeout(getTimeoutMillis());
                         clientSocket.setSoLinger(false, 0);
@@ -79,11 +80,11 @@ public abstract class TCPClient extends Client {
                         clientSocket.setReuseAddress(true);
                         in = clientSocket.getInputStream();
                         online = true;
-                        getLogger().info("TCP socket for {} connected.", getDataType());
+                        getLogger().info("Receiver {} connected.", getType());
                         break;
                     } catch (IOException e) {
                         try {
-                            getLogger().warn("TCP Socket for {} could not connect ({}), trying again in one minute...", getDataType(), e.getLocalizedMessage());
+                            getLogger().warn("Receiver {} could not connect ({}), trying again in one minute...", getType(), e.getLocalizedMessage());
                             TimeUnit.MINUTES.sleep(1);
                         } catch (InterruptedException ie) {
                             // This is fine, carry on
@@ -94,7 +95,7 @@ public abstract class TCPClient extends Client {
                 while (run) {
                     boolean ok = read(in);
                     if (!ok) {
-                        getLogger().warn("TCP Socket for {} read failed, reconnecting...", getDataType());
+                        getLogger().warn("Receiver {} read failed, reconnecting...", getType());
                         try {
                             online = false;
                             Thread.sleep(1000);

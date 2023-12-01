@@ -27,7 +27,7 @@ public class APRSASCIIDumpParser {
         File f = new File("/home/ian/Documents/all2.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
         TrackTable tt = new TrackTable();
-        APRSTCPClient dummyClient = new APRSTCPClient("", 0, tt);
+        APRSTCPClient dummyClient = new APRSTCPClient("", "", 0, tt);
 
         // Read in file, convert to APRS packets and load into temporary track table
         String s;

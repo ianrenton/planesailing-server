@@ -18,25 +18,24 @@ import java.io.InputStreamReader;
  */
 public class SBSTCPClient extends TCPClient {
 
-    private static final String DATA_TYPE_ADSB = "SBS format (ADS-B) data";
-    private static final String DATA_TYPE_MLAT = "SBS format (MLAT) data";
     private static final Logger LOGGER = LogManager.getLogger(SBSTCPClient.class);
 
-    private final String dataType;
+    private final boolean mlat;
     private final int socketTimeoutMillis;
 
     /**
      * Create the client
      *
+     * @param name       The name of the connection.
      * @param remoteHost Host to connect to.
      * @param remotePort Port to connect to.
      * @param trackTable The track table to use.
      * @param mlat       true if this connection will be receiving MLAT data, false if it
      *                   will be receiving Mode-S/ADS-B data from a local radio.
      */
-    public SBSTCPClient(String remoteHost, int remotePort, TrackTable trackTable, boolean mlat) {
-        super(remoteHost, remotePort, trackTable);
-        dataType = mlat ? DATA_TYPE_MLAT : DATA_TYPE_ADSB;
+    public SBSTCPClient(String name, String remoteHost, int remotePort, TrackTable trackTable, boolean mlat) {
+        super(name, remoteHost, remotePort, trackTable);
+        this.mlat = mlat;
         socketTimeoutMillis = mlat ? 600000 : 60000; // 1 min for local data, 10 min for MLAT from server
     }
 
@@ -50,7 +49,7 @@ public class SBSTCPClient extends TCPClient {
             }
             return true;
         } catch (IOException ex) {
-            getLogger().warn("Exception encountered in TCP Socket for {}.", getDataType(), ex);
+            getLogger().warn("Exception encountered in Receiver {}.", getType(), ex);
             return false;
         }
     }
@@ -135,7 +134,7 @@ public class SBSTCPClient extends TCPClient {
                 a.updateMetadataTime();
             }
         } catch (Exception ex) {
-            getLogger().warn("TCP Socket for {} encountered an exception handling line {}", getDataType(), m, ex);
+            getLogger().warn("Receiver {} encountered an exception handling line {}", name, m, ex);
         }
     }
 
@@ -145,8 +144,8 @@ public class SBSTCPClient extends TCPClient {
     }
 
     @Override
-    protected String getDataType() {
-        return dataType;
+    public ClientType getType() {
+        return mlat ? ClientType.MLAT : ClientType.ADSB;
     }
 
     @Override

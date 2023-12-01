@@ -5,11 +5,13 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class Client {
 
+    protected final String name;
     protected final TrackTable trackTable;
     protected boolean online;
     protected long lastReceivedTime;
 
-    public Client(TrackTable trackTable) {
+    public Client(String name, TrackTable trackTable) {
+        this.name = name;
         this.trackTable = trackTable;
     }
 
@@ -23,12 +25,16 @@ public abstract class Client {
      */
     public abstract void stop();
 
+    public String getName() {
+        return name;
+    }
+
     public ConnectionStatus getStatus() {
         if (online) {
             if (System.currentTimeMillis() - lastReceivedTime <= getTimeoutMillis()) {
                 return ConnectionStatus.ACTIVE;
             } else {
-                return ConnectionStatus.ONLINE;
+                return ConnectionStatus.WAITING;
             }
         } else {
             return ConnectionStatus.OFFLINE;
@@ -36,9 +42,9 @@ public abstract class Client {
     }
 
     /**
-     * Get the data type this connection handles, used only for logging.
+     * Get the data type this connection handles.
      */
-    protected abstract String getDataType();
+    public abstract ClientType getType();
 
     /**
      * Get the subclass logger implementation

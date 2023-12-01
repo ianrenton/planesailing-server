@@ -1,6 +1,7 @@
 package com.ianrenton.planesailing.app;
 
-import com.ianrenton.planesailing.comms.*;
+import com.ianrenton.planesailing.comms.Feeder;
+import com.ianrenton.planesailing.comms.WebServer;
 import com.ianrenton.planesailing.utils.DataMaps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -28,10 +28,7 @@ public class Application {
     private final TrackTable trackTable = new TrackTable();
 
     private WebServer webServer;
-    private final List<Client> aisReceivers = new ArrayList<>();
-    private final List<Client> adsbReceivers = new ArrayList<>();
-    private final List<Client> mlatReceivers = new ArrayList<>();
-    private final List<Client> aprsReceivers = new ArrayList<>();
+    private final List<Feeder> feeders = new ArrayList<>();
 
     /**
      * Start the application
@@ -75,45 +72,17 @@ public class Application {
             // Load custom tracks from config
             trackTable.loadCustomTracksFromConfig();
 
-            // Set up connections
+            // Set up web server
             webServer = new WebServer(CONFIG.getInt("comms.web-server.port"));
 
-            List<? extends Config> aisReceiversConfig = CONFIG.getConfigList("comms.ais-receivers");
-            for (Config c : aisReceiversConfig) {
-                aisReceivers.add(new AISUDPReceiver(c.getInt("port"), trackTable));
-            }
-
-            List<? extends Config> adsbReceiversConfig = CONFIG.getConfigList("comms.adsb-receivers");
-            for (Config c : adsbReceiversConfig) {
-                switch (c.getString("protocol")) {
-                    case "dump1090json" ->
-                            adsbReceivers.add(new Dump1090JSONReader(c.getString("file"), trackTable));
-                    case "beastbinary" ->
-                            adsbReceivers.add(new BEASTBinaryTCPClient(c.getString("host"), c.getInt("port"), trackTable, false));
-                    case "beastavr" ->
-                            adsbReceivers.add(new BEASTAVRTCPClient(c.getString("host"), c.getInt("port"), trackTable));
-                    case "sbs" ->
-                            adsbReceivers.add(new SBSTCPClient(c.getString("host"), c.getInt("port"), trackTable, false));
-                    default ->
-                            LOGGER.error("Unknown air data protocol '{}'. Options are 'beastbinary', 'beastavr' and 'sbs'.", c.getString("protocol"));
+            // Set up feeders, and clients within them
+            List<? extends Config> feedersConfig = CONFIG.getConfigList("comms.feeders");
+            if (!feedersConfig.isEmpty()) {
+                for (Config c : feedersConfig) {
+                    feeders.add(new Feeder(c, trackTable));
                 }
-            }
-
-            List<? extends Config> mlatReceiversConfig = CONFIG.getConfigList("comms.mlat-receivers");
-            for (Config c : mlatReceiversConfig) {
-                switch (c.getString("protocol")) {
-                    case "beastbinary" ->
-                            mlatReceivers.add(new BEASTBinaryTCPClient(c.getString("host"), c.getInt("port"), trackTable, true));
-                    case "sbs" ->
-                            mlatReceivers.add(new SBSTCPClient(c.getString("host"), c.getInt("port"), trackTable, true));
-                    default ->
-                            LOGGER.error("Unknown air data protocol '{}'. Options are 'beastbinary' and 'sbs'.", c.getString("comms.mlat-receiver.protocol"));
-                }
-            }
-
-            List<? extends Config> aprsReceiversConfig = CONFIG.getConfigList("comms.aprs-receivers");
-            for (Config c : aprsReceiversConfig) {
-                aprsReceivers.add(new APRSTCPClient(c.getString("host"), c.getInt("port"), trackTable));
+            } else {
+                LOGGER.error("No feeders are defined, Plane/Sailing Server will not receive any data.");
             }
 
         } catch (Exception ex) {
@@ -127,34 +96,16 @@ public class Application {
             // Run web server thread
             webServer.run();
 
-            // Run data receiver threads
-            for (Client c : aisReceivers) {
-                c.run();
-            }
-            for (Client c : adsbReceivers) {
-                c.run();
-            }
-            for (Client c : mlatReceivers) {
-                c.run();
-            }
-            for (Client c : aprsReceivers) {
-                c.run();
+            // Run data receiver client threads
+            for (Feeder f : feeders) {
+                f.runAll();
             }
 
             // Add a JVM shutdown hook to stop threads nicely
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 webServer.stop();
-                for (Client c : aisReceivers) {
-                    c.stop();
-                }
-                for (Client c : adsbReceivers) {
-                    c.stop();
-                }
-                for (Client c : mlatReceivers) {
-                    c.stop();
-                }
-                for (Client c : aprsReceivers) {
-                    c.stop();
+                for (Feeder f : feeders) {
+                    f.stopAll();
                 }
                 trackTable.shutdown();
             }));
@@ -174,71 +125,7 @@ public class Application {
         return trackTable;
     }
 
-    public ConnectionStatus getWebServerStatus() {
-        return webServer.getStatus();
+    public List<Feeder> getFeeders() {
+        return feeders;
     }
-
-    /**
-     * Get the status of the ADS-B receiver, or if there's more than one, return the "best" status amongst them.
-     * "Disabled" will be returned if there are no receivers of this type configured.
-     */
-    public ConnectionStatus getADSBReceiverStatus() {
-        if (!adsbReceivers.isEmpty()) {
-            return getBestStatus(adsbReceivers);
-        } else {
-            return ConnectionStatus.DISABLED;
-        }
-    }
-
-    /**
-     * Get the status of the MLAT receiver, or if there's more than one, return the "best" status amongst them.
-     * "Disabled" will be returned if there are no receivers of this type configured.
-     */
-    public ConnectionStatus getMLATReceiverStatus() {
-        if (!mlatReceivers.isEmpty()) {
-            return getBestStatus(mlatReceivers);
-        } else if (adsbReceivers.stream().anyMatch(r -> r instanceof Dump1090JSONReader)) {
-            // If using a Dump1090 JSON reader we don't need separate MLAT status, because the JSON data includes MLAT
-            Optional<Client> r = adsbReceivers.stream().filter(r2 -> r2 instanceof Dump1090JSONReader).findFirst();
-            return r.isPresent() ? r.get().getStatus() : ConnectionStatus.DISABLED;
-        } else {
-            return ConnectionStatus.DISABLED;
-        }
-    }
-
-    /**
-     * Get the status of the AIS receiver, or if there's more than one, return the "best" status amongst them.
-     * "Disabled" will be returned if there are no receivers of this type configured.
-     */
-    public ConnectionStatus getAISReceiverStatus() {
-        if (!aisReceivers.isEmpty()) {
-            return getBestStatus(aisReceivers);
-        } else {
-            return ConnectionStatus.DISABLED;
-        }
-    }
-
-    /**
-     * Get the status of the APRS receiver, or if there's more than one, return the "best" status amongst them.
-     * "Disabled" will be returned if there are no receivers of this type configured.
-     */
-    public ConnectionStatus getAPRSReceiverStatus() {
-        if (!aprsReceivers.isEmpty()) {
-            return getBestStatus(aprsReceivers);
-        } else {
-            return ConnectionStatus.DISABLED;
-        }
-    }
-
-    private ConnectionStatus getBestStatus(List<Client> clients) {
-        List<ConnectionStatus> statuses = clients.stream().map(Client::getStatus).toList();
-        if (statuses.contains(ConnectionStatus.ACTIVE)) {
-            return ConnectionStatus.ACTIVE;
-        } else if (statuses.contains(ConnectionStatus.ONLINE)) {
-            return ConnectionStatus.ONLINE;
-        } else {
-            return ConnectionStatus.OFFLINE;
-        }
-    }
-
 }

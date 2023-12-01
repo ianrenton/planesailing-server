@@ -21,8 +21,11 @@ import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The HTTP server that will provide data to the Plane/Sailing client over the
@@ -194,7 +197,7 @@ public class WebServer {
      * Get a map of some useful server telemetry
      */
     private String getTelemetryCallJSON() {
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("cpuLoad", String.format("%.0f", OS_BEAN.getCpuLoad() * 100.0));
         map.put("memUsed",
                 String.format("%.0f", ((OS_BEAN.getCommittedVirtualMemorySize() / (double) TOTAL_MEM_BYTES)) * 100.0));
@@ -205,11 +208,8 @@ public class WebServer {
         if (temp != null) {
             map.put("temp", String.format("%.1f", temp));
         }
-        map.put("webServerStatus", APP.getWebServerStatus().toString());
-        map.put("adsbReceiverStatus", APP.getADSBReceiverStatus().toString());
-        map.put("mlatReceiverStatus", APP.getMLATReceiverStatus().toString());
-        map.put("aisReceiverStatus", APP.getAISReceiverStatus().toString());
-        map.put("aprsReceiverStatus", APP.getAPRSReceiverStatus().toString());
+        map.put("webServerStatus", getStatus());
+        map.put("feederStatus", getFeederStatus());
 
         JSONObject o = new JSONObject(map);
         return o.toString(readableJSON ? 2 : 0);
@@ -224,22 +224,22 @@ public class WebServer {
                 "counter", (System.currentTimeMillis() - Application.START_TIME) / 1000.0)
                 + PrometheusMetricGenerator.generate("plane_sailing_requests_served", "Number of HTTP requests served by the Plane/Sailing server since start",
                 "counter", requestsServed)
-                + PrometheusMetricGenerator.generate("plane_sailing_adsb_available", "Is ADSB input configured and connected?",
-                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ONLINE || APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
-                + PrometheusMetricGenerator.generate("plane_sailing_mlat_available", "Is MLAT input configured and connected?",
-                "gauge", APP.getMLATReceiverStatus() == ConnectionStatus.ONLINE || APP.getMLATReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
-                + PrometheusMetricGenerator.generate("plane_sailing_ais_available", "Is AIS input configured and connected?",
-                "gauge", APP.getAISReceiverStatus() == ConnectionStatus.ONLINE || APP.getAISReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
-                + PrometheusMetricGenerator.generate("plane_sailing_aprs_available", "Is APRS input configured and connected?",
-                "gauge", APP.getAPRSReceiverStatus() == ConnectionStatus.ONLINE || APP.getAPRSReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
-                + PrometheusMetricGenerator.generate("plane_sailing_adsb_receiving", "Is ADSB input receiving data?",
-                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
-                + PrometheusMetricGenerator.generate("plane_sailing_mlat_receiving", "Is MLAT input receiving data?",
-                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
-                + PrometheusMetricGenerator.generate("plane_sailing_ais_receiving", "Is AIS input receiving data?",
-                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
-                + PrometheusMetricGenerator.generate("plane_sailing_aprs_receiving", "Is APRS input receiving data?",
-                "gauge", APP.getADSBReceiverStatus() == ConnectionStatus.ACTIVE ? 1 : 0)
+                + PrometheusMetricGenerator.generate("plane_sailing_adsb_inputs_available", "How many ADSB receivers are configured and connected?",
+                "gauge", countADSBReceviersConnected())
+                + PrometheusMetricGenerator.generate("plane_sailing_mlat_inputs_available", "How many MLAT receivers are configured and connected?",
+                "gauge", countMLATReceviersConnected())
+                + PrometheusMetricGenerator.generate("plane_sailing_ais_inputs_available", "How many AIS receivers are configured and connected?",
+                "gauge", countAISReceviersConnected())
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_inputs_available", "How many APRS receivers are configured and connected?",
+                "gauge", countAPRSReceviersConnected())
+                + PrometheusMetricGenerator.generate("plane_sailing_adsb_inputs_receiving", "How many ADSB receivers are receiving data?",
+                "gauge", countADSBReceviersActive())
+                + PrometheusMetricGenerator.generate("plane_sailing_mlat_inputs_receiving", "How many MLAT receivers are receiving data?",
+                "gauge", countMLATReceviersActive())
+                + PrometheusMetricGenerator.generate("plane_sailing_ais_inputs_receiving", "How many AIS receivers are receiving data?",
+                "gauge", countAISReceviersActive())
+                + PrometheusMetricGenerator.generate("plane_sailing_aprs_inputs_receiving", "How many APRS receivers are receiving data?",
+                "gauge", countAPRSReceviersActive())
                 + PrometheusMetricGenerator.generate("plane_sailing_track_count", "Number of tracks of all kinds in the system",
                 "gauge", tt.size())
                 + PrometheusMetricGenerator.generate("plane_sailing_aircraft_count", "Number of aircraft tracks in the system",
@@ -264,6 +264,53 @@ public class WebServer {
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0));
     }
 
+    /**
+     * Get a connection status summary for all feeders and all their receiver clients' status.
+     */
+    private Map<String, Map<String, ConnectionStatus>> getFeederStatus() {
+        return APP.getFeeders().stream().collect(Collectors.toMap(Feeder::getName, Feeder::getStatus));
+    }
+
+    private long countADSBReceviersConnected() {
+        return getAllReceiversOfType(ClientType.ADSB).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countMLATReceviersConnected() {
+        return getAllReceiversOfType(ClientType.MLAT).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countAISReceviersConnected() {
+        return getAllReceiversOfType(ClientType.AIS).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countAPRSReceviersConnected() {
+        return getAllReceiversOfType(ClientType.APRS).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countADSBReceviersActive() {
+        return getAllReceiversOfType(ClientType.ADSB).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countMLATReceviersActive() {
+        return getAllReceiversOfType(ClientType.MLAT).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countAISReceviersActive() {
+        return getAllReceiversOfType(ClientType.AIS).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countAPRSReceviersActive() {
+        return getAllReceiversOfType(ClientType.APRS).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private List<Client> getAllReceiversOfType(ClientType type) {
+        List<Client> receivers = new ArrayList<>();
+        for (Feeder f : APP.getFeeders()) {
+            f.getReceivers().stream().filter(r -> r.getType() == type).forEach(receivers::add);
+        }
+        return receivers;
+    }
+
     private enum Call {
         FIRST, UPDATE, TELEMETRY, METRICS, HOME
     }
@@ -273,7 +320,7 @@ public class WebServer {
             if (System.currentTimeMillis() - lastReceivedTime <= CLIENT_REQUEST_RATE_MILLIS * 2) {
                 return ConnectionStatus.ACTIVE;
             } else {
-                return ConnectionStatus.ONLINE;
+                return ConnectionStatus.WAITING;
             }
         } else {
             return ConnectionStatus.OFFLINE;

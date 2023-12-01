@@ -23,7 +23,6 @@ public class AISUDPReceiver extends Client {
     private static final Logger LOGGER = LogManager.getLogger(AISUDPReceiver.class);
     // Expected milliseconds between receiving packets
     private static final int PACKET_RX_RATE_MILLIS = 120000;
-    private static final String DATA_TYPE = "AIS data";
     private final int localPort;
     private final UDPReceiver udpReceiverThread = new UDPReceiver();
     private final AISReceiver aisReceiverThread = new AISReceiver();
@@ -34,11 +33,12 @@ public class AISUDPReceiver extends Client {
     /**
      * Create the receiver
      *
+     * @param name       The name of the connection.
      * @param localPort  Port to listen on.
      * @param trackTable The track table to use.
      */
-    public AISUDPReceiver(int localPort, TrackTable trackTable) {
-        super(trackTable);
+    public AISUDPReceiver(String name, int localPort, TrackTable trackTable) {
+        super(name, trackTable);
         this.localPort = localPort;
 
         try {
@@ -297,8 +297,8 @@ public class AISUDPReceiver extends Client {
     }
 
     @Override
-    protected String getDataType() {
-        return DATA_TYPE;
+    public ClientType getType() {
+        return ClientType.AIS;
     }
 
     @Override

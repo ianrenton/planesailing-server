@@ -24,18 +24,17 @@ import java.io.InputStream;
 public class BEASTBinaryTCPClient extends TCPClient {
 
     private static final Logger LOGGER = LogManager.getLogger(BEASTBinaryTCPClient.class);
-    private static final String DATA_TYPE_ADSB = "BEAST Binary (ADS-B) data";
-    private static final String DATA_TYPE_MLAT = "BEAST Binary (MLAT) data";
     private static final byte ESC = (byte) 0x1a;
     private static final String COMMB_CALLSIGN_BASE64 = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_ !\"#$%&'()*+,-./0123456789:;<=>?";
     private static final ModeSDecoder DECODER = new ModeSDecoder();
 
-    private final String dataType;
+    private final boolean mlat;
     private final int socketTimeoutMillis;
 
     /**
      * Create the client
      *
+     * @param name       The name of the connection.
      * @param remoteHost Host to connect to.
      * @param remotePort Port to connect to.
      * @param trackTable The track table to use.
@@ -43,9 +42,9 @@ public class BEASTBinaryTCPClient extends TCPClient {
      *                   if it will be receiving Mode-S/ADS-B data from a local
      *                   radio.
      */
-    public BEASTBinaryTCPClient(String remoteHost, int remotePort, TrackTable trackTable, boolean mlat) {
-        super(remoteHost, remotePort, trackTable);
-        dataType = mlat ? DATA_TYPE_MLAT : DATA_TYPE_ADSB;
+    public BEASTBinaryTCPClient(String name, String remoteHost, int remotePort, TrackTable trackTable, boolean mlat) {
+        super(name, remoteHost, remotePort, trackTable);
+        this.mlat = mlat;
         socketTimeoutMillis = mlat ? 600000 : 60000; // 1 min for local data, 10 min for MLAT from server
     }
 
@@ -98,7 +97,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
             }
             return false;
         } catch (IOException ex) {
-            getLogger().warn("Exception encountered in TCP Socket for {}.", getDataType(), ex);
+            getLogger().warn("Exception encountered in Receiver {}.", getType(), ex);
             return false;
         }
     }
@@ -133,7 +132,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
             // Modify MLAT data to look like "real" ADS-B data
             byte[] fudgedData = fudgeMLATData(data);
             // Handle the message
-            handle(DECODER.decode(fudgedData), trackTable, dataType);
+            handle(DECODER.decode(fudgedData), trackTable, name);
 
         } catch (BadFormatException e) {
             LOGGER.debug("Malformed message skipped. Message: {}", e.getMessage());
@@ -169,9 +168,9 @@ public class BEASTBinaryTCPClient extends TCPClient {
      *
      * @param msg        The Mode S packet
      * @param trackTable The track table to use
-     * @param dataType   The data type of this connection. Used only for logging.
+     * @param name       The name of this connection. Used only for logging.
      */
-    static void handle(ModeSReply msg, TrackTable trackTable, String dataType) {
+    static void handle(ModeSReply msg, TrackTable trackTable, String name) {
         try {
             // Get the ICAO 24-bit hex code
             String icao24 = tools.toHexString(msg.getIcao24());
@@ -381,7 +380,7 @@ public class BEASTBinaryTCPClient extends TCPClient {
             a.updateMetadataTime();
 
         } catch (Exception ex) {
-            LOGGER.warn("TCP Socket for {} encountered an exception handling a Mode S packet", dataType, ex);
+            LOGGER.warn("Receiver {} encountered an exception handling a Mode S packet", name, ex);
         }
     }
 
@@ -485,8 +484,8 @@ public class BEASTBinaryTCPClient extends TCPClient {
     }
 
     @Override
-    protected String getDataType() {
-        return dataType;
+    public ClientType getType() {
+        return mlat ? ClientType.MLAT : ClientType.ADSB;
     }
 
     @Override

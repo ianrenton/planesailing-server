@@ -35,12 +35,13 @@ public class APRSTCPClient extends TCPClient {
     /**
      * Create the client
      *
+     * @param name       The name of the connection.
      * @param remoteHost Host to connect to.
      * @param remotePort Port to connect to.
      * @param trackTable The track table to use.
      */
-    public APRSTCPClient(String remoteHost, int remotePort, TrackTable trackTable) {
-        super(remoteHost, remotePort, trackTable);
+    public APRSTCPClient(String name, String remoteHost, int remotePort, TrackTable trackTable) {
+        super(name, remoteHost, remotePort, trackTable);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class APRSTCPClient extends TCPClient {
             }
             return false;
         } catch (IOException ex) {
-            getLogger().warn("Exception encountered in TCP Socket for {}.", getDataType(), ex);
+            getLogger().warn("Exception encountered in Receiver {}.", getType(), ex);
             return false;
         }
     }
@@ -212,8 +213,8 @@ public class APRSTCPClient extends TCPClient {
     }
 
     @Override
-    protected String getDataType() {
-        return "APRS data";
+    public ClientType getType() {
+        return ClientType.APRS;
     }
 
     @Override

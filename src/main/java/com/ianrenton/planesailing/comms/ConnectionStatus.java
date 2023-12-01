@@ -1,7 +1,7 @@
 package com.ianrenton.planesailing.comms;
 
 public enum ConnectionStatus {
-    DISABLED("Disabled"), OFFLINE("Offline"), ONLINE("Online"), ACTIVE("Active");
+    OFFLINE("Offline"), WAITING("Waiting"), ACTIVE("Active");
 
     private final String prettyName;
 

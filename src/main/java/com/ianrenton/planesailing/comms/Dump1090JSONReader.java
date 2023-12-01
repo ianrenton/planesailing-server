@@ -19,20 +19,19 @@ import java.util.concurrent.TimeUnit;
 
 public class Dump1090JSONReader extends Client {
     private static final Logger LOGGER = LogManager.getLogger(Dump1090JSONReader.class);
-    private static final String DATA_TYPE = "Dump1090 JSON (Aircraft) data";
     private static final int QUERY_INTERVAL_MS = 5000;
     private URL url;
     private transient final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1,
-            new BasicThreadFactory.Builder().namingPattern(DATA_TYPE + " reader").build());
+            new BasicThreadFactory.Builder().namingPattern(name + " client").build());
     @SuppressWarnings("rawtypes")
     private transient ScheduledFuture readerTask;
 
-    public Dump1090JSONReader(String url, TrackTable trackTable) {
-        super(trackTable);
+    public Dump1090JSONReader(String name, String url, TrackTable trackTable) {
+        super(name, trackTable);
         try {
             this.url = new URL(url);
         } catch (MalformedURLException e) {
-            LOGGER.error("{} is an invalid URL, {} reader could not be created!", url, DATA_TYPE);
+            LOGGER.error("{} is an invalid URL, {} client could not be created!", url, name);
         }
     }
 
@@ -50,8 +49,8 @@ public class Dump1090JSONReader extends Client {
     }
 
     @Override
-    protected String getDataType() {
-        return DATA_TYPE;
+    public ClientType getType() {
+        return ClientType.ADSB;
     }
 
     @Override
@@ -191,7 +190,7 @@ public class Dump1090JSONReader extends Client {
                     }
                 }
             } catch (Throwable e) {
-                LOGGER.error("Exception reading {}", DATA_TYPE, e);
+                LOGGER.error("Exception reading Dump1090 JSON data on connection {}", name, e);
             }
         }
     }

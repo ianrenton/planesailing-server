@@ -19,19 +19,19 @@ import java.io.InputStreamReader;
  */
 public class BEASTAVRTCPClient extends TCPClient {
 
-    private static final String DATA_TYPE = "BEAST AVR Mode-S (ADS-B) data";
     private static final Logger LOGGER = LogManager.getLogger(BEASTAVRTCPClient.class);
     private final ModeSDecoder decoder = new ModeSDecoder();
 
     /**
      * Create the client
      *
+     * @param name       The name of the connection.
      * @param remoteHost Host to connect to.
      * @param remotePort Port to connect to.
      * @param trackTable The track table to use.
      */
-    public BEASTAVRTCPClient(String remoteHost, int remotePort, TrackTable trackTable) {
-        super(remoteHost, remotePort, trackTable);
+    public BEASTAVRTCPClient(String name, String remoteHost, int remotePort, TrackTable trackTable) {
+        super(name, remoteHost, remotePort, trackTable);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class BEASTAVRTCPClient extends TCPClient {
             }
             return true;
         } catch (IOException ex) {
-            getLogger().warn("Exception encountered in TCP Socket for {}.", getDataType(), ex);
+            getLogger().warn("Exception encountered in Receiver {}.", getType(), ex);
             return false;
         }
     }
@@ -58,7 +58,7 @@ public class BEASTAVRTCPClient extends TCPClient {
      */
     private void handle(String hex) {
         try {
-            BEASTBinaryTCPClient.handle(decoder.decode(hex), trackTable, DATA_TYPE);
+            BEASTBinaryTCPClient.handle(decoder.decode(hex), trackTable, name);
         } catch (BadFormatException e) {
             LOGGER.debug("Malformed message skipped. Message: {}", e.getMessage());
         } catch (UnspecifiedFormatError e) {
@@ -72,8 +72,8 @@ public class BEASTAVRTCPClient extends TCPClient {
     }
 
     @Override
-    protected String getDataType() {
-        return DATA_TYPE;
+    public ClientType getType() {
+        return ClientType.ADSB;
     }
 
     @Override
