@@ -6,7 +6,7 @@
 
 This is the server-side code for Plane/Sailing version 2.
 
-This software receives data from local ADS-B, AIS and APRS receiving software for tracking planes, ships and amateur radio stations respectively. It combines them into one large "track table", and provides a web interface by which the [Plane/Sailing client](https://github.com/ianrenton/planesailing) can fetch data via JSON.
+This software receives data from local ADS-B, AIS, APRS and HORUS-compatible receiving software for tracking planes, ships, amateur radio stations, and radiosondes respectively. It combines them into one large "track table", and provides a web interface by which the [Plane/Sailing client](https://github.com/ianrenton/planesailing) can fetch data via JSON.
 
 For more information on the Plane/Sailing project, please see https://ianrenton.com/hardware/planesailing
 
@@ -17,6 +17,7 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 * Receives MLAT messages in BEAST Binary and SBS/BaseStation format (e.g. from PiAware)
 * Receives complete aircraft data sets direct from Dump1090 in its own JSON format, if preferred
 * Receives APRS messages via KISS TCP (e.g. from Direwolf)
+* Receives HORUS JSON format messages via UDP (e.g. from radiosonde_auto_rx)
 * Includes support for config-based addition of extra tracks for the base station, airports and seaports
 * Includes support for config-based addition of AIS track names, to cover the period between getting a position message and a details message
 * Includes look-up tables to determine aircraft operators, types, and the correct MIL-STD2525C symbols to use for a variety of tracks

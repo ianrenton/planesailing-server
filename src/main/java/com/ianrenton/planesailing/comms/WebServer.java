@@ -232,6 +232,8 @@ public class WebServer {
                 "gauge", countAISReceviersConnected())
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_inputs_available", "How many APRS receivers are configured and connected?",
                 "gauge", countAPRSReceviersConnected())
+                + PrometheusMetricGenerator.generate("plane_sailing_horus_inputs_available", "How many HORUS receivers are configured and connected?",
+                "gauge", countHORUSReceviersConnected())
                 + PrometheusMetricGenerator.generate("plane_sailing_adsb_inputs_receiving", "How many ADSB receivers are receiving data?",
                 "gauge", countADSBReceviersActive())
                 + PrometheusMetricGenerator.generate("plane_sailing_mlat_inputs_receiving", "How many MLAT receivers are receiving data?",
@@ -240,6 +242,8 @@ public class WebServer {
                 "gauge", countAISReceviersActive())
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_inputs_receiving", "How many APRS receivers are receiving data?",
                 "gauge", countAPRSReceviersActive())
+                + PrometheusMetricGenerator.generate("plane_sailing_horus_inputs_receiving", "How many HORUS receivers are receiving data?",
+                "gauge", countHORUSReceviersActive())
                 + PrometheusMetricGenerator.generate("plane_sailing_track_count", "Number of tracks of all kinds in the system",
                 "gauge", tt.size())
                 + PrometheusMetricGenerator.generate("plane_sailing_aircraft_count", "Number of aircraft tracks in the system",
@@ -254,6 +258,8 @@ public class WebServer {
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE).count())
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_base_count", "Number of APRS base station tracks in the system",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_BASE_STATION).count())
+                + PrometheusMetricGenerator.generate("plane_sailing_radiosonde_count", "Number of radiosondes in the system",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.RADIOSONDE).count())
                 + PrometheusMetricGenerator.generate("plane_sailing_aircraft_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked aircraft",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.AIRCRAFT).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
                 + PrometheusMetricGenerator.generate("plane_sailing_ship_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked ship",
@@ -261,7 +267,9 @@ public class WebServer {
                 + PrometheusMetricGenerator.generate("plane_sailing_ais_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked AIS contact",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.SHIP || t.getTrackType() == TrackType.AIS_SHORE_STATION || t.getTrackType() == TrackType.AIS_ATON).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked APRS contact",
-                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0));
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
+                + PrometheusMetricGenerator.generate("plane_sailing_radiosonde_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked radiosonde",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.RADIOSONDE).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0));
     }
 
     /**
@@ -287,6 +295,10 @@ public class WebServer {
         return getAllReceiversOfType(ClientType.APRS).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
     }
 
+    private long countHORUSReceviersConnected() {
+        return getAllReceiversOfType(ClientType.HORUS).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
     private long countADSBReceviersActive() {
         return getAllReceiversOfType(ClientType.ADSB).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
     }
@@ -301,6 +313,10 @@ public class WebServer {
 
     private long countAPRSReceviersActive() {
         return getAllReceiversOfType(ClientType.APRS).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countHORUSReceviersActive() {
+        return getAllReceiversOfType(ClientType.HORUS).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
     }
 
     private List<Client> getAllReceiversOfType(ClientType type) {

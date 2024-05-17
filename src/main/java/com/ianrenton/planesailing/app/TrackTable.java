@@ -299,6 +299,9 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
             case SHIP, AIS_ATON, AIS_SHORE_STATION -> {
                 return baseStationPosition.haversine(new Position(longitude, latitude, 0.0)) * METRES_TO_NMI <= AISTrack.MAX_AIS_RANGE;
             }
+            case RADIOSONDE -> {
+                return baseStationPosition.haversine(new Position(longitude, latitude, 0.0)) * METRES_TO_NMI <= Radiosonde.MAX_RADIOSONDE_RANGE;
+            }
             default -> {
                 return true;
             }
