@@ -1,12 +1,8 @@
 package com.ianrenton.planesailing.data;
 
 import com.ianrenton.planesailing.app.Application;
-import com.ianrenton.planesailing.utils.DataMaps;
-import dk.tbsalling.aismessages.ais.messages.types.NavigationStatus;
-import dk.tbsalling.aismessages.ais.messages.types.ShipType;
 
 import java.io.Serial;
-import java.util.Map.Entry;
 
 public class Radiosonde extends Track {
     @Serial

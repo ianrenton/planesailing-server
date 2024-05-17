@@ -6,7 +6,7 @@
 
 This is the server-side code for Plane/Sailing version 2.
 
-This software receives data from local ADS-B, AIS, APRS and HORUS-compatible receiving software for tracking planes, ships, amateur radio stations, and radiosondes respectively. It combines them into one large "track table", and provides a web interface by which the [Plane/Sailing client](https://github.com/ianrenton/planesailing) can fetch data via JSON.
+This software receives data from local ADS-B, AIS, APRS and HORUS-compatible receiving software, along with Meshtastic nodes. The data is used for tracking planes, ships, amateur radio stations, radiosondes, and Meshtastic nodes respectively. It combines them into one large "track table", and provides a web interface by which the [Plane/Sailing client](https://github.com/ianrenton/planesailing) can fetch data via JSON.
 
 For more information on the Plane/Sailing project, please see https://ianrenton.com/hardware/planesailing
 
@@ -18,6 +18,7 @@ For more information on the Plane/Sailing project, please see https://ianrenton.
 * Receives complete aircraft data sets direct from Dump1090 in its own JSON format, if preferred
 * Receives APRS messages via KISS TCP (e.g. from Direwolf)
 * Receives HORUS JSON format messages via UDP (e.g. from radiosonde_auto_rx)
+* Queries Meshtastic nodes via their Python API to obtain details of nearby nodes
 * Includes support for config-based addition of extra tracks for the base station, airports and seaports
 * Includes support for config-based addition of AIS track names, to cover the period between getting a position message and a details message
 * Includes look-up tables to determine aircraft operators, types, and the correct MIL-STD2525C symbols to use for a variety of tracks
@@ -49,7 +50,7 @@ To run Plane/Sailing Server:
 
 1. Ensure your machine has Java 17 or later installed, e.g. `sudo apt install openjdk-17-jre-headless`
 2. Find your copy of Plane/Sailing Server, either from the ZIP download or one you built yourself (see the previous section). You should have three files: a JAR file, an `application.conf` file, a `run.sh`, and a `data` subdirectory.
-3. Edit `application.conf` and set the IP addresses and ports as required. Each section (AIS, ADS-B, MLAT, APRS) contains a *list* (within square brackets) of connections (blocks surrounded by curly brackets) to make. If you don't have a particular data type, e.g. you don't do APRS, remove the entry for that section leaving an empty list like `aprs-receivers: []`. If you have more than one connection to make in a category, add multiple blocks.
+3. Edit `application.conf` and set the IP addresses and ports as required. A list of receiving nodes is supported, each with any number of AIS, ADS-B, MLAT, APRS, HORUS and Meshtastic receivers. One configuration of each type is provided as an example for you to copy. If there's something your setup doesn't do, just delete the corresponding section.
 4. Set the base station position, and any airports and seaports you'd like to appear in your data.
 5. Save `application.conf` and run the application, e.g. `chmod +x run.sh`, `./run.sh`
 6. Hopefully you should see log messages indicating that it has started up and loaded data! Every 10 seconds it will print out a summary of what's in its track table.
@@ -68,6 +69,29 @@ Finally, Plane/Sailing v1 loaded its aircraft data from a JSON file written by D
 
 If you're not sure, the default will work fine.
 
+### A Note on Meshtastic Support
+
+Meshtastic node support relies on calling on the Python command-line utility to connect to the node and retrieve data. This is inelegant and somewhat insecure, but does easily provide the ability to connect to Bluetooth nodes as well as WiFi, and avoids me having to write and maintain a Meshtastic protobuf API for Java :)
+
+In `application.conf` you will simply provide a command line for the application to run at an interval. In order for this to work, you will need to [set up the Meshtastic Python CLI interface](https://meshtastic.org/docs/software/python/cli/installation/). On some systems (e.g. recent Ubuntu), this involves a `venv` (virtual environment) as `pip` cannot be run at the system level and the Meshtastic library is not yet available in the package manager. For example, the following may be required to set it up:
+
+```bash
+sudo apt install python3 python3-pip python3-venv 
+python3 -m venv ~/meshtastic-venv 
+source ~/meshtastic-venv/bin/activate 
+pip3 install --upgrade pytap2 
+pip3 install --upgrade meshtastic 
+deactivate
+```
+
+Then the following command is run from Plane/Sailing:
+
+```bash
+source ~/meshtastic-venv/bin/activate && meshtastic --host [ipaddress] --info 
+```
+
+Plane/Sailing is currently *explicitly calling `bash`* to run the command, and therefore this will only work on Linux and where `bash` is available. Improving this is a work in progress.
+
 ## Checking the Web Interface
 
 By default, Plane/Sailing Server runs on port 8090. Leave the software running, then access `http://[ipaddress]:8090/` in a web browser. You should see something that looks like this:
@@ -76,7 +100,7 @@ By default, Plane/Sailing Server runs on port 8090. Leave the software running, 
 
 *(Expecting to see the Plane/Sailing interface, with a map background etc.? That's part of the [Plane/Sailing client](https://github.com/ianrenton/planesailing), not the server. The two are provided separately in case you want to run them in different places&mdash;e.g. I run the server on a Raspberry Pi, but host the client using GitHub Pages. If you want to run the client and server on the same machine, read on as this is covered in the "Reverse Proxy Setup" section.)*
 
-### Automatic Run on Startup
+## Automatic Run on Startup
 
 Depending on your use case you may wish to have the software run automatically on startup. How to do this is system-dependent, on most Linux systems that use systemd, like Ubuntu and Raspbian, you will want to create a file like `/etc/systemd/system/plane-sailing-server.service` with the contents similar to this:
 
@@ -109,7 +133,7 @@ If you want to check it's working, use e.g. `systemctl status plane-sailing-serv
 
 If you are running Plane/Sailing Server on Windows you can make it start automatically by using NSSM to install Plane/Sailing Server as a service, or with Scheduled Tasks, a shortcut in your Startup items, etc.
 
-### Reverse Proxy Setup
+## Reverse Proxy Setup
 
 The client can quite happily connect to the Plane/Sailing Server directly on its default port of 8090. However, you may wish to add a "proper" web server providing a reverse proxy setup. There are several reasons you might want to do this:
 

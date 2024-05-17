@@ -234,6 +234,8 @@ public class WebServer {
                 "gauge", countAPRSReceviersConnected())
                 + PrometheusMetricGenerator.generate("plane_sailing_horus_inputs_available", "How many HORUS receivers are configured and connected?",
                 "gauge", countHORUSReceviersConnected())
+                + PrometheusMetricGenerator.generate("plane_sailing_meshtastic_inputs_available", "How many Meshtastic node queriers are configured and have communicated at least once?",
+                "gauge", countMeshtasticReceviersConnected())
                 + PrometheusMetricGenerator.generate("plane_sailing_adsb_inputs_receiving", "How many ADSB receivers are receiving data?",
                 "gauge", countADSBReceviersActive())
                 + PrometheusMetricGenerator.generate("plane_sailing_mlat_inputs_receiving", "How many MLAT receivers are receiving data?",
@@ -244,6 +246,8 @@ public class WebServer {
                 "gauge", countAPRSReceviersActive())
                 + PrometheusMetricGenerator.generate("plane_sailing_horus_inputs_receiving", "How many HORUS receivers are receiving data?",
                 "gauge", countHORUSReceviersActive())
+                + PrometheusMetricGenerator.generate("plane_sailing_meshtastic_inputs_receiving", "How many Meshtastic receivers have responded to query on schedule?",
+                "gauge", countMeshtasticReceviersActive())
                 + PrometheusMetricGenerator.generate("plane_sailing_track_count", "Number of tracks of all kinds in the system",
                 "gauge", tt.size())
                 + PrometheusMetricGenerator.generate("plane_sailing_aircraft_count", "Number of aircraft tracks in the system",
@@ -269,7 +273,9 @@ public class WebServer {
                 + PrometheusMetricGenerator.generate("plane_sailing_aprs_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked APRS contact",
                 "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.APRS_MOBILE || t.getTrackType() == TrackType.APRS_BASE_STATION).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
                 + PrometheusMetricGenerator.generate("plane_sailing_radiosonde_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked radiosonde",
-                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.RADIOSONDE).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0));
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.RADIOSONDE).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0))
+                + PrometheusMetricGenerator.generate("plane_sailing_meshtastic_node_furthest_distance", "Distance in nautical miles from the base station to the furthest tracked Meshtastic node",
+                "gauge", tt.values().stream().filter(t -> t.getTrackType() == TrackType.MESHTASTIC_NODE).mapToDouble(tt::getDistanceFromBaseStationOrZero).map(d -> d * 0.000539957).max().orElse(0.0));
     }
 
     /**
@@ -299,6 +305,10 @@ public class WebServer {
         return getAllReceiversOfType(ClientType.HORUS).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
     }
 
+    private long countMeshtasticReceviersConnected() {
+        return getAllReceiversOfType(ClientType.MESHTASTIC).stream().filter(r -> r.getStatus() == ConnectionStatus.WAITING || r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
     private long countADSBReceviersActive() {
         return getAllReceiversOfType(ClientType.ADSB).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
     }
@@ -317,6 +327,10 @@ public class WebServer {
 
     private long countHORUSReceviersActive() {
         return getAllReceiversOfType(ClientType.HORUS).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
+    }
+
+    private long countMeshtasticReceviersActive() {
+        return getAllReceiversOfType(ClientType.MESHTASTIC).stream().filter(r -> r.getStatus() == ConnectionStatus.ACTIVE).count();
     }
 
     private List<Client> getAllReceiversOfType(ClientType type) {

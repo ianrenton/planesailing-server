@@ -15,9 +15,8 @@ public abstract class Track implements Serializable {
     private static final Logger LOGGER = LogManager.getLogger(Track.class);
 
     protected final String id; // unique ID. ICAO Hex is used for aircraft, MMSI for ships, callsign for APRS
-    // tracks and radiosondes. These are all sufficiently different that each track should be
-    // able to use this without risk of collision. The same ID is used as the
-    // key for the TrackTable.
+    // tracks and radiosondes, "!" hex code for Meshtastic. These are all sufficiently different that each track should be
+    // able to use this without risk of collision. The same ID is used as the key for the TrackTable.
     protected String callsign;
     protected TrackType trackType;
     protected String symbolCode;

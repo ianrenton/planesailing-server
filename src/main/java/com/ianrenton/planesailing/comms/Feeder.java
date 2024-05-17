@@ -67,6 +67,7 @@ public class Feeder {
                 }
                 case APRS -> receivers.add(new APRSTCPClient(c.getString("name"), c.getString("host"), c.getInt("port"), trackTable));
                 case HORUS -> receivers.add(new HORUSJSONUDPReceiver(c.getString("name"), c.getInt("port"), trackTable));
+                case MESHTASTIC -> receivers.add(new MeshtasticNodeQuerier(c.getString("name"), c.getString("command"), c.getInt("poll-interval-sec"), trackTable));
             }
         }
     }
