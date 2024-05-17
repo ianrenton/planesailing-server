@@ -118,7 +118,6 @@ public class MeshtasticNodeQuerier extends Client {
                     
                     if (nodeData.has("position")) {
                         JSONObject positionData = nodeData.getJSONObject("position");
-                        System.out.println("## " + id); // todo remove
                         if (positionData.has("latitude") && positionData.has("longitude")) {
                             double lat = positionData.getDouble("latitude");
                             double lon = positionData.getDouble("longitude");
@@ -127,7 +126,6 @@ public class MeshtasticNodeQuerier extends Client {
                                 time = positionData.getLong("time");
                             }
                             n.addPosition(lat, lon, time * 1000L);
-                        System.out.println("## " + lat + " " + lon + " " + time * 1000L); // todo remove
                         }
                         if (positionData.has("altitude")) {
                             n.setAltitude(positionData.getDouble("altitude") * 3.28); // Metres to feet
