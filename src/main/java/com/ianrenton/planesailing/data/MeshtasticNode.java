@@ -7,7 +7,7 @@ import java.io.Serial;
 public class MeshtasticNode extends Track {
     @Serial
     private static final long serialVersionUID = 1L;
-    private static final String DEFAULT_SYMBOL = "SUGPEVC-----";
+    private static final String DEFAULT_SYMBOL = "SUGPUUSR----";
     public static final Long DROP_MESHTASTIC_TRACK_TIME = Application.CONFIG.getLong("timing.drop-meshtastic-after");
     
     private String shortName = "";
