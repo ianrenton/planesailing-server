@@ -84,6 +84,7 @@ public abstract class Track implements Serializable {
      * reckoned position calculated at the front end based on the age of
      * the position data.
      */
+    @Deprecated
     public TimestampedPosition getDRPosition() {
         if (!positionHistory.isEmpty()) {
             TimestampedPosition p = positionHistory.getLatest();
@@ -320,6 +321,7 @@ public abstract class Track implements Serializable {
      * @deprecated Not needed as the client will be dead reckoning its position
      * internally so will need to do its own formatting
      */
+    @Deprecated
     public String getDisplayPosition() {
         if (!positionHistory.isEmpty()) {
             double lat = positionHistory.getLatest().latitude();

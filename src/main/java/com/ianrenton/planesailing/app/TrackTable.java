@@ -194,18 +194,26 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
         ConfigList baseStationConfigs = Application.CONFIG.getList("custom-tracks.base-stations");
         for (ConfigValue c : baseStationConfigs) {
             Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-            BaseStation bs = new BaseStation((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"));
+            BaseStation bs = new BaseStation((String) data.get("name"),
+                    ((Number) data.get("lat")).doubleValue(),
+                    ((Number) data.get("lon")).doubleValue());
             put(bs.getID(), bs);
             // Special case - store the first base station's position as the ADS-B decoder
             // will want that. Note Position takes longitude first!
-            baseStationPosition = new Position((Double) data.get("lon"), (Double) data.get("lat"), ((Number) data.get("alt")).doubleValue());
+            baseStationPosition = new Position(
+                    ((Number) data.get("lon")).doubleValue(),
+                    ((Number) data.get("lat")).doubleValue(),
+                    ((Number) data.get("alt")).doubleValue());
         }
         LOGGER.info("Loaded {} base stations from config file", baseStationConfigs.size());
 
         ConfigList airportConfigs = Application.CONFIG.getList("custom-tracks.airports");
         for (ConfigValue c : airportConfigs) {
             Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-            Airport ap = new Airport((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"), (String) data.get("icao-code"));
+            Airport ap = new Airport((String) data.get("name"),
+                    ((Number) data.get("lat")).doubleValue(),
+                    ((Number) data.get("lon")).doubleValue(),
+                    (String) data.get("icao-code"));
             put(ap.getID(), ap);
         }
         LOGGER.info("Loaded {} airports from config file", airportConfigs.size());
@@ -213,7 +221,9 @@ public class TrackTable extends ConcurrentHashMap<String, Track> {
         ConfigList seaportConfigs = Application.CONFIG.getList("custom-tracks.seaports");
         for (ConfigValue c : seaportConfigs) {
             Map<String, Object> data = (Map<String, Object>) c.unwrapped();
-            Seaport sp = new Seaport((String) data.get("name"), (Double) data.get("lat"), (Double) data.get("lon"));
+            Seaport sp = new Seaport((String) data.get("name"),
+                    ((Number) data.get("lat")).doubleValue(),
+                    ((Number) data.get("lon")).doubleValue());
             put(sp.getID(), sp);
         }
         LOGGER.info("Loaded {} seaports from config file", seaportConfigs.size());

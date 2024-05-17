@@ -36,7 +36,9 @@ If you want to modify and build the software yourself, it's best to clone it usi
 
 Plane/Sailing Server is a Maven project, so with Maven and a JDK installed, you can build it by running `mvn package`, and you'll find the output in `target/output/`.
 
-However there is one complication, in that this project depends on [javAPRSlib](https://github.com/ab0oo/javAPRSlib) which is a Maven project, but isn't published anywhere. So before you try to build Plane/Sailing Server, you'll need to clone that project, check out the 2.0-release tag, and install it locally with `mvn install`. You should _then_ be able to build this project without issues.
+### Using IDEs
+
+IntelliJ IDEA is my IDE of choice, so the source code comes with IDEA config files to help you get up and running. If you prefer a different IDE, and you want to run the software direct from your IDE for testing, you will want to set the runtime working directory to `target/output` and add `-Dconfig.file=application.conf` to the VM arguments.
 
 ## Setup
 
